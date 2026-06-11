@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Profile A — NQ NY-Open OTE Reversal</title>
+<link rel="stylesheet" href="/static/style.css?v=matrix3">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="dot"></span>
+    <h1 id="stratName">Profile A</h1>
+    <span class="badge" id="statusBadge">—</span>
+  </div>
+  <div class="sub" id="cfg">—</div>
+</header>
+
+<!-- LIVE bar (updates as the bot trades) -->
+<div class="livebar" id="livebar">
+  <div class="lb"><span class="lbl">MODE</span><b id="lvMode">—</b></div>
+  <div class="lb"><span class="lbl">ACCOUNT</span><b id="lvAcct">—</b></div>
+  <div class="lb"><span class="lbl">BALANCE</span><b id="lvBal">—</b></div>
+  <div class="lb"><span class="lbl">TODAY P&amp;L</span><b id="lvDay">—</b></div>
+  <div class="lb"><span class="lbl">OPEN POS</span><b id="lvPos">flat</b></div>
+  <div class="lb"><span class="lbl">LAST SIGNAL</span><b id="lvSig">—</b></div>
+  <div class="lb live-ind" id="liveInd"><span class="lbl">LIVE</span><b id="lvLive">offline</b></div>
+</div>
+
+<div class="dnote" id="dnote">—</div>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="grid">
+  <div class="col">
+    <div class="card"><h2>Equity curve <span class="mut" id="eqNote">— backtest, 2 MNQ</span></h2>
+      <canvas id="equityChart" height="120"></canvas></div>
+    <div class="card"><h2>Monthly P&amp;L <span class="mut">— past 12 months</span></h2>
+      <canvas id="monthlyChart" height="120"></canvas></div>
+  </div>
+  <div class="col">
+    <div class="card"><h2>Walk-forward robustness <span class="mut">— PF by year (frozen rules)</span></h2>
+      <canvas id="yearChart" height="120"></canvas>
+      <div class="sub" id="valNote"></div></div>
+    <div class="card"><h2>The edge <span class="mut">— why it works</span></h2>
+      <div class="sub edge" id="edgeBox"></div></div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2>Funded sizing — MyFundedFutures Core 50K <span class="mut" id="fundProg"></span></h2>
+    <table class="firms"><thead><tr><th>Size</th><th>Risk / trade</th><th>Role</th><th>P(pass ≤90d)</th><th>Note</th></tr></thead>
+    <tbody id="sizing"></tbody></table>
+    <div class="sub" id="fundMeta" style="margin-top:8px"></div>
+    <div class="sub" id="fundBlow" style="margin-top:4px"></div>
+  </div>
+  <div class="card">
+    <h2>Risk profile <span class="mut">— 20k-path Monte Carlo</span></h2>
+    <table class="firms"><tbody id="riskTbl"></tbody></table>
+    <div class="sub" id="riskNote" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<div class="card" id="sizingCard" style="margin-top:14px;display:none">
+  <h2>Funded sizing matrix <span class="mut" id="sizingHdr">— pick period &amp; account</span></h2>
+  <div id="sizingPeriod" style="margin:4px 0 6px"></div>
+  <div id="sizingTabs" style="margin:2px 0 10px"></div>
+  <canvas id="sizingChart" height="110"></canvas>
+  <table class="firms" style="margin-top:12px"><thead><tr>
+    <th>Size</th><th style="text-align:right">Pass %</th><th style="text-align:right">Accts passed</th>
+    <th style="text-align:right">Didn't pass</th><th style="text-align:right">Avg pass time</th>
+    <th style="text-align:right">Per account</th><th style="text-align:right">Funded blow-ups</th>
+    <th style="text-align:right">Net / yr</th></tr></thead>
+    <tbody id="sizingTbl"></tbody></table>
+  <div class="sub" id="sizingNote" style="margin-top:8px"></div>
+</div>
+
+<div class="card" id="paperCard" style="margin-top:14px;display:none">
+  <h2>Paper-live validation <span class="mut" id="paperNote">— realtime fill-assumption check (data-only, no orders)</span></h2>
+  <div class="kpis" id="paperKpis"></div>
+  <div class="scroll"><table class="trades" id="paperTbl">
+    <thead><tr><th>Date</th><th>Dir</th><th>Entry</th><th>Fill</th><th>TP1</th><th>TP2</th><th>Stop</th><th>R</th><th>Fill quality</th><th>Notes</th></tr></thead>
+    <tbody></tbody></table></div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Trades <span class="mut" id="tradeNote">— backtest + live</span></h2>
+  <div class="scroll"><table class="trades" id="tradesTbl">
+    <thead><tr><th>Date</th><th>Phase</th><th>Dir</th><th>Entry</th><th>Stop</th><th>Exit</th><th>Pts</th><th>P&amp;L $</th><th>Result</th></tr></thead>
+    <tbody></tbody></table></div>
+</div>
+
+<div class="footnote" id="footer">Backtest values are real historical results (Dukascopy CFD, CME-revalidated). Live trades append automatically as the bot fills.</div>
+
+<script src="/static/app.js?v=matrix3"></script>
+</body>
+</html>

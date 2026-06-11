@@ -1,0 +1,30 @@
+[1/3] building full-history backtest reference ...
+      ny_am trades total=1705  in test window [2025-06-01..2025-12-01)=71
+[2/3] feeding bars into live ProfileAEngine sequentially ...
+      done feed: 42499 bars, 6453 latest_signal() calls, 73 live signals (1170s)
+[3/3] comparing live vs backtest ...
+
+================= SIGNAL-PARITY RESULT =================
+Window:                  2025-06-01 .. 2025-12-01
+Backtest ny_am trades:   71
+Live signals emitted:    73
+Matched (same key):      71
+Missing (bt, not live):  0
+Extra   (live, not bt):  2
+Field mismatches:        0
+-------------------------------------------------------
+Trade count difference:  +2
+Signal difference %:     2.82%   (missing+extra+fieldmismatch / bt)
+Entry difference %:      0.00%   (of matched trades)
+Stop  difference %:      0.00%   (of matched trades)
+Direction diff %:        0.00%
+Target diff %:           0.00%
+-------------------------------------------------------
+VERDICT: FAIL — DEPLOYMENT BLOCKER
+=======================================================
+
+
+-- EXTRA (first 15 of 2): live signals with no backtest trade --
+   2025-07-01 14:00  long  entry=22589.33 stop=22565.83 tgt=22636.34 liq=london_low
+   2025-07-18 13:50  long  entry=23105.13 stop=23092.81 tgt=23129.78 liq=london_low
+detail -> /Users/jacksonclarke/trading-team/bot/nq-liq-bot/out_parity.csv
