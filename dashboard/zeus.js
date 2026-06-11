@@ -1,0 +1,250 @@
+/* ZEUS god terminal — display & analyse only. No control paths exist here. */
+let S = null, ORACLE = null, FILTER = {};
+const $ = (q) => document.querySelector(q);
+const fmt = (n, d=0) => n == null ? "—" : Number(n).toLocaleString("en-US",{minimumFractionDigits:d, maximumFractionDigits:d});
+const usd = (n) => n == null ? "—" : (n<0?"-$":"$")+fmt(Math.abs(n),0);
+const cls = (n) => n>0?"pos":n<0?"neg":"dim";
+const ago = (ts) => { if(!ts) return "never"; const s=(Date.now()-new Date(ts))/1e3;
+  return s<90?`${s.toFixed(0)}s ago`:s<5400?`${(s/60).toFixed(0)}m ago`:`${(s/3600).toFixed(1)}h ago`; };
+
+async function refresh(){
+  const t0=performance.now();
+  S = await (await fetch("/api/state")).json();
+  document.body.dataset.tier = S.header.tier;
+  renderHeader(performance.now()-t0); renderAll();
+}
+
+function renderHeader(clientMs){
+  $("#voice").textContent = S.meta.voice;
+  const m=S.meta,h=S.header;
+  const tierCls={GREEN:"g",YELLOW:"y",ORANGE:"o",RED:"r",BLACK:"k"}[h.tier]||"";
+  $("#chips").innerHTML = [
+    [`MODE <b>${m.mode}</b>`, m.mode==="LOCKED"?"k":""],
+    [`TRADING <b>${m.trading_allowed?"PERMITTED":"FORBIDDEN"}</b>`, m.trading_allowed?"g":"r"],
+    [`ALERT TIER <b>${h.tier}</b>`, tierCls],
+    [`SESSION <b>${h.in_entry_window?"ENTRY WINDOW OPEN":"GATES CLOSED"}</b>`, h.in_entry_window?"g":""],
+    [`HEARTBEAT <b>${ago(h.heartbeat)}</b>`,""],
+    [`BROKER SYNC <b>${ago(h.broker_sync)}</b>`,""],
+    [`JOURNAL <b>${ago(h.last_journal)}</b>`,""],
+  ].map(([t,c])=>`<span class="chip ${c}">${t}</span>`).join("");
+  $("#meta").innerHTML =
+    `Last refreshed <b>${new Date(m.refreshed).toLocaleTimeString()}</b> · server ${m.refresh_ms}ms · round-trip ${clientMs.toFixed(0)}ms<br>`+
+    `Data health <b>${m.data_health}</b> · Next session <b>${m.next_session}</b>`;
+}
+
+function panel(title, body){ return `<div class="panel"><h3>${title}</h3>${body}</div>`; }
+function kv(rows){ return `<dl class="kv">`+rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("")+`</dl>`; }
+
+function renderAll(){
+  renderCommand(); renderAccounts(); renderStrategies(); renderTrades();
+  renderJournal(); renderRecon(); renderAlerts(); renderEvidence(); renderSettings();
+}
+
+/* Ⅰ COMMAND CENTRE */
+function renderCommand(){
+  const p=S.portfolio, a=S.strategies, last=S.trades.find(t=>"usd" in t);
+  $("#page-command").innerHTML = `
+  <div class="grid g4">
+    ${panel("Exposure", `<div class="big">${p.exposure_mnq} MNQ</div>
+      <div class="dim">${p.exposure_nq} NQ-equivalent · A=${p.alloc_a} / B=${p.alloc_b}</div>`)}
+    ${panel("Weekly PnL", `<div class="big ${cls(p.pnl_week)}">${usd(p.pnl_week)}</div>
+      <div class="dim">month ${usd(p.pnl_month)} · year ${usd(p.pnl_year)}</div>`)}
+    ${panel("Weekly Points", `<div class="big">${fmt(S.weekly.current,1)}</div>
+      <div class="dim">4wk avg ${fmt(S.weekly.avg4,1)} · ${S.weekly.est_note}</div>`)}
+    ${panel("Edge Health", `<div class="big">${a.worst}</div>
+      <div class="dim">A ${a.A.health} (${a.A.vs_validation??"—"}%) · B ${a.B.health} (${a.B.vs_validation??"—"}%)</div>`)}
+  </div>
+  <div class="grid g3" style="margin-top:14px">
+    ${panel("Account Health", S.accounts.length ? S.accounts.map(ac=>
+      `<div class="stat"><span class="tag ${ac.status}">${ac.status}</span> <b>${ac.name}</b>
+       <span class="dim">cushion ${usd(ac.cushion)} (${fmt(ac.cushion_frac*100,0)}% of DD)</span>
+       <div class="bar ${ac.cushion_frac<.4?"bad":ac.cushion_frac<.6?"warn":""}"><i style="width:${Math.min(100,ac.cushion_frac*100)}%"></i></div></div>`).join("")
+      : `<span class="dim">No accounts registered — pre-deployment.</span>`)}
+    ${panel("P3 Spear", (p.p3_active>0
+        ? `<div class="big">${p.p3_active} BRAKED</div><div class="note">ZEUS has lowered the spear. Capital preservation engaged.</div>`
+        : `<div class="big dim">SHEATHED</div><div class="dim">No account near its floor.</div>`)
+      + kv([["Total cushion", usd(p.cushion)],["Payouts to date", usd(p.payouts)],["Equity", usd(p.equity)]]))}
+    ${panel("Latest Strike", last ? kv([
+        ["When", new Date(last.ts).toLocaleString()],["Strategy", last.strategy],
+        ["Account", last.account],["Side", `${last.side} ${last.qty}`],
+        ["Result", `<span class="${cls(last.usd)}">${fmt(last.r,2)}R · ${usd(last.usd)}</span>`],
+        ["Chain", last.chain_ok?`<span class="tag ok">COMPLETE</span>`:`<span class="tag RED">BROKEN</span>`]])
+        +`<div class="note">The strike is complete.</div>`
+      : `<span class="dim">No closed trades yet.</span>`)}
+  </div>
+  <div style="margin-top:14px">${panel("Active Alerts",
+     S.alerts.length ? alertTable(S.alerts.slice(0,6)) : `<span class="dim">Silence on Olympus. No alerts.</span>`)}</div>`;
+}
+
+/* Ⅱ ACCOUNTS */
+function renderAccounts(){
+  $("#page-accounts").innerHTML = S.accounts.length ? `<div class="grid g3">`+
+    S.accounts.map(a=>`<div class="card ${a.status}">
+      <h4>${a.name}<span class="tag ${a.status}">${a.status}</span></h4>
+      ${kv([["Firm",a.firm],["Size",usd(a.size)],["Phase",a.phase],
+        ["Balance",usd(a.balance)],["Floor",usd(a.floor)],
+        ["Cushion",`${usd(a.cushion)} (${fmt(a.cushion_frac*100,0)}%)`],
+        ["P3",a.p3_braked?`<span class="tag DANGER">SPEAR LOWERED</span>`:"sheathed"],
+        ["Daily loss used",usd(a.daily_loss_used)],["Trades today",a.trades_today],
+        ["Open position",a.open_position??"flat"],
+        ["Working stop",a.working_stop??"—"],["Working target",a.working_target??"—"],
+        ["Last recon",a.last_recon],["Last payout",a.last_payout??"—"],
+        ["Next payout eligible",a.next_payout_eligible??"—"],
+        ["Paid to date",usd(a.paid)]])}
+      <div class="bar ${a.cushion_frac<.4?"bad":a.cushion_frac<.6?"warn":""}"><i style="width:${Math.min(100,a.cushion_frac*100)}%"></i></div>
+    </div>`).join("")+`</div>`
+  : panel("Accounts", `<span class="dim">No accounts registered. They will appear when B1 syncs broker state.</span>`);
+}
+
+/* Ⅲ STRATEGIES */
+function stratBlock(s){
+  const r=(x)=>x?`${x.n} tr · WR ${x.wr}% · PF ${x.pf??"—"} · ${s.baseline.exp_r?x.exp_r+"R":x.exp_pts+"pt"} exp · ${usd(x.avg_usd)}/tr`:"—";
+  return panel(s.label+` — <span class="tag ${s.health.split(" ")[0]}">${s.health}</span>`, kv([
+    ["All trades", r(s.total)],["Rolling 30", r(s.r30)],["Rolling 60", r(s.r60)],
+    ["Rolling 90", r(s.r90)],["Max drawdown", usd(-Math.abs(s.max_dd))],
+    ["vs validation", s.vs_validation!=null?`${s.vs_validation}% of baseline`:"insufficient data"],
+    ["Baseline", s.baseline.exp_r?`+${s.baseline.exp_r}R/trade · PF ${s.baseline.pf}`:`+${s.baseline.exp_pts}pt/trade · PF ${s.baseline.pf}`]]))
+}
+function renderStrategies(){
+  $("#page-strategies").innerHTML = `<div class="grid g2">${stratBlock(S.strategies.A)}${stratBlock(S.strategies.B)}</div>
+   <div style="margin-top:14px">${panel("Weekly Points Tracker", weeklyTable())}</div>
+   <div class="note">Edge health per RAGNAROK decay monitor: ≥90% FULL STRENGTH · ≥70% WATCHING · ≥50% DEGRADED (half size) · &lt;50% CRITICAL (halt) · HALTED. The live strategy is frozen — health drives SIZE, never rules.</div>`;
+}
+function weeklyTable(){
+  const w=S.weekly;
+  return kv([["Current week", fmt(w.current,1)+" pts"],["Last week", fmt(w.last,1)],
+    ["4-week avg", fmt(w.avg4,1)],["12-week avg", fmt(w.avg12,1)],
+    ["Best / worst", `${fmt(w.best,1)} / ${fmt(w.worst,1)}`],
+    ["Estimate", w.est_note]]) +
+  `<table style="margin-top:10px"><tr><th>Week</th><th>A pts</th><th>B pts</th><th>Total</th><th>$</th></tr>`+
+  w.weeks.map(x=>`<tr><td>${x.week}</td><td>${fmt(x.A,1)}</td><td>${fmt(x.B,1)}</td><td><b>${fmt(x.total,1)}</b></td><td class="${cls(x.usd)}">${usd(x.usd)}</td></tr>`).join("")+`</table>`;
+}
+
+/* Ⅳ TRADES */
+const TFILTERS=[["all","All"],["A","Profile A"],["B","Profile B"],["win","Winners"],["loss","Losers"],["p3","P3 trades"],["rejected","Rejected"],["broken","Chain issues"]];
+function renderTrades(){
+  const f=FILTER.trades||"all";
+  let rows=S.trades.filter(t=>
+    f==="all"||(f==="A"&&t.strategy==="A")||(f==="B"&&t.strategy==="B")||
+    (f==="win"&&t.usd>0)||(f==="loss"&&t.usd<0)||(f==="p3"&&t.p3)||
+    (f==="rejected"&&t.status==="rejected")||(f==="broken"&&!t.chain_ok));
+  $("#page-trades").innerHTML = panel("Trade Ledger",
+   `<div class="filters">${TFILTERS.map(([k,l])=>`<button data-tf="${k}" class="${f===k?"on":""}">${l}</button>`).join("")}</div>
+    <table><tr><th>Time</th><th>Strat</th><th>Account</th><th>Side</th><th>Entry</th><th>Stop</th><th>Exit</th><th>R</th><th>Pts</th><th>$</th><th>Slip</th><th>Chain</th><th>Evidence</th></tr>
+    ${rows.slice(0,120).map(t=>`<tr>
+      <td>${new Date(t.ts).toLocaleString()}</td><td>${t.strategy}</td><td>${t.account}</td>
+      <td>${t.side} ${t.qty}</td><td>${fmt(t.entry,2)}</td><td>${fmt(t.stop,2)}</td>
+      <td>${fmt(t.exit,2)}</td><td class="${cls(t.r)}">${fmt(t.r,2)}</td>
+      <td>${fmt(t.points,2)}</td><td class="${cls(t.usd)}">${usd(t.usd)}</td>
+      <td>${fmt(t.slip,2)}</td>
+      <td>${t.chain_ok?`<span class="tag ok">✓</span>`:`<span class="tag RED">✗</span>`}</td>
+      <td><a href="/api/trade/${t.cl}" target="_blank" style="color:var(--gold-hi)">export</a></td></tr>`).join("")}
+    </table><div class="note">${rows.length} trades shown (max 120). Every row is reconstructable from the journal — that is the point.</div>`);
+  document.querySelectorAll("[data-tf]").forEach(b=>b.onclick=()=>{FILTER.trades=b.dataset.tf;renderTrades();});
+}
+
+/* Ⅴ JOURNAL */
+function renderJournal(){
+  const jn=S.journal;
+  $("#page-journal").innerHTML = `<div class="grid g2">
+   ${panel("B0 Journal", kv([
+     ["Status", jn.online?`<span class="tag ok">ONLINE</span>`:`<span class="tag RED">OFFLINE</span>`],
+     ["Append-only", jn.append_only?`<span class="tag ok">VERIFIED LIVE</span>`:`<span class="tag BLACK">FAILED</span>`],
+     ["Events", fmt(jn.events)],["Last INTENT", ago(jn.last.INTENT)],
+     ["Last ACK", ago(jn.last.ACK)],["Last FILL", ago(jn.last.FILL)],
+     ["Last RECON_ALERT", ago(jn.last.RECON_ALERT)],
+     ["Duplicates blocked", fmt(jn.dup_blocked)],
+     ["Unknown orders", jn.unknown_orders],["Unknown fills", jn.unknown_fills]]))}
+   ${panel("Evidence Locker Chain", kv([
+     ["Hash-chain", jn.locker_ok?`<span class="tag ok">INTACT</span>`:`<span class="tag BLACK">TAMPER DETECTED</span>`],
+     ...(jn.locker_problems||[]).map((p,i)=>[`Problem ${i+1}`,p])])
+     +`<div class="note">${jn.append_only&&jn.locker_ok?"The journal can be trusted. ZEUS does not trust his memory — he trusts this.":"DO NOT TRADE until the journal is trustworthy."}</div>`)}
+  </div>`;
+}
+
+/* Ⅵ RECONCILIATION */
+function renderRecon(){
+  const r=S.recon;
+  $("#page-recon").innerHTML = panel("Reconciliation Center",
+   kv([["Last run", ago(r.last_run)],["Naked-position alerts (total)", r.naked],
+       ["Unknown fills", S.journal.unknown_fills],["Unknown orders", S.journal.unknown_orders]])
+   +`<h3 style="margin-top:14px">Recent RECON_ALERTS</h3>`
+   +(r.alerts.length?`<table><tr><th>Time</th><th>Account</th><th>Check</th><th>Tier</th><th>Detail</th></tr>`+
+     r.alerts.map(a=>`<tr><td>${new Date(a.ts).toLocaleString()}</td><td>${a.account}</td>
+       <td>${a.payload?.check??"—"}</td><td><span class="tag ${a.payload?.tier??"YELLOW"}">${a.payload?.tier??"?"}</span></td>
+       <td>${JSON.stringify(a.payload?.detail??a.payload?.note??"").slice(0,80)}</td></tr>`).join("")+`</table>`
+    :`<span class="dim">No discrepancies on record. Broker and ledger agree.</span>`)
+   +`<div class="note">Broker is truth. Any confirmed mismatch escalates the terminal to RED or BLACK automatically — this page cannot suppress it.</div>`);
+}
+
+/* Ⅶ ALERTS */
+function alertTable(rows){
+  return `<table><tr><th>Tier</th><th>Alert</th><th>Detail</th><th>Required action</th><th>Ack</th></tr>`+
+   rows.map(a=>`<tr><td><span class="tag ${a.tier}">${a.tier}</span></td><td>${a.name}</td>
+     <td>${a.detail}</td><td>${a.action}</td>
+     <td>${a.acked?`<span class="dim">acked</span>`:`<button class="ackbtn" data-ack="${a.name}">ack</button>`}</td></tr>`).join("")+`</table>`;
+}
+function renderAlerts(){
+  $("#page-alerts").innerHTML = panel("HEIMDALL Alerts",
+    (S.alerts.length?alertTable(S.alerts):`<span class="dim">No alerts. The watchman sees nothing.</span>`)
+    +`<div class="note">Acknowledgement is a journaled record of awareness — it never dismisses an alert. Alerts clear only when their condition clears. No alert can be hidden from this terminal.</div>`);
+  document.querySelectorAll(".ackbtn").forEach(b=>b.onclick=async()=>{
+    await fetch("/api/ack",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({name:b.dataset.ack,note:"acknowledged via terminal"})});
+    refresh();
+  });
+}
+
+/* Ⅷ EVIDENCE */
+function renderEvidence(){
+  const e=S.evidence;
+  $("#page-evidence").innerHTML = panel("Evidence Locker",
+   `<div class="grid g3">`+Object.entries(e).map(([k,v])=>
+     `<div class="stat"><div class="big">${v}</div><div class="dim">${k}</div></div>`).join("")+`</div>
+    <div class="note">Purpose: if a firm questions the account, ZEUS proves every trade was generated by the system — signal → intent → fill → exit, hash-chained. Export any trade from the Trades page; verify the chain with <code>python3 locker.py verify</code>.</div>`);
+}
+
+/* Ⅸ ORACLE */
+async function renderOracle(){
+  if(!ORACLE) ORACLE = await (await fetch("/api/oracle")).json();
+  const o=ORACLE;
+  $("#page-oracle").innerHTML = panel(`Weekly Oracle Review — ${o.window}`,
+    Object.entries(o.sections).map(([k,v])=>`<div class="stat"><b style="color:var(--gold-hi)">${k}</b><pre>${v}</pre></div>`).join("")
+    +`<h3 style="margin-top:12px">Recommendations</h3>`
+    +o.recommendations.map(r=>`<div class="stat"><span class="label">${r.label}</span> ${r.text}</div>`).join("")
+    +`<div class="note">The oracle reviews, analyses, recommends. It cannot deploy. Any change walks the full gauntlet: hypothesis → backtest → OOS → Monte Carlo → slippage stress → funded sim → paper → HUMAN APPROVAL. Until then the live strategy is frozen.</div>`);
+}
+
+/* Ⅹ SETTINGS */
+function renderSettings(){
+  const iv=localStorage.getItem("zeus_iv")||"30";
+  $("#page-settings").innerHTML = `<div class="grid g2">
+   ${panel("Display Settings", `
+     <div class="stat">Refresh interval
+       <select id="set-iv">${[10,30,60,300].map(v=>`<option ${v==iv?"selected":""}>${v}</option>`).join("")}</select> seconds</div>
+     <div class="stat">Theme <b>OLYMPUS DARK</b> <span class="dim">(there is no other theme on the mountain)</span></div>
+     <div class="stat">Account visibility / strategy visibility — <span class="dim">all visible (display-only build)</span></div>`)}
+   ${panel("Welded Controls", `
+     <div class="stat lockrow"><input type="checkbox" disabled> Enable LIVE trading
+       <div class="dim">Requires: SAFETY.enabled=True AND paper=False in code + config, THOR battery green, Gate-6 sign-off. Not available from any dashboard, by design.</div></div>
+     <div class="stat lockrow"><input type="checkbox" disabled> Modify strategy rules / sizing / P3
+       <div class="dim">Frozen. Changes walk the Oracle gauntlet to HUMAN APPROVAL.</div></div>
+     <div class="stat lockrow"><input type="checkbox" disabled> Clear BLACK lockout
+       <div class="dim">Only <code>flatten.operator_clear()</code> with a written root-cause note — deliberately NOT exposed here.</div></div>
+     <div class="stat">Emergency lockout status: ${S.header.lockout?`<span class="tag BLACK">LOCKED — ${S.header.lockout}</span>`:`<span class="tag ok">CLEAR</span>`}</div>`)}
+  </div>`;
+  $("#set-iv").onchange=(e)=>{localStorage.setItem("zeus_iv",e.target.value);startTimer();};
+}
+
+/* nav + refresh loop */
+document.querySelectorAll("#rail button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#rail button").forEach(x=>x.classList.remove("on"));
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");
+  $("#page-"+b.dataset.page).classList.add("on");
+  if(b.dataset.page==="oracle") renderOracle();
+});
+let TIMER=null;
+function startTimer(){ clearInterval(TIMER);
+  TIMER=setInterval(refresh, 1000*(parseInt(localStorage.getItem("zeus_iv")||"30"))); }
+refresh(); startTimer();

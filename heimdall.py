@@ -116,9 +116,11 @@ class Heimdall:
         return dict(total=total, **{"24h": d24})
 
     def _alert_class_count(self, check_name):
+        """24h window — historical drills/incidents must not alarm forever."""
         return self.j.con.execute(
             "SELECT COUNT(*) FROM ledger WHERE event_type='RECON_ALERT' "
-            "AND payload_json LIKE ?", (f'%{check_name}%',)).fetchone()[0]
+            "AND payload_json LIKE ? AND ts_utc >= datetime('now', '-1 day')",
+            (f'%{check_name}%',)).fetchone()[0]
 
     def _recovery_count(self):
         return self.j.con.execute(

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZEUS — God Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=IBM+Plex+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="zeus.css">
+</head>
+<body data-tier="GREEN">
+<div class="sky"></div>
+
+<header id="pediment">
+  <div class="wordmark">
+    <svg class="bolt" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
+      <path d="M13 1 4 14h6l-2 9 9-13h-6l2-9z"/>
+    </svg>
+    <h1>ZEUS</h1>
+    <span class="sub">GOD&nbsp;TERMINAL&nbsp;·&nbsp;ZEUS-MAX&nbsp;COMMAND</span>
+  </div>
+  <p id="voice" class="voice">Summoning…</p>
+  <div class="chips" id="chips"></div>
+  <div class="meta" id="meta"></div>
+</header>
+
+<nav id="rail">
+  <button data-page="command"  class="on">Ⅰ&nbsp;Command Centre</button>
+  <button data-page="accounts">Ⅱ&nbsp;Accounts</button>
+  <button data-page="strategies">Ⅲ&nbsp;Strategies</button>
+  <button data-page="trades">Ⅳ&nbsp;Trades</button>
+  <button data-page="journal">Ⅴ&nbsp;Journal</button>
+  <button data-page="recon">Ⅵ&nbsp;Reconciliation</button>
+  <button data-page="alerts">Ⅶ&nbsp;Alerts</button>
+  <button data-page="evidence">Ⅷ&nbsp;Evidence Locker</button>
+  <button data-page="oracle">Ⅸ&nbsp;Weekly Oracle</button>
+  <button data-page="settings">Ⅹ&nbsp;Settings</button>
+</nav>
+
+<main id="main">
+  <section id="page-command"  class="page on"></section>
+  <section id="page-accounts" class="page"></section>
+  <section id="page-strategies" class="page"></section>
+  <section id="page-trades"   class="page"></section>
+  <section id="page-journal"  class="page"></section>
+  <section id="page-recon"    class="page"></section>
+  <section id="page-alerts"   class="page"></section>
+  <section id="page-evidence" class="page"></section>
+  <section id="page-oracle"   class="page"></section>
+  <section id="page-settings" class="page"></section>
+</main>
+
+<footer id="creed">THE GODS DO NOT CHASE LOSSES · DISPLAY AND ANALYSE ONLY — THE THRONE CANNOT BE COMMANDED FROM HERE</footer>
+<script src="zeus.js"></script>
+</body>
+</html>

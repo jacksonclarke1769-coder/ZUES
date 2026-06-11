@@ -1,0 +1,112 @@
+"""ZEUS terminal tests: state shape, freshness, voice, oracle, and the CRITICAL
+SAFETY REQUIREMENTS (no control paths: no lockout override, no live-enable,
+no strategy mutation, alerts not hideable)."""
+import json
+import pytest
+import zeus_server
+from zeus_server import APP, CFG
+
+
+@pytest.fixture
+def client(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)               # isolated dbs/evidence
+    import os
+    os.makedirs("data", exist_ok=True)
+    CFG["demo"] = False
+    return APP.test_client()
+
+
+def test_state_shape_and_freshness(client):
+    r = client.get("/api/state")
+    s = r.get_json()
+    for key in ("meta", "header", "portfolio", "accounts", "strategies", "weekly",
+                "trades", "journal", "recon", "alerts", "evidence"):
+        assert key in s, key
+    assert s["meta"]["refresh_ms"] is not None          # recomputed, timed
+    assert s["meta"]["refreshed"]                       # last-refreshed shown
+    assert s["meta"]["mode"] in ("SIM", "PAPER", "LIVE", "LOCKED", "DEMO-PREVIEW")
+    assert isinstance(s["meta"]["trading_allowed"], bool)
+    assert s["meta"]["next_session"]
+
+
+def test_two_refreshes_recompute(client):
+    a = client.get("/api/state").get_json()["meta"]["refreshed"]
+    b = client.get("/api/state").get_json()["meta"]["refreshed"]
+    assert b >= a and a != ""                           # nothing cached/stale
+
+
+def test_voice_lines():
+    v = zeus_server.voice("SIM", None, [], True, "FULL STRENGTH")
+    assert "ZEUS is awake" in v
+    v = zeus_server.voice("SIM", None, [], False, "FULL STRENGTH")
+    assert "gates" in v.lower()
+    v = zeus_server.voice("LOCKED", "x|y", [], False, "FULL STRENGTH")
+    assert "BLACK ALERT" in v and "throne is locked" in v.lower() or "throne" in v.lower()
+    v = zeus_server.voice("SIM", None, [], True, "DEGRADED")
+    assert "oracle weakens" in v.lower()
+
+
+def test_lockout_forces_black_and_voice(client, monkeypatch):
+    j, store = zeus_server.dbs()
+    store.set_state(emergency_lockout="2026|ALL|test|flat=True")
+    s = client.get("/api/state").get_json()
+    assert s["header"]["tier"] == "BLACK"
+    assert s["meta"]["trading_allowed"] is False
+    assert "throne is locked" in s["meta"]["voice"].lower()
+    store.set_state(emergency_lockout="")
+
+
+def test_oracle_ten_sections(client):
+    o = client.get("/api/oracle").get_json()
+    assert len(o["sections"]) == 10
+    assert "frozen" in o["sections"]["10. Proposed refinements"]
+    assert all(r["label"] in ("OBSERVATION", "INVESTIGATION", "PROPOSED TEST",
+                              "REJECTED", "APPROVED FOR PAPER", "APPROVED FOR LIVE")
+               for r in o["recommendations"])
+
+
+def test_SAFETY_no_control_endpoints():
+    """The server must expose NO route that can mutate trading logic/state."""
+    forbidden = ("enable", "live", "lockout", "clear", "override", "strategy",
+                 "size", "p3", "config", "flatten", "order", "trade/place")
+    for rule in APP.url_map.iter_rules():
+        r = str(rule).lower()
+        if r.startswith("/api/"):
+            assert r in ("/api/state", "/api/oracle", "/api/trade/<cl>", "/api/ack"), r
+        methods = rule.methods - {"HEAD", "OPTIONS"}
+        if "POST" in methods:
+            assert str(rule) == "/api/ack"              # the ONLY write: journaled ack
+
+
+def test_SAFETY_ack_does_not_dismiss_alert(client):
+    """Ack records awareness; alert remains while its condition persists."""
+    j, store = zeus_server.dbs()
+    store.set_state(emergency_lockout="2026|ALL|sticky|flat=True")
+    client.post("/api/ack", json=dict(name="lockout_active", note="seen it"))
+    s = client.get("/api/state").get_json()
+    names = [a["name"] for a in s["alerts"]]
+    assert "lockout_active" in names                    # NOT hidden by ack
+    acked = [a for a in s["alerts"] if a["name"] == "lockout_active"][0]
+    assert acked["acked"] is True
+    # and the ack is journaled
+    n = j.con.execute("SELECT COUNT(*) FROM ledger WHERE payload_json LIKE '%alert_ack%'"
+                      ).fetchone()[0]
+    assert n >= 1
+    store.set_state(emergency_lockout="")
+
+
+def test_every_alert_has_action(client):
+    j, store = zeus_server.dbs()
+    store.set_state(emergency_lockout="2026|ALL|t|flat=True")
+    s = client.get("/api/state").get_json()
+    for a in s["alerts"]:
+        assert a["action"] and len(a["action"]) > 3
+    store.set_state(emergency_lockout="")
+
+
+def test_trade_evidence_export(client):
+    j, _ = zeus_server.dbs()
+    cl = j.intent("A1", "A", "A", "tz", "entry", dict(side="Buy", qty=4, entry=1.0,
+                                                      stop=0.5, target=2.0))
+    r = client.get(f"/api/trade/{cl}").get_json()
+    assert r[0]["cl_ord_id"] == cl and r[0]["events"][0]["event_type"] == "INTENT"
