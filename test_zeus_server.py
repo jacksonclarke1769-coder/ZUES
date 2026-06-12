@@ -132,3 +132,22 @@ def test_brief_reports_action_required_on_lockout(client):
     assert "locked" in s["brief"].lower()
     assert any("lockout" in a.lower() for a in s["actions"])
     store.set_state(emergency_lockout="")
+
+
+def test_plan_block_and_strategy_stream_points(client):
+    s = client.get("/api/state").get_json()
+    assert s["plan"]["avg"]["pts_wk"] == 30 and s["plan"]["strong"]["pts_wk"] == 54
+    assert "planning baseline" in s["brief"].lower() or s["week_panel"]["avg12"] is None
+    # strategy-stream dedupe: same signal on N accounts counts points once
+    import zeus_server
+    j, _ = zeus_server.dbs()
+    for acct in ("X1", "X2", "X3"):
+        cl = j.intent(acct, "A", "A", "sigdup", "entry",
+                      dict(side="Buy", qty=4, entry=100.0, stop=90.0, target=120.0))
+        j.append("SEND", acct, cl); j.append("ACK", acct, cl)
+        j.append("FILL", acct, cl, payload=dict(qty=4, side="Buy", px=100.0))
+        j.append("EXIT", acct, cl, payload=dict(px=110.0, reason="target"))
+    s = client.get("/api/state").get_json()
+    wk = s["weekly"]["weeks"][0]
+    assert abs(wk["A"] - 10.0) < 0.2         # 10 pts counted ONCE, not 3x
+    assert abs(wk["usd"] - 3 * 80.0) < 1     # dollars: all 3 accounts (10pt*2$*4qty)

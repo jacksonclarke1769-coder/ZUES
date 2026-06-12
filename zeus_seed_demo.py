@@ -44,7 +44,7 @@ while t < now - timedelta(hours=4):
             side = random.choice(["Buy", "Sell"])
             base_px = 24200 + random.uniform(-300, 300)
             stop_off = random.uniform(45, 70) if strat == "A" else random.uniform(18, 30)
-            win = random.random() < (0.47 if strat == "A" else 0.52)
+            win = random.random() < (0.45 if strat == "A" else 0.47)
             ts = t.replace(hour=random.choice((13, 14, 15)),
                            minute=random.randint(0, 59), second=0)
             for acc in ACCTS:
@@ -70,7 +70,8 @@ while t < now - timedelta(hours=4):
                 j.append("BRACKET_CONFIRMED", acc["name"], cl,
                          payload=dict(broker_order_id=sig_n * 10 + 1), ts=iso)
                 if win:
-                    move = stop_off * (2 if random.random() < 0.55 else 1.2)
+                    move = stop_off * ((2 if random.random() < 0.55 else 1.2)
+                                       if strat == "A" else 1.5)
                 else:
                     move = -stop_off
                 exit_px = fill_px + (move if side == "Buy" else -move)

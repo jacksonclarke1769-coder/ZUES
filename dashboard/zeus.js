@@ -69,7 +69,7 @@ function renderCommand(){
   </div>
 
   <div class="grid g4 kpis">
-    ${kpi(fmt(w.pts,0)+" pts","Weekly · "+usd(w.usd),cls(w.usd))}
+    ${kpi(fmt(w.pts,0)+" pts",`Weekly · plan ${S.plan?.avg.pts_wk}/wk avg · ${S.plan?.strong.pts_wk} strong`,cls(w.usd))}
     ${kpi(usd(p.pnl_month),"Monthly",cls(p.pnl_month))}
     ${kpi(usd(p.pnl_ytd),"Year-to-date",cls(p.pnl_ytd))}
     ${kpi(`${healthy} / ${S.accounts.length||0}`,"Accounts alive")}
@@ -86,7 +86,9 @@ function renderCommand(){
       ["Trades", w.n??0],["Win rate", w.wr!=null?w.wr+"%":"—"],
       ["Avg R", w.avg_r!=null?fmt(w.avg_r,2)+"R":"—"],
       ["Last week", fmt(w.last,0)+" pts"],["4-week avg", fmt(w.avg4,0)+" pts"],
-      ["12-week avg", fmt(w.avg12,0)+" pts"]]))}
+      ["12-week avg", fmt(w.avg12,0)+" pts"],
+      ["Plan — avg regime", `<b>+${S.plan?.avg.pts_wk} pts · ${usd(S.plan?.avg.net_wk)} net</b>`],
+      ["Plan — strong year", `+${S.plan?.strong.pts_wk} pts · ${usd(S.plan?.strong.net_wk)} net`]]))}
     ${panel("Portfolio Health", Object.entries(S.lights||{}).map(([k,v])=>
       `<div class="stat light"><span class="lamp ${v}"></span>${k}</div>`).join("")
       +`<div class="note">Click pages Ⅱ–Ⅵ for detail. Green = healthy.</div>`)}

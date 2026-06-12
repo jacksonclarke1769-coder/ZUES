@@ -31,6 +31,11 @@ BASE = dict(A=dict(exp_r=0.263, pf=1.39, label="Profile A v2"),
             B=dict(exp_pts=4.0, pf=1.30, label="Profile B v1"))
 NQ_PT = 20.0
 MNQ_PT = 2.0
+# Validated planning baseline (Titan->profit-audit stack; strategy-stream points)
+PLAN = dict(avg=dict(pts_wk=30, gross_wk=1600, net_wk=1300),
+            strong=dict(pts_wk=54, gross_wk=2900, net_wk=2300),
+            note="A ~22pt/wk + B ~9pt/wk avg regime · 39+15 strong year · "
+                 "full ZEUS-MAX = 4.8 NQ-eq")
 
 
 def dbs():
@@ -73,7 +78,7 @@ def trades_from_journal(j):
         kinds = [e["event_type"] for e in evs]
         complete = ("INTENT" in kinds and "FILL" in kinds and
                     "BRACKET_CONFIRMED" in kinds and "EXIT" in kinds)
-        t = dict(cl=chain["cl_ord_id"], ts=head["ts_utc"],
+        t = dict(cl=chain["cl_ord_id"], ts=head["ts_utc"], sig=p.get("signal_ts"),
                  strategy=head["strategy"] or "A", account=head["account_id"],
                  side=p.get("side"), qty=qty, entry=entry_px, stop=p.get("stop"),
                  target=p.get("target"), status=chain["status"], chain_ok=complete,
@@ -134,16 +139,19 @@ def strat_panel(trades, s):
 
 def weekly(trades):
     wk = {}
+    seen = set()                       # (strategy, signal) -> count points ONCE
     for t in trades:
         if "points" not in t:
             continue
         d = datetime.fromisoformat(t["ts"].replace("Z", "+00:00"))
         key = f"{d.isocalendar().year}-W{d.isocalendar().week:02d}"
         w = wk.setdefault(key, dict(week=key, A=0.0, B=0.0, total=0.0, usd=0.0))
-        # strategy points are PER CONTRACT (qty-free) so "pts × NQ-eq" stays coherent
-        w[t["strategy"]] = round(w[t["strategy"]] + t["points"], 1)
-        w["total"] = round(w["total"] + t["points"], 1)
-        w["usd"] = round(w["usd"] + t["usd"], 2)
+        sig = (t["strategy"], t.get("sig") or t["ts"])
+        if sig not in seen:            # strategy points = ONE stream, qty-free
+            seen.add(sig)
+            w[t["strategy"]] = round(w[t["strategy"]] + t["points"], 1)
+            w["total"] = round(w["total"] + t["points"], 1)
+        w["usd"] = round(w["usd"] + t["usd"], 2)   # dollars: all accounts
     rows = sorted(wk.values(), key=lambda w: w["week"], reverse=True)
     tot = [w["total"] for w in rows]
     return dict(weeks=rows[:13],
@@ -263,6 +271,7 @@ def assemble_state():
         pts=state["weekly"]["current"], usd=round(sum(t["usd"] for t in wk_now), 2),
         last=state["weekly"]["last"], avg4=state["weekly"]["avg4"],
         avg12=state["weekly"]["avg12"])
+    state["plan"] = PLAN
     hb_age = None
     if state["header"]["heartbeat"]:
         hb_age = (now - datetime.fromisoformat(
@@ -324,8 +333,10 @@ def assemble_state():
         + (f"{healthy} of {len(state['accounts'])} accounts are healthy. "
            if state["accounts"] else "No accounts are registered yet. ")
         + (f"{n_al} active alert{'s' if n_al != 1 else ''}. " if n_al else "No active alerts. ")
-        + (f"Weekly performance sits at {wkp['pts']:+.0f} points, {vs} the 12-week "
-           f"average of {wkp['avg12']:+.0f}. " if wkp["avg12"] else "")
+        + (f"Weekly performance sits at {wkp['pts']:+.0f} points against the "
+           f"planning baseline of +{PLAN['avg']['pts_wk']}/wk "
+           f"(strong-year +{PLAN['strong']['pts_wk']}); 12-week average "
+           f"{wkp['avg12']:+.0f}. " if wkp["avg12"] is not None else "")
         + edges + ". "
         + (f"{len(state['actions'])} item(s) require action."
            if state["actions"] else "No action required."))
