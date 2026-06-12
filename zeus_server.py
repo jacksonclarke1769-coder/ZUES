@@ -248,6 +248,87 @@ def assemble_state():
         oracle_labels=["OBSERVATION", "INVESTIGATION", "PROPOSED TEST", "REJECTED",
                        "APPROVED FOR PAPER", "APPROVED FOR LIVE"],
     )
+    # ---------- Command-Centre blocks (simplification redesign) ----------
+    state["portfolio"]["pnl_ytd"] = round(
+        sum(t.get("usd", 0) for t in trades
+            if t["ts"] >= f"{now.year}-01-01"), 2)
+    wk_now = [t for t in trades if "usd" in t and
+              datetime.fromisoformat(t["ts"].replace("Z", "+00:00")).isocalendar()[:2]
+              == now.isocalendar()[:2]]
+    state["week_panel"] = dict(
+        n=len(wk_now),
+        wr=(round(100 * sum(1 for t in wk_now if t["usd"] > 0) / len(wk_now), 0)
+            if wk_now else None),
+        avg_r=(round(sum(t["r"] for t in wk_now) / len(wk_now), 2) if wk_now else None),
+        pts=state["weekly"]["current"], usd=round(sum(t["usd"] for t in wk_now), 2),
+        last=state["weekly"]["last"], avg4=state["weekly"]["avg4"],
+        avg12=state["weekly"]["avg12"])
+    hb_age = None
+    if state["header"]["heartbeat"]:
+        hb_age = (now - datetime.fromisoformat(
+            state["header"]["heartbeat"].replace("Z", "+00:00"))).total_seconds()
+    sync_age = None
+    if state["header"]["broker_sync"]:
+        sync_age = (now - datetime.fromisoformat(
+            state["header"]["broker_sync"].replace("Z", "+00:00"))).total_seconds()
+    def _light(ok, warn=False):
+        return "green" if ok else ("yellow" if warn else "red")
+    ed = {"FULL STRENGTH": "green", "WATCHING": "yellow", "DEGRADED": "yellow",
+          "CRITICAL": "red", "HALTED": "red"}
+    state["lights"] = {
+        "Strategy A": ed.get(edge_a["health"], "yellow"),
+        "Strategy B": ed.get(edge_b["health"], "yellow"),
+        "Journal": _light(state["journal"]["append_only"] and state["journal"]["locker_ok"]),
+        "Reconciliation": _light(snap["unknown_positions"] + snap["unknown_fills"]
+                                 + snap["naked_alerts"] == 0),
+        "Broker": _light(sync_age is not None and sync_age < 120,
+                         warn=sync_age is None),
+        "Infrastructure": _light(hb_age is not None and hb_age < 120,
+                                 warn=hb_age is None),
+    }
+    # action centre: manual list (store) + auto items from live conditions
+    actions = json.loads(store.get_state("zeus_actions") or "[]")
+    if lockout:
+        actions.insert(0, "Review BLACK lockout — root-cause, then operator_clear with note")
+    for a in alerts:
+        if a[0] in ("ORANGE", "RED", "BLACK") and a[1] != "lockout_active":
+            actions.append(f"Alert [{a[0]}] {a[1]}: {_action_for(a[1])}")
+    if not ok_locker:
+        actions.insert(0, "Evidence locker TAMPER check failed — investigate now")
+    state["actions"] = actions[:8]
+    # latest activity: last 5 ledger events, humanized
+    hum = dict(INTENT="Intent logged", SEND="Order sent", ACK="Broker acknowledged",
+               FILL="Filled", PARTIAL_FILL="Partial fill",
+               BRACKET_CONFIRMED="Bracket confirmed (protected)", EXIT="Trade closed",
+               REJECT="Order rejected", CANCEL="Order cancelled",
+               CANCEL_SENT="Cancel sent", CANCEL_CONFIRMED="Cancel confirmed",
+               MODIFY_SENT="Modify sent", MODIFY_CONFIRMED="Modify confirmed",
+               RECON_ALERT="Reconciliation alert", STATE_ASSERT="State assertion",
+               EMERGENCY_FLATTEN="EMERGENCY FLATTEN")
+    cur = j.con.execute("SELECT ts_utc, event_type, account_id, cl_ord_id FROM ledger"
+                        " ORDER BY seq DESC LIMIT 5").fetchall()
+    state["activity"] = [dict(ts=r[0], text=f"{hum.get(r[1], r[1])}"
+                              + (f" · {r[2]}" if r[2] not in (None, "ALL") else ""))
+                         for r in cur]
+    # daily brief — one paragraph, regenerated every refresh
+    healthy = sum(1 for a in state["accounts"] if a["status"] == "SAFE")
+    wkp = state["week_panel"]
+    vs = ("above" if (wkp["pts"] or 0) >= (wkp["avg12"] or 0) else "below")
+    edges = (f"Strategy A is {edge_a['health']}"
+             + (f" ({edge_a['vs_validation']}% of validation)" if edge_a["vs_validation"] else "")
+             + f"; Strategy B is {edge_b['health']}"
+             + (f" ({edge_b['vs_validation']}%)" if edge_b["vs_validation"] else ""))
+    n_al = len([a for a in alerts if a[0] != "GREEN"])
+    state["brief"] = (
+        ("ZEUS is locked. " if lockout else "ZEUS is operational. ")
+        + (f"{healthy} of {len(state['accounts'])} accounts are healthy. "
+           if state["accounts"] else "No accounts are registered yet. ")
+        + (f"{n_al} active alert{'s' if n_al != 1 else ''}. " if n_al else "No active alerts. ")
+        + (f"Weekly performance sits at {wkp['pts']:+.0f} points, {vs} the 12-week "
+           f"average of {wkp['avg12']:+.0f}. " if wkp["avg12"] else "")
+        + edges + ". "
+        + (f"{len(state['actions'])} item(s) require action."
+           if state["actions"] else "No action required."))
     state["meta"]["refresh_ms"] = round((time.time() - t0) * 1000, 1)
     return state
 

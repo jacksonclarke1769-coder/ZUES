@@ -110,3 +110,25 @@ def test_trade_evidence_export(client):
                                                       stop=0.5, target=2.0))
     r = client.get(f"/api/trade/{cl}").get_json()
     assert r[0]["cl_ord_id"] == cl and r[0]["events"][0]["event_type"] == "INTENT"
+
+
+def test_command_centre_blocks(client):
+    s = client.get("/api/state").get_json()
+    for key in ("brief", "actions", "activity", "lights", "week_panel"):
+        assert key in s, key
+    assert isinstance(s["brief"], str) and len(s["brief"]) > 20
+    assert set(s["lights"]) == {"Strategy A", "Strategy B", "Journal",
+                                "Reconciliation", "Broker", "Infrastructure"}
+    assert all(v in ("green", "yellow", "red") for v in s["lights"].values())
+    assert len(s["activity"]) <= 5
+    assert "pnl_ytd" in s["portfolio"]
+
+
+def test_brief_reports_action_required_on_lockout(client):
+    import zeus_server
+    j, store = zeus_server.dbs()
+    store.set_state(emergency_lockout="2026|ALL|brief-test|flat=True")
+    s = client.get("/api/state").get_json()
+    assert "locked" in s["brief"].lower()
+    assert any("lockout" in a.lower() for a in s["actions"])
+    store.set_state(emergency_lockout="")

@@ -40,40 +40,72 @@ function renderAll(){
   renderJournal(); renderRecon(); renderAlerts(); renderEvidence(); renderSettings();
 }
 
-/* Ⅰ COMMAND CENTRE */
+/* Ⅰ COMMAND CENTRE — the bridge: 5 questions in 5 seconds */
+function tradeState(){
+  const t=S.header.tier, ok=S.meta.trading_allowed;
+  if(t==="BLACK") return ["⚫","BLACK LOCKOUT","k"];
+  if(!ok||t==="RED") return ["🔴","TRADE BLOCKED","r"];
+  if(t==="ORANGE"||t==="YELLOW") return ["🟡","CAUTION","y"];
+  return ["🟢","TRADE ALLOWED","g"];
+}
 function renderCommand(){
-  const p=S.portfolio, a=S.strategies, last=S.trades.find(t=>"usd" in t);
+  const p=S.portfolio, a=S.strategies, w=S.week_panel||{};
+  const [ico,label,c]=tradeState();
+  const healthy=S.accounts.filter(x=>x.status==="SAFE").length;
+  const edgePct=Math.min(a.A.vs_validation??100, a.B.vs_validation??100);
+  const kpi=(top,sub,big)=>`<div class="panel kpi"><div class="big ${big||""}">${top}</div><div class="dim">${sub}</div></div>`;
   $("#page-command").innerHTML = `
-  <div class="grid g4">
-    ${panel("Exposure", `<div class="big">${p.exposure_mnq} MNQ</div>
-      <div class="dim">${p.exposure_nq} NQ-equivalent · A=${p.alloc_a} / B=${p.alloc_b}</div>`)}
-    ${panel("Weekly PnL", `<div class="big ${cls(p.pnl_week)}">${usd(p.pnl_week)}</div>
-      <div class="dim">month ${usd(p.pnl_month)} · year ${usd(p.pnl_year)}</div>`)}
-    ${panel("Weekly Points", `<div class="big">${fmt(S.weekly.current,1)}</div>
-      <div class="dim">4wk avg ${fmt(S.weekly.avg4,1)} · ${S.weekly.est_note}</div>`)}
-    ${panel("Edge Health", `<div class="big">${a.worst}</div>
-      <div class="dim">A ${a.A.health} (${a.A.vs_validation??"—"}%) · B ${a.B.health} (${a.B.vs_validation??"—"}%)</div>`)}
+  <div class="hero ${c}">
+    <div class="hero-status">${ico} ${label}</div>
+    <div class="hero-sub">
+      Accounts Healthy <b>${healthy}/${S.accounts.length||0}</b> ·
+      Active Alerts <b>${S.alerts.length}</b> ·
+      Mode <b>${S.meta.mode}</b> ·
+      Next Session <b>${S.meta.next_session}</b> ·
+      Heartbeat <b>${ago(S.header.heartbeat)}</b> ·
+      Refreshed <b>${new Date(S.meta.refreshed).toLocaleTimeString()}</b>
+    </div>
+    <p class="brief">${S.brief||""}</p>
   </div>
+
+  <div class="grid g4 kpis">
+    ${kpi(fmt(w.pts,0)+" pts","Weekly · "+usd(w.usd),cls(w.usd))}
+    ${kpi(usd(p.pnl_month),"Monthly",cls(p.pnl_month))}
+    ${kpi(usd(p.pnl_ytd),"Year-to-date",cls(p.pnl_ytd))}
+    ${kpi(`${healthy} / ${S.accounts.length||0}`,"Accounts alive")}
+    ${kpi(`${p.alloc_a+p.alloc_b} MNQ`,`${((p.alloc_a+p.alloc_b)/10).toFixed(1)} NQ exposure`)}
+    ${kpi(p.p3_active>0?`${p.p3_active} PROTECTED`:"SHEATHED","P3 status",p.p3_active?"neg":"")}
+    ${kpi(`${fmt(edgePct,0)}%`,a.worst,edgePct>=90?"pos":edgePct>=70?"":"neg")}
+    ${kpi(S.meta.next_session.split(" ").slice(-2).join(" "),"Next session")}
+  </div>
+
   <div class="grid g3" style="margin-top:14px">
-    ${panel("Account Health", S.accounts.length ? S.accounts.map(ac=>
-      `<div class="stat"><span class="tag ${ac.status}">${ac.status}</span> <b>${ac.name}</b>
-       <span class="dim">cushion ${usd(ac.cushion)} (${fmt(ac.cushion_frac*100,0)}% of DD)</span>
-       <div class="bar ${ac.cushion_frac<.4?"bad":ac.cushion_frac<.6?"warn":""}"><i style="width:${Math.min(100,ac.cushion_frac*100)}%"></i></div></div>`).join("")
-      : `<span class="dim">No accounts registered — pre-deployment.</span>`)}
-    ${panel("P3 Spear", (p.p3_active>0
-        ? `<div class="big">${p.p3_active} BRAKED</div><div class="note">ZEUS has lowered the spear. Capital preservation engaged.</div>`
-        : `<div class="big dim">SHEATHED</div><div class="dim">No account near its floor.</div>`)
-      + kv([["Total cushion", usd(p.cushion)],["Payouts to date", usd(p.payouts)],["Equity", usd(p.equity)]]))}
-    ${panel("Latest Strike", last ? kv([
-        ["When", new Date(last.ts).toLocaleString()],["Strategy", last.strategy],
-        ["Account", last.account],["Side", `${last.side} ${last.qty}`],
-        ["Result", `<span class="${cls(last.usd)}">${fmt(last.r,2)}R · ${usd(last.usd)}</span>`],
-        ["Chain", last.chain_ok?`<span class="tag ok">COMPLETE</span>`:`<span class="tag RED">BROKEN</span>`]])
-        +`<div class="note">The strike is complete.</div>`
-      : `<span class="dim">No closed trades yet.</span>`)}
+    ${panel("This Week", kv([
+      ["Points", `<b class="${cls(w.pts)}">${fmt(w.pts,0)} pts</b>`],
+      ["Dollars", `<b class="${cls(w.usd)}">${usd(w.usd)} gross</b>`],
+      ["Trades", w.n??0],["Win rate", w.wr!=null?w.wr+"%":"—"],
+      ["Avg R", w.avg_r!=null?fmt(w.avg_r,2)+"R":"—"],
+      ["Last week", fmt(w.last,0)+" pts"],["4-week avg", fmt(w.avg4,0)+" pts"],
+      ["12-week avg", fmt(w.avg12,0)+" pts"]]))}
+    ${panel("Portfolio Health", Object.entries(S.lights||{}).map(([k,v])=>
+      `<div class="stat light"><span class="lamp ${v}"></span>${k}</div>`).join("")
+      +`<div class="note">Click pages Ⅱ–Ⅵ for detail. Green = healthy.</div>`)}
+    ${panel("Action Centre", (S.actions&&S.actions.length)
+       ? S.actions.map(x=>`<div class="stat action">☐ ${x}</div>`).join("")
+       : `<div class="big pos" style="font-size:18px">No action required.</div>`)}
   </div>
-  <div style="margin-top:14px">${panel("Active Alerts",
-     S.alerts.length ? alertTable(S.alerts.slice(0,6)) : `<span class="dim">Silence on Olympus. No alerts.</span>`)}</div>`;
+
+  <div class="grid g2" style="margin-top:14px">
+    ${panel("Accounts", S.accounts.length?`<table><tr><th>Account</th><th>Cushion</th><th>P3</th><th>Status</th></tr>`+
+      S.accounts.map(x=>`<tr><td>${x.name}</td><td>${usd(x.cushion)}</td>
+        <td>${x.p3_braked?"ON":"OFF"}</td>
+        <td><span class="tag ${x.status}">${x.status==="SAFE"?"🟢":x.status==="CAUTION"?"🟡":"🔴"} ${x.status}</span></td></tr>`).join("")
+      +`</table><div class="note">Click page Ⅱ for full account detail.</div>`
+      : `<span class="dim">No accounts registered — pre-deployment.</span>`)}
+    ${panel("Latest Activity", (S.activity||[]).map(e=>
+       `<div class="stat"><span class="dim">${new Date(e.ts).toLocaleTimeString()}</span> &nbsp;${e.text}</div>`).join("")
+       || `<span class="dim">No events.</span>`)}
+  </div>`;
 }
 
 /* Ⅱ ACCOUNTS */

@@ -120,3 +120,23 @@ pre{font:300 11.5px/1.6 var(--mono);color:var(--bone);white-space:pre-wrap}
   letter-spacing:.3em;color:var(--gold-dim);padding:10px;border-top:1px solid var(--hair)}
 @media (max-width:980px){body{grid-template:"head" auto "rail" auto "main" 1fr "foot" auto / 1fr}
   #rail{display:flex;overflow-x:auto}.g2,.g3,.g4{grid-template-columns:1fr}}
+
+/* ---------- Command-Centre simplification ---------- */
+.hero{border:1px solid var(--gold);background:linear-gradient(180deg,rgba(201,162,39,.08),var(--panel));
+  padding:22px 26px;margin-bottom:14px;position:relative;animation:arrive .4s ease-out}
+.hero-status{font:900 40px/1 var(--disp);letter-spacing:.08em;color:var(--gold-hi)}
+.hero.y .hero-status{color:var(--yellow)} .hero.r .hero-status{color:var(--red)}
+.hero.k .hero-status{color:var(--red);animation:throb 2.2s infinite}
+.hero-sub{margin-top:10px;font-size:12px;color:var(--stone)}
+.hero-sub b{color:var(--bone)}
+.brief{margin-top:12px;font:500 13.5px/1.6 var(--disp);color:var(--bone);
+  border-left:3px solid var(--gold);padding-left:12px;max-width:1000px}
+.kpis .kpi{text-align:center;padding:16px 10px}
+.kpis .big{font-size:22px}
+.light{font-size:13px;display:flex;align-items:center;gap:10px}
+.lamp{width:11px;height:11px;display:inline-block;border:1px solid var(--hair)}
+.lamp.green{background:var(--green);box-shadow:0 0 8px rgba(61,220,132,.5)}
+.lamp.yellow{background:var(--yellow);box-shadow:0 0 8px rgba(231,197,68,.5)}
+.lamp.red{background:var(--red);box-shadow:0 0 8px rgba(231,60,60,.6)}
+.action{font-weight:600;color:var(--gold-hi);border-left:3px solid var(--orange);
+  padding-left:10px}

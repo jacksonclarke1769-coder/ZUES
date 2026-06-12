@@ -99,7 +99,12 @@ for a in ACCTS:
         open_position=None, working_stop=None, working_target=None,
         last_recon="clean", last_payout=("2026-06-02" if a["paid"] else None),
         next_payout_eligible="2026-06-16"))
-store.set_state(zeus_accounts=json.dumps(accounts_state),
+store.set_state(zeus_actions=json.dumps([
+                    "Send Topstep approval letter (evidence/approvals/)",
+                    "Provision VPS + dead-man (KEY_ARRIVAL.md step 2)",
+                    "Run Tradovate Spike Day when credentials arrive",
+                ]),
+                zeus_accounts=json.dumps(accounts_state),
                 heartbeat_ts=(now - timedelta(seconds=22)).isoformat(),
                 feed_last_bar_ts=(now - timedelta(seconds=31)).isoformat(),
                 broker_sync_ts=(now - timedelta(seconds=19)).isoformat(),
