@@ -189,14 +189,14 @@ def test_ares_safety_rail(client):
         dict(name="ACC-FUND", phase="FUNDED", size=150000, dd=4500, balance=151000,
              floor=145600, alloc_a=4, alloc_b=2, paid=0)]))
     # arming an EVAL account is allowed
-    ares_mode.arm("ACC-EVAL", "A8/B4", store=store, journal=j)
+    ares_mode.arm_eval("ACC-EVAL", "150K-balanced", store=store, journal=j)
     s = client.get("/api/state").get_json()
     assert s["ares"]["active"] and "ACC-EVAL" in s["ares"]["accounts"]
     assert s["ares"]["violation"] == []
     # arming a FUNDED account is REFUSED
     import pytest as _pt
     with _pt.raises(RuntimeError):
-        ares_mode.arm("ACC-FUND", "A8/B4", store=store, journal=j)
+        ares_mode.arm_eval("ACC-FUND", "150K-balanced", store=store, journal=j)
     # if ARES somehow active on a funded account -> RED alert + violation
     store.set_state(ares_mode=json.dumps({"ACC-FUND": {"size": "A8/B4"}}))
     s = client.get("/api/state").get_json()

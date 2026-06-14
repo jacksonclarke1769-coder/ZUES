@@ -402,6 +402,34 @@ def assemble_state():
         state["actions"].insert(0, f"DISARM ARES on funded account {ares_violation}")
         if state["header"]["tier"] in ("GREEN", "YELLOW"):
             state["header"]["tier"] = "RED"
+    # ---------- ARES AUTO deployment card ----------
+    try:
+        from auto_safety import D1cGate, smoke_passed
+        funded_modes = json.loads(store.get_state("zeus_funded") or "{}")
+        d1c = D1cGate(store).status()
+        modes = {}
+        for a in state["accounts"]:
+            nm = a["name"]
+            modes[nm] = ("ARES" if nm in ares else
+                         "ZEUS_FUNDED" if nm in funded_modes else "PAUSED")
+        # live/paper/dry-run posture (runner sets it; default dry-run = safest)
+        exec_state = store.get_state("auto_exec_mode") or "dry-run"
+        broker_ok = smoke_passed(store)
+        # green ONLY if no violation, no lockout, D1c not unexpectedly production
+        dep_green = (not ares_violation and not lockout
+                     and d1c["mode"] in ("SHADOW", "OFF"))
+        state["deployment"] = dict(
+            d1c_mode=d1c["mode"], d1c_requested=d1c["requested"],
+            exec_state=exec_state, broker_smoke=broker_ok,
+            account_modes=modes, ares_accounts=list(ares),
+            funded_accounts=list(funded_modes), green=dep_green,
+            next_action=(("DISARM ARES on funded: " + ", ".join(ares_violation))
+                         if ares_violation else
+                         ("clear BLACK lockout" if lockout else
+                          ("send approval letters + API access (live blocked)"
+                           if not broker_ok else "ready"))))
+    except Exception as e:
+        state["deployment"] = dict(error=str(e), green=False)
     state["meta"]["refresh_ms"] = round((time.time() - t0) * 1000, 1)
     return state
 
