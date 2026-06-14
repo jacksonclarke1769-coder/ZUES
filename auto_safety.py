@@ -84,26 +84,48 @@ class DailyGuard:
 # ------------------------------- D1c gate -----------------------------------
 
 class D1cGate:
-    """Shadow by default; production LOCKED behind explicit, multi-condition approval.
-    Never flips to production accidentally — production requires ALL of: approval flag,
-    ATHENA-allows flag, and a passing gate-test flag, re-checked every call."""
+    """Four modes: OFF · SHADOW · ACTIVE_EVAL_FILTER · PRODUCTION_FUNDED. Fail closed.
+
+      eval accounts:   OFF / SHADOW / ACTIVE_EVAL_FILTER allowed.
+      funded accounts: OFF / SHADOW by default; PRODUCTION_FUNDED only with ALL
+                       promotion flags (approval + ATHENA-allows + gate-test); a requested
+                       ACTIVE_EVAL_FILTER on a funded account degrades to SHADOW.
+    Any unauthorised/illegal request degrades to SHADOW — never escalates."""
+    MODES = ("OFF", "SHADOW", "ACTIVE_EVAL_FILTER", "PRODUCTION_FUNDED")
+    EVAL_ALLOWED = {"OFF", "SHADOW", "ACTIVE_EVAL_FILTER"}
+    FUNDED_DEFAULT = {"OFF", "SHADOW"}
+    PROD_FLAGS = ("approve-d1c-production.flag", "athena-allows-d1c.flag",
+                  "d1c-gate-test-pass.flag")
+
     def __init__(self, store=None):
         self.store = store or Store()
 
-    def mode(self):
-        req = self.store.get_state("d1c_requested_mode") or "SHADOW"
-        if req != "PRODUCTION":
-            return "SHADOW"
-        # production requested -> verify EVERY latch, else fall back to SHADOW
-        for f in ("approve-d1c-production.flag", "athena-allows-d1c.flag",
-                  "d1c-gate-test-pass.flag"):
-            if not os.path.exists(os.path.join(APPROVAL_DIR, f)):
-                return "SHADOW"
-        return "PRODUCTION"
+    def requested(self):
+        r = self.store.get_state("d1c_requested_mode") or "SHADOW"
+        return r if r in self.MODES else "SHADOW"
 
-    def status(self):
-        return dict(mode=self.mode(),
-                    requested=self.store.get_state("d1c_requested_mode") or "SHADOW")
+    def prod_approved(self):
+        return all(os.path.exists(os.path.join(APPROVAL_DIR, f)) for f in self.PROD_FLAGS)
+
+    def resolve(self, account_type):
+        """Effective D1c mode for an account_type ('eval'|'funded'|None). Fail closed."""
+        req = self.requested()
+        if account_type == "eval":
+            return req if req in self.EVAL_ALLOWED else "SHADOW"
+        if account_type == "funded":
+            if req in self.FUNDED_DEFAULT:
+                return req
+            if req == "PRODUCTION_FUNDED":
+                return "PRODUCTION_FUNDED" if self.prod_approved() else "SHADOW"
+            return "SHADOW"          # ACTIVE_EVAL_FILTER not permitted on funded
+        return "OFF" if req == "OFF" else "SHADOW"
+
+    def mode(self, account_type=None):
+        return self.resolve(account_type)
+
+    def status(self, account_type=None):
+        return dict(requested=self.requested(), mode=self.resolve(account_type),
+                    prod_approved=self.prod_approved())
 
 
 # --------------------------- broker smoke gate ------------------------------

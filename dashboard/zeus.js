@@ -55,13 +55,16 @@ function renderCommand(){
   const edgePct=Math.min(a.A.vs_validation??100, a.B.vs_validation??100);
   const kpi=(top,sub,big)=>`<div class="panel kpi"><div class="big ${big||""}">${top}</div><div class="dim">${sub}</div></div>`;
   const ares = S.ares||{};
+  const dep = S.deployment||{};
+  const depStrip = dep.d1c_active_eval_filter
+    ? `<div class="ares-strip" style="border-color:var(--gold);color:var(--gold-hi)">⚙ ${dep.d1c_banner}</div>` : "";
   const aresStrip = ares.violation && ares.violation.length
     ? `<div class="ares-strip viol">⚔ ARES ON FUNDED ACCOUNT — VIOLATION: ${ares.violation.join(", ")} — DISARM NOW</div>`
     : (ares.active
        ? `<div class="ares-strip">⚔ ARES EVAL ATTACK MODE — ${Object.entries(ares.accounts).map(([k,v])=>k+" @ "+v.size).join(" · ")} · ZEUS funded mode elsewhere</div>`
        : "");
   $("#page-command").innerHTML = `
-  ${aresStrip}
+  ${aresStrip}${depStrip}
   <div class="hero ${c}">
     <div class="hero-status">${ico} ${label}</div>
     <div class="hero-sub">

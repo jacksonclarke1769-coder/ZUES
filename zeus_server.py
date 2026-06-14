@@ -406,7 +406,11 @@ def assemble_state():
     try:
         from auto_safety import D1cGate, smoke_passed
         funded_modes = json.loads(store.get_state("zeus_funded") or "{}")
-        d1c = D1cGate(store).status()
+        # show D1c resolved for whichever account types are active
+        _gate = D1cGate(store)
+        d1c = _gate.status()
+        d1c["eval_mode"] = _gate.resolve("eval")
+        d1c["funded_mode"] = _gate.resolve("funded")
         modes = {}
         for a in state["accounts"]:
             nm = a["name"]
@@ -416,10 +420,16 @@ def assemble_state():
         exec_state = store.get_state("auto_exec_mode") or "dry-run"
         broker_ok = smoke_passed(store)
         # green ONLY if no violation, no lockout, D1c not unexpectedly production
-        dep_green = (not ares_violation and not lockout
-                     and d1c["mode"] in ("SHADOW", "OFF"))
+        # green unless: a violation, a lockout, or D1c production-funded active w/o approval
+        d1c_ok = not (d1c["funded_mode"] == "PRODUCTION_FUNDED" and not d1c["prod_approved"])
+        dep_green = (not ares_violation and not lockout and d1c_ok)
         state["deployment"] = dict(
             d1c_mode=d1c["mode"], d1c_requested=d1c["requested"],
+            d1c_eval_mode=d1c["eval_mode"], d1c_funded_mode=d1c["funded_mode"],
+            d1c_active_eval_filter=(d1c["eval_mode"] == "ACTIVE_EVAL_FILTER"),
+            d1c_banner=("D1c ACTIVE EVAL FILTER · NOT FUNDED PRODUCTION · NOT ATHENA PROMOTION"
+                        if d1c["eval_mode"] == "ACTIVE_EVAL_FILTER" else
+                        f"D1c {d1c['eval_mode']}"),
             exec_state=exec_state, broker_smoke=broker_ok,
             account_modes=modes, ares_accounts=list(ares),
             funded_accounts=list(funded_modes), green=dep_green,

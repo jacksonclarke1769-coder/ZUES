@@ -25,6 +25,28 @@ from auto_safety import EVAL_TIERS, tier_spec
 ARES_KEY = "ares_mode"        # {account: {tier, am, bm, started}}
 FUNDED_KEY = "zeus_funded"    # {account: {tier, am, bm, started}}
 
+D1C_MODES = ("OFF", "SHADOW", "ACTIVE_EVAL_FILTER", "PRODUCTION_FUNDED")
+D1C_EVAL_ALLOWED = {"OFF", "SHADOW", "ACTIVE_EVAL_FILTER"}
+D1C_FUNDED_ALLOWED = {"OFF", "SHADOW"}   # PRODUCTION_FUNDED only via promotion flags (gate)
+
+
+def set_d1c(mode, account_type, store=None, journal=None):
+    """Set the requested D1c mode, validating it against the account type. Eval may use
+    the active filter; funded may not (that needs the staged PRODUCTION_FUNDED promotion).
+    Illegal combinations raise — the gate would degrade them to SHADOW anyway."""
+    store = store or Store(); journal = journal or Journal()
+    m = mode.upper().replace("-", "_")
+    if m not in D1C_MODES:
+        raise ValueError(f"unknown D1c mode '{mode}'. options: {list(D1C_MODES)}")
+    if account_type == "eval" and m not in D1C_EVAL_ALLOWED:
+        raise RuntimeError(f"D1c {m} not allowed for eval accounts")
+    if account_type == "funded" and m == "ACTIVE_EVAL_FILTER":
+        raise RuntimeError("D1c ACTIVE_EVAL_FILTER is eval-only — forbidden on funded")
+    store.set_state(d1c_requested_mode=m)
+    journal.append("STATE_ASSERT", "ALL", payload=dict(
+        action="d1c_set_mode", mode=m, account_type=account_type, ts=_now()))
+    return m
+
 
 def _now():
     return datetime.now(timezone.utc).isoformat()

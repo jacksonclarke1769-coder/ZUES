@@ -47,3 +47,24 @@ Print this. Tick every box. If any pre-session box fails → no trading today.
 Distance-to-breach is the only number that can end you. Protect it. A missed day costs
 nothing — the eval has no time limit beyond the firm's reset window. One bad day with no
 stop costs the whole account. **The gods do not chase losses.**
+
+## D1c Active Eval Filter (if selected)
+
+Before session:
+- [ ] Confirm D1c mode (OFF / SHADOW / ACTIVE_EVAL_FILTER) — `auto_runner.py ... --d1c-mode`
+- [ ] If ACTIVE_EVAL_FILTER selected: confirm it is an EVAL account (never funded)
+- [ ] Confirm D1c cannot increase size (size comes from the tier only — unchanged by D1c)
+- [ ] Confirm Profile B is unaffected by D1c
+- [ ] Confirm fail-closed behaviour (stale/missing/zero drift → suspend Profile A)
+- [ ] Confirm D1c log path: `out/ares/d1c_eval_log.csv`
+
+During session:
+- [ ] If D1c BLOCKS a Profile A trade → do NOT override manually. Skip it.
+- [ ] If D1c SUSPENDS → do NOT force the trade. Skip it.
+- [ ] If D1c is unavailable/stale → skip the Profile A trade (Profile B continues normally).
+- [ ] Do NOT increase size because D1c is active. D1c removes risk; it never grants more.
+
+After session:
+- [ ] Record allowed / blocked / suspended A trades (from the D1c log)
+- [ ] Compare with the raw Profile A signal count
+- [ ] Record whether D1c reduced risk this session (blocked losers vs blocked winners)

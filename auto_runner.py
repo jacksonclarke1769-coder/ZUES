@@ -66,8 +66,19 @@ def resolve_plan(args, store):
         blockers.append(f"DAILY STOP already hit today ({gstate['pnl']:+.0f}) — "
                         "no new entries until next ET day (restart cannot bypass)")
 
-    # D1c gate
-    d1c = D1cGate(store).status()
+    # D1c gate (defensive Profile-A filter; never adds trades / changes size)
+    d1c_req = getattr(args, "d1c_mode", "shadow").upper().replace("-", "_")
+    store.set_state(d1c_requested_mode=d1c_req)
+    acct_type = "funded" if args.mode == "funded" else "eval"
+    gate = D1cGate(store)
+    d1c = gate.status(acct_type)
+    d1c["account_type"] = acct_type
+    if d1c_req == "PRODUCTION_FUNDED" and not gate.prod_approved():
+        blockers.append("D1c PRODUCTION_FUNDED requested without promotion approval "
+                        "(needs approve-d1c-production + athena-allows-d1c + gate-test flags)")
+    if d1c_req == "ACTIVE_EVAL_FILTER" and acct_type == "funded":
+        blockers.append("D1c ACTIVE_EVAL_FILTER is eval-only — forbidden on a funded "
+                        "account (use staged funded rollout, see d1c-funded-rollout.md)")
 
     # execution-mode latches
     exec_mode = "live" if args.live else ("paper" if args.paper else "dry-run")
@@ -100,6 +111,9 @@ def main(argv=None):
     g.add_argument("--live", action="store_true")
     p.add_argument("--dashboard-green", action="store_true",
                    help="assert dashboard safety green (real check wired in B1)")
+    p.add_argument("--d1c-mode", default="shadow",
+                   choices=["off", "shadow", "active-eval-filter", "production-funded"],
+                   help="D1c defensive Profile-A filter mode (default shadow)")
     args = p.parse_args(argv)
 
     store = Store()
@@ -112,7 +126,9 @@ def main(argv=None):
               "daily_stop", "available_buffer", "worst_day", "current_mode", "et_date"):
         print(f"  {k:18}: {plan[k]}")
     print(f"  size_ok           : {plan['size_ok']}")
-    print(f"  D1c               : {plan['d1c']['mode']} (requested {plan['d1c']['requested']})")
+    print(f"  D1c               : {plan['d1c']['mode']} (requested {plan['d1c']['requested']}, "
+          f"acct {plan['d1c']['account_type']})")
+    print(f"  D1c role          : blocks/suspends Profile A only · never B · never size")
     print(f"  daily_guard       : {plan['daily_guard']}")
     if plan["exec_mode"] == "live":
         print(f"  live_latches_ok   : {plan['live_latches_ok']}")

@@ -55,12 +55,11 @@ def test_ares_refused_on_funded(env):
 # 4. D1c production cannot turn on accidentally — locked without all flags
 def test_d1c_production_locked(env):
     s, _ = env
-    s.set_state(d1c_requested_mode="PRODUCTION")     # requested, but no flags
-    assert A.D1cGate(s).mode() == "SHADOW"           # falls back to shadow
-    for f in ("approve-d1c-production.flag", "athena-allows-d1c.flag",
-              "d1c-gate-test-pass.flag"):
+    s.set_state(d1c_requested_mode="PRODUCTION_FUNDED")   # requested, but no flags
+    assert A.D1cGate(s).resolve("funded") == "SHADOW"     # falls back to shadow
+    for f in A.D1cGate.PROD_FLAGS:
         open(os.path.join("evidence/approvals", f), "w").close()
-    assert A.D1cGate(s).mode() == "PRODUCTION"        # only with ALL flags
+    assert A.D1cGate(s).resolve("funded") == "PRODUCTION_FUNDED"  # only with ALL flags
 
 
 # 5. daily stop cannot be bypassed by restart (persisted by date)
