@@ -1,0 +1,16 @@
+{
+  "trial": "ATHENA II/III forward paper trial",
+  "trial_start_et": "2026-06-13T00:00:00",
+  "forward_decision_count": 0,
+  "backfilled_decisions": 7,
+  "backfilled_decisions_count_for_trial": false,
+  "production_gate_enabled": false,
+  "shadow_gate_enabled": true,
+  "champion": "ZEUS-MAX",
+  "challenger_status": "CHALLENGER / PAPER ONLY",
+  "gates": {
+    "gate1": 10,
+    "gate2": 20,
+    "final": 30
+  }
+}

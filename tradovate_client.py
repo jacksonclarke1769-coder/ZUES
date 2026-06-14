@@ -60,13 +60,21 @@ class TradovateClient:
         return d
 
     def _resolve_account(self):
+        """VULCAN P11: account selection is EXPLICIT or it is an error. No silent
+        first-account fallback — with multiple funded accounts on one login, guessing
+        is how the wrong account gets traded."""
+        spec = self.account_spec
+        if not spec or str(spec).startswith("YOUR_"):
+            raise TradovateError(
+                "account_spec is required (explicit account name or id in config.TRADOVATE) "
+                "— refusing to guess among the login's accounts")
         accts = self._get("/account/list")
-        if self.account_spec:
-            for a in accts:
-                if a.get("name") == self.account_spec or str(a.get("id")) == str(self.account_spec):
-                    self.account_id = a["id"]; return
-        if accts:
-            self.account_id = accts[0]["id"]
+        for a in accts:
+            if a.get("name") == spec or str(a.get("id")) == str(spec):
+                self.account_id = a["id"]; return
+        raise TradovateError(
+            f"account_spec {spec!r} not found among {len(accts)} accounts on this login "
+            f"({[a.get('name') for a in accts][:8]}) — refusing first-account fallback")
 
     def _ensure(self):
         if not self.token or time.time() > self.token_exp - 120:

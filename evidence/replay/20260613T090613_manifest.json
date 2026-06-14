@@ -1,0 +1,29 @@
+{
+  "runid": "20260613T090613",
+  "mode": "HERMES-REPLAY-REHEARSAL",
+  "config": {
+    "start": "2025-04-01",
+    "end": "2025-04-15",
+    "speed": "instant"
+  },
+  "bars_replayed": 10961,
+  "paper_signals": 7,
+  "d1c_replay_decisions": 7,
+  "replay_keep_rate": 0.857,
+  "replay_fail_open": 0,
+  "replay_gate_eval": {
+    "n_forward": 0,
+    "gate": null
+  },
+  "official_before": {
+    "forward": 0,
+    "production": false
+  },
+  "official_after": {
+    "forward": 0,
+    "production": false
+  },
+  "official_verdict": "no gate triggered (0/10 forward; next: GATE 1 at 10)",
+  "official_unchanged": true,
+  "isolation_ok": true
+}

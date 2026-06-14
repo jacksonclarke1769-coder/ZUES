@@ -1,0 +1,10 @@
+{
+  "asof": "2026-06-13 09:07:53.172699",
+  "mode": "REPLAY-REHEARSAL",
+  "replay_decisions": 7,
+  "kept": 6,
+  "keep_rate": 0.857,
+  "agreement": 1.0,
+  "fail_open_events": 0,
+  "counts_for_trial": false
+}

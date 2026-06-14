@@ -1,0 +1,8 @@
+signal_time,fill_time,direction,drift,decision,reference,agree,fresh,fail_open,result_R,source,trial_eligible
+2025-11-03 11:20:00-05:00,2025-11-03 11:20:00-05:00,short,-134.02600000000166,KEEP,KEEP,True,True,False,-1.004,backfill,False
+2025-11-05 10:45:00-05:00,,long,159.96500000000015,KEEP,KEEP,True,True,False,,backfill,False
+2025-11-12 10:35:00-05:00,,short,-199.66600000000108,KEEP,KEEP,True,True,False,,backfill,False
+2025-11-17 10:35:00-05:00,2025-11-17 10:35:00-05:00,long,90.33199999999852,KEEP,KEEP,True,True,False,-1.001,backfill,False
+2025-11-20 12:10:00-05:00,,short,-670.4880000000012,KEEP,KEEP,True,True,False,,backfill,False
+2025-11-21 11:00:00-05:00,2025-11-21 11:30:00-05:00,short,-28.203999999997905,KEEP,KEEP,True,True,False,-1.002,backfill,False
+2025-11-26 10:35:00-05:00,2025-11-26 10:35:00-05:00,short,-0.21700000000055297,KEEP,KEEP,True,True,False,-0.004,backfill,False

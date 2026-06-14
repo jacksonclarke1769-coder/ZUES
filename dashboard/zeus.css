@@ -140,3 +140,9 @@ pre{font:300 11.5px/1.6 var(--mono);color:var(--bone);white-space:pre-wrap}
 .lamp.red{background:var(--red);box-shadow:0 0 8px rgba(231,60,60,.6)}
 .action{font-weight:600;color:var(--gold-hi);border-left:3px solid var(--orange);
   padding-left:10px}
+
+.ares-strip{border:1px solid var(--orange);background:rgba(232,132,44,.10);
+  color:var(--orange);font:700 12px/1.3 var(--disp);letter-spacing:.14em;
+  padding:8px 16px;margin-bottom:12px;text-align:center}
+.ares-strip.viol{border-color:var(--red);background:rgba(231,60,60,.14);
+  color:var(--red);animation:throb 1.6s infinite}

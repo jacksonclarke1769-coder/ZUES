@@ -1,0 +1,39 @@
+{
+  "runid": "20260613T090846",
+  "project": "VULCAN full-stack deployment war game",
+  "mode": "WAR-GAME (no real orders)",
+  "git_commit": "",
+  "git_dirty": false,
+  "suite": {
+    "total": 159,
+    "passed": 159,
+    "new_vulcan_tests": 13
+  },
+  "phase1_drill": {
+    "window": "2025-04-01..2025-04-15",
+    "bars": 10961,
+    "signals": 7,
+    "replay_decisions": 7,
+    "fail_open": 0,
+    "official_unchanged": true
+  },
+  "bugs_found": [
+    "P11: _resolve_account silently fell back to first account on missing/mismatched spec",
+    "P8: SimBot.process_bar accepted duplicate/out-of-order bars (feed-layer-only protection)"
+  ],
+  "bugs_fixed": [
+    "_resolve_account now fail-closed (explicit spec required, no fallback) + 4 tests",
+    "process_bar non-increasing-timestamp guard + 4 tests"
+  ],
+  "hashes": {
+    "trial_state": "a00bd4e4793132b5",
+    "official_decisions": "ef6a0757fbc74956",
+    "replay_decisions": "f5b04ac1fc85f6fa",
+    "drift_gate": "d68bbfc977ca1638",
+    "tradovate_client": "c7f3421d219e0c61"
+  },
+  "d1c_production": "OFF",
+  "athena_forward": "0/30",
+  "readiness_score": 80,
+  "verdict": "A \u2014 READY FOR PAPER/DEMO (live blocked: B1 runner + key + broker integration)"
+}

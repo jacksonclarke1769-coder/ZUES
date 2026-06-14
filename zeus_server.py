@@ -11,6 +11,7 @@ Run:  python3 zeus_server.py [--demo] [--port 8777]
 --demo serves the seeded preview db (data/zeus_demo_*.db, clearly labeled SIMULATED).
 """
 import json
+import os
 import time
 from datetime import datetime, timezone, timedelta
 
@@ -36,6 +37,53 @@ PLAN = dict(avg=dict(pts_wk=30, gross_wk=1600, net_wk=1300),
             strong=dict(pts_wk=54, gross_wk=2900, net_wk=2300),
             note="A ~22pt/wk + B ~9pt/wk avg regime · 39+15 strong year · "
                  "full ZEUS-MAX = 4.8 NQ-eq")
+
+
+REGIME_JSON = os.path.expanduser("~/trading-team/backtests/prometheus/out/regime_status.json")
+D1C_SHADOW_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               "out", "d1c_shadow", "status.json")
+
+
+# Frozen CERBERUS/ATHENA-validated candidate stats (PAPER-ONLY — display, never logic).
+# Sources: reports/cerberus-destroy-d1c-2026-06-12.md, prometheus-wave2, income_12mo_compare.
+D1C_CANDIDATE = dict(
+    label="D1c morning-drift gate — CHALLENGER (paper trial, production OFF)",
+    paper_only=True,
+    mc_net_base=65_800, mc_net_d1c=100_400, mc_net_delta_pct=52,
+    p5_base=12_200, p5_d1c=52_900,
+    real_12mo_base=121_420, real_12mo_d1c=169_469, real_12mo_delta_pct=39.6,
+    all_dead_base_pct=0.17, all_dead_d1c_pct=0.0,
+    keep_pf=2.79, drop_pf=0.42, validated_keep_rate=62,
+    cerberus="10/10 phases survived", vulcan_readiness="80/100 (paper-ready)",
+    note="Earned ONLY if the 30-decision forward paper trial promotes. Nothing live.")
+
+
+# Last-12-months stream statistics, both books, from the validated unit framework
+# (real bar sequence 2025-05-25 -> 2026-05-25; recomputed when the data window rolls).
+STATS_12MO = dict(
+    window="2025-05-26 → 2026-05-25",
+    base=dict(trades=331, trades_wk=6.4, wr_pct=47.4, wr_a_pct=46.5,
+              avg_r_a=0.254, avg_pts_trade=11.05, net_12mo=121_420),
+    d1c=dict(trades=276, trades_wk=5.3, wr_pct=53.3, wr_a_pct=64.0,
+             avg_r_a=0.575, avg_pts_trade=15.79, net_12mo=169_469),
+    note="A+B stream at 1 MNQ units; net = 8-acct real-sequence replay, after splits. "
+         "D1c column is PAPER-ONLY.")
+
+
+def _regime_monitor():
+    """ATHENA II mandated monitoring block (read-only; absent files -> nulls).
+    Surfaces the PROMETHEUS regime dashboard (cost-compression / stop-distance /
+    rolling-PF tripwires), the D1c shadow-trial status, and the frozen validated
+    candidate stats. NO trading logic reads this."""
+    out = {"regime": None, "d1c_shadow": None, "d1c_candidate": D1C_CANDIDATE,
+           "stats_12mo": STATS_12MO}
+    for key, path in (("regime", REGIME_JSON), ("d1c_shadow", D1C_SHADOW_JSON)):
+        try:
+            with open(path) as f:
+                out[key] = json.load(f)
+        except (OSError, ValueError):
+            pass
+    return out
 
 
 def dbs():
@@ -272,6 +320,7 @@ def assemble_state():
         last=state["weekly"]["last"], avg4=state["weekly"]["avg4"],
         avg12=state["weekly"]["avg12"])
     state["plan"] = PLAN
+    state["regime_monitor"] = _regime_monitor()
     hb_age = None
     if state["header"]["heartbeat"]:
         hb_age = (now - datetime.fromisoformat(
@@ -340,6 +389,19 @@ def assemble_state():
         + edges + ". "
         + (f"{len(state['actions'])} item(s) require action."
            if state["actions"] else "No action required."))
+    # ---------- ARES mode (eval attack) + funded-account safety rail ----------
+    ares = json.loads(store.get_state("ares_mode") or "{}")
+    funded_names = {a["name"] for a in state["accounts"] if a.get("phase") == "FUNDED"}
+    ares_violation = [acct for acct in ares if acct in funded_names]
+    state["ares"] = dict(active=bool(ares), accounts=ares, violation=ares_violation)
+    if ares_violation:
+        state["alerts"].insert(0, dict(
+            tier="RED", name="ares_on_funded_account",
+            detail=f"ARES sizing active on FUNDED account(s) {ares_violation}",
+            action="disarm now: python3 ares_mode.py disarm <account>", acked=False))
+        state["actions"].insert(0, f"DISARM ARES on funded account {ares_violation}")
+        if state["header"]["tier"] in ("GREEN", "YELLOW"):
+            state["header"]["tier"] = "RED"
     state["meta"]["refresh_ms"] = round((time.time() - t0) * 1000, 1)
     return state
 

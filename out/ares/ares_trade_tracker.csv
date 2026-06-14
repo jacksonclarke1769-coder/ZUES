@@ -1,0 +1,2 @@
+date,account,mode,setup,direction,session,entry,stop,target,contracts,result,pnl,balance,cum_profit,dist_to_target,dist_to_breach,daily_pnl,trades_today,mistake_flag,rule_breach_flag,notes
+2026-06-14,EXAMPLE-150K,ARES,A-sweep-OTE,long,NY-AM,22050.00,21985.00,22180.00,8,WIN,1040.00,151040,1040,7960,5540,1040,1,N,N,"example row — delete before live use"

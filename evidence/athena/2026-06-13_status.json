@@ -1,0 +1,16 @@
+{
+  "asof": "2026-06-13 00:36:42.791888",
+  "challenger_status": "CHALLENGER / PAPER ONLY",
+  "champion": "ZEUS-MAX",
+  "production_gate_enabled": false,
+  "forward_decisions": 0,
+  "backfilled_decisions": 7,
+  "next_gate": "gate1 at 10",
+  "n_signals": 7,
+  "kept": 7,
+  "keep_rate": 1.0,
+  "forward_keep_rate": null,
+  "agreement": 1.0,
+  "fail_open_events": 0,
+  "heimdall": "WARMUP"
+}

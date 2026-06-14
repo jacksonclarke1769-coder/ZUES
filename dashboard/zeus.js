@@ -54,7 +54,14 @@ function renderCommand(){
   const healthy=S.accounts.filter(x=>x.status==="SAFE").length;
   const edgePct=Math.min(a.A.vs_validation??100, a.B.vs_validation??100);
   const kpi=(top,sub,big)=>`<div class="panel kpi"><div class="big ${big||""}">${top}</div><div class="dim">${sub}</div></div>`;
+  const ares = S.ares||{};
+  const aresStrip = ares.violation && ares.violation.length
+    ? `<div class="ares-strip viol">⚔ ARES ON FUNDED ACCOUNT — VIOLATION: ${ares.violation.join(", ")} — DISARM NOW</div>`
+    : (ares.active
+       ? `<div class="ares-strip">⚔ ARES EVAL ATTACK MODE — ${Object.entries(ares.accounts).map(([k,v])=>k+" @ "+v.size).join(" · ")} · ZEUS funded mode elsewhere</div>`
+       : "");
   $("#page-command").innerHTML = `
+  ${aresStrip}
   <div class="hero ${c}">
     <div class="hero-status">${ico} ${label}</div>
     <div class="hero-sub">
@@ -97,6 +104,8 @@ function renderCommand(){
        : `<div class="big pos" style="font-size:18px">No action required.</div>`)}
   </div>
 
+  ${challengerRow()}
+
   <div class="grid g2" style="margin-top:14px">
     ${panel("Accounts", S.accounts.length?`<table><tr><th>Account</th><th>Cushion</th><th>P3</th><th>Status</th></tr>`+
       S.accounts.map(x=>`<tr><td>${x.name}</td><td>${usd(x.cushion)}</td>
@@ -107,6 +116,56 @@ function renderCommand(){
     ${panel("Latest Activity", (S.activity||[]).map(e=>
        `<div class="stat"><span class="dim">${new Date(e.ts).toLocaleTimeString()}</span> &nbsp;${e.text}</div>`).join("")
        || `<span class="dim">No events.</span>`)}
+  </div>`;
+}
+
+/* Challenger & Regime row (PROMETHEUS / ATHENA — display only, nothing here trades) */
+function challengerRow(){
+  const rm=S.regime_monitor||{}; const rg=rm.regime, sh=rm.d1c_shadow, cd=rm.d1c_candidate;
+  const regimeBody = rg ? kv([
+      ["Status", `<span class="tag ${rg.status}">${rg.status}</span> <span class="dim">as of ${rg.asof}</span>`],
+      ["Median stop distance", `<b>${fmt(rg.median_stop_distance_pts,1)} pt</b> <span class="dim">(RED &lt;15 · YELLOW &lt;25)</span>`],
+      ["Cost burden", `<b>${fmt(rg.cost_burden_pct_of_R,1)}%</b> of R <span class="dim">(2014-18 dead era: ~22%)</span>`],
+      ["Rolling 252-trade PF", `<b>${fmt(rg.rolling_252_pf,2)}</b> <span class="dim">(RED &lt;1.0 sustained)</span>`],
+      ["Rolling expectancy", `${fmt(rg.rolling_126_expectancy_R,3)}R · WR ${fmt(rg.rolling_126_win_rate_pct,1)}%`]])
+    : `<span class="dim">regime_status.json absent — run regime_dashboard.py</span>`;
+  const trialBody = sh ? kv([
+      ["Challenger", `<b>${sh.challenger_status||"—"}</b>`],
+      ["Forward clock", `<b>${sh.official_forward_count??0} / 30</b> · next: ${sh.next_official_gate||"—"}`],
+      ["Backfilled / Replay", `${sh.backfilled_decision_count??0} diag · ${sh.replay_decision_count??0} rehearsal <span class="dim">(never count)</span>`],
+      ["Fail-open events", `<b class="${(sh.fail_open_events||0)>0?'neg':'pos'}">${sh.fail_open_events??0}</b>`],
+      ["Production gate", sh.production_gate_enabled
+          ? `<span class="tag RED">ON — INCIDENT</span>`
+          : `<span class="tag GREEN">OFF (paper only)</span>`],
+      ["Verdict", `<span class="dim">${sh.current_athena_verdict||"—"}</span>`]])
+    : `<span class="dim">no shadow status yet</span>`;
+  const candBody = cd ? kv([
+      ["MC net /yr", `$${fmt(cd.mc_net_base/1000,1)}k → <b class="pos">$${fmt(cd.mc_net_d1c/1000,1)}k</b> (+${cd.mc_net_delta_pct}%)`],
+      ["Bad-luck p5", `$${fmt(cd.p5_base/1000,1)}k → <b class="pos">$${fmt(cd.p5_d1c/1000,1)}k</b>`],
+      ["Real 12-mo replay", `$${fmt(cd.real_12mo_base/1000,1)}k → <b class="pos">$${fmt(cd.real_12mo_d1c/1000,1)}k</b> (+${cd.real_12mo_delta_pct}%)`],
+      ["Portfolio all-dead", `${cd.all_dead_base_pct}% → <b class="pos">${cd.all_dead_d1c_pct}%</b>`],
+      ["Stream PF split", `keep <b>${cd.keep_pf}</b> / drop ${cd.drop_pf} · keep-rate ~${cd.validated_keep_rate}%`],
+      ["Hostile record", `CERBERUS ${cd.cerberus} · VULCAN ${cd.vulcan_readiness}`]])
+      +`<div class="note">${cd.note}</div>`
+    : "";
+  const st=rm.stats_12mo;
+  const statsBody = st ? `<table>
+      <tr><th></th><th>ZEUS-MAX</th><th>+D1c <span class="dim">(paper)</span></th></tr>
+      <tr><td>12-mo net</td><td>${usd(st.base.net_12mo)}</td><td class="pos"><b>${usd(st.d1c.net_12mo)}</b></td></tr>
+      <tr><td>Trades / week</td><td>${fmt(st.base.trades_wk,1)}</td><td>${fmt(st.d1c.trades_wk,1)}</td></tr>
+      <tr><td>Win rate (book)</td><td>${fmt(st.base.wr_pct,1)}%</td><td class="pos"><b>${fmt(st.d1c.wr_pct,1)}%</b></td></tr>
+      <tr><td>Win rate (A only)</td><td>${fmt(st.base.wr_a_pct,1)}%</td><td class="pos"><b>${fmt(st.d1c.wr_a_pct,1)}%</b></td></tr>
+      <tr><td>Avg R / trade (A)</td><td>+${fmt(st.base.avg_r_a,3)}R</td><td class="pos"><b>+${fmt(st.d1c.avg_r_a,3)}R</b></td></tr>
+      <tr><td>Avg pts / trade</td><td>+${fmt(st.base.avg_pts_trade,1)}</td><td class="pos"><b>+${fmt(st.d1c.avg_pts_trade,1)}</b></td></tr>
+      <tr><td>Trades (12 mo)</td><td>${st.base.trades}</td><td>${st.d1c.trades}</td></tr>
+    </table><div class="note">${st.window} · ${st.note}</div>` : "";
+  return `<div class="grid g2" style="margin-top:14px">
+    ${panel("Regime Monitor — PROMETHEUS", regimeBody)}
+    ${panel("Challenger D1c — ATHENA Trial", trialBody)}
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    ${panel("Last 12 Months — Stream Statistics", statsBody)}
+    ${panel("If Promoted (validated · PAPER-ONLY)", candBody)}
   </div>`;
 }
 

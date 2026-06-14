@@ -84,6 +84,12 @@ class SimBot:
 
     # ---------------- per-bar pipeline ----------------
     def process_bar(self, ts, o, h, l, c):
+        # VULCAN P8 defense-in-depth: refuse duplicate / out-of-order bars at the engine
+        # boundary (feeds already dedupe; this makes a feed glitch harmless here too).
+        last = getattr(self, "last_bar_ts", None)
+        if last is not None and ts <= last:
+            return
+        self.last_bar_ts = ts
         if self.trade_from is not None and ts < self.trade_from:
             self.engine.add_bar(ts, o, h, l, c)        # warmup only — fill the buffer, no trading
             return

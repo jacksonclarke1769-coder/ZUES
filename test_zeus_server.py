@@ -151,3 +151,56 @@ def test_plan_block_and_strategy_stream_points(client):
     wk = s["weekly"]["weeks"][0]
     assert abs(wk["A"] - 10.0) < 0.2         # 10 pts counted ONCE, not 3x
     assert abs(wk["usd"] - 3 * 80.0) < 1     # dollars: all 3 accounts (10pt*2$*4qty)
+
+
+def test_regime_monitor_block_read_only(client):
+    """ATHENA II monitoring: state carries regime + d1c shadow status; purely read-only."""
+    s = client.get("/api/state").get_json()
+    assert "regime_monitor" in s
+    rm = s["regime_monitor"]
+    assert set(rm.keys()) == {"regime", "d1c_shadow", "d1c_candidate", "stats_12mo"}
+    st = rm["stats_12mo"]
+    assert st["base"]["trades_wk"] > 0 and st["d1c"]["wr_pct"] > st["base"]["wr_pct"]
+    assert "PAPER-ONLY" in st["note"]
+    # frozen candidate stats must be clearly paper-only and display-only
+    cd = rm["d1c_candidate"]
+    assert cd["paper_only"] is True
+    assert "production OFF" in cd["label"]
+    assert cd["mc_net_delta_pct"] == 52
+    # if the prometheus regime file exists it must carry the tripwire fields
+    if rm["regime"] is not None:
+        for k in ("status", "median_stop_distance_pts", "rolling_252_pf"):
+            assert k in rm["regime"], k
+        assert rm["regime"]["status"] in ("GREEN", "YELLOW", "RED")
+    # no new routes were added for this (safety whitelist untouched)
+    from zeus_server import APP as _APP
+    api_rules = sorted(str(r) for r in _APP.url_map.iter_rules() if str(r).startswith("/api/"))
+    assert api_rules == ["/api/ack", "/api/oracle", "/api/state", "/api/trade/<cl>"]
+
+
+def test_ares_safety_rail(client):
+    """ARES cannot be armed on a funded account; if forced, dashboard raises RED."""
+    import zeus_server, ares_mode, json
+    j, store = zeus_server.dbs()
+    # register one funded + one eval account
+    store.set_state(zeus_accounts=json.dumps([
+        dict(name="ACC-EVAL", phase="EVAL", size=150000, dd=4500, balance=152000,
+             floor=145500, alloc_a=8, alloc_b=4, paid=0),
+        dict(name="ACC-FUND", phase="FUNDED", size=150000, dd=4500, balance=151000,
+             floor=145600, alloc_a=4, alloc_b=2, paid=0)]))
+    # arming an EVAL account is allowed
+    ares_mode.arm("ACC-EVAL", "A8/B4", store=store, journal=j)
+    s = client.get("/api/state").get_json()
+    assert s["ares"]["active"] and "ACC-EVAL" in s["ares"]["accounts"]
+    assert s["ares"]["violation"] == []
+    # arming a FUNDED account is REFUSED
+    import pytest as _pt
+    with _pt.raises(RuntimeError):
+        ares_mode.arm("ACC-FUND", "A8/B4", store=store, journal=j)
+    # if ARES somehow active on a funded account -> RED alert + violation
+    store.set_state(ares_mode=json.dumps({"ACC-FUND": {"size": "A8/B4"}}))
+    s = client.get("/api/state").get_json()
+    assert "ACC-FUND" in s["ares"]["violation"]
+    assert s["header"]["tier"] == "RED"
+    assert any(a["name"] == "ares_on_funded_account" for a in s["alerts"])
+    store.set_state(ares_mode="{}", zeus_accounts="[]")

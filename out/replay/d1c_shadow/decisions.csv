@@ -1,0 +1,8 @@
+signal_time,fill_time,direction,drift,decision,reference,agree,fresh,fail_open,result_R,source,trial_eligible,counts_for_trial
+2025-04-01 10:00:00-04:00,2025-04-01 10:00:00-04:00,long,29.090000000000146,KEEP,KEEP,True,True,False,1.5,replay,False,False
+2025-04-01 10:35:00-04:00,2025-04-01 10:35:00-04:00,short,-23.13300000000163,KEEP,KEEP,True,True,False,-1.004,replay,False,False
+2025-04-02 10:35:00-04:00,,long,261.4770000000026,KEEP,KEEP,True,True,False,,replay,False,False
+2025-04-07 09:45:00-04:00,2025-04-07 09:45:00-04:00,short,-167.64400000000023,KEEP,KEEP,True,True,False,-0.001,replay,False,False
+2025-04-09 09:45:00-04:00,2025-04-09 09:45:00-04:00,long,162.67799999999988,KEEP,KEEP,True,True,False,1.5,replay,False,False
+2025-04-11 10:45:00-04:00,2025-04-11 10:45:00-04:00,short,82.44599999999991,SUSPEND,SUSPEND,True,True,False,1.5,replay,False,False
+2025-04-14 10:00:00-04:00,2025-04-14 10:00:00-04:00,short,-184.27900000000227,KEEP,KEEP,True,True,False,1.5,replay,False,False
