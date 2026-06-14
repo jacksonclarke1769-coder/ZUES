@@ -54,26 +54,29 @@ def _validate_bracket(side, entry, stop, target, root):
     return e, s, tg
 
 
-def _wire(root, action, qty, order_type, limit_price=None, stop_price=None,
+def _wire(root, action, qty=0, order_type="market", limit_price=None, stop_price=None,
           target_price=None, sid=None, meta=None, price=None):
-    """The ONLY place TradersPost field names live. Bracket keys VERIFIED from docs:
-    takeProfit.limitPrice + stopLoss{type:stop, stopPrice}. `price` is MANDATORY for
-    Tradovate bracket/limit orders (Tradovate has no market data — without it TradersPost
-    submits a market order). signalId is OUR dedup key (TradersPost has no native dedup),
-    carried in extras."""
-    p = dict(ticker=TP_SYMBOL[root], action=action, quantity=int(qty),
-             orderType=order_type)
-    if price is not None:
-        p["price"] = price            # signal price — required for Tradovate brackets
-    if limit_price is not None:
-        p["limitPrice"] = limit_price
-    if stop_price is not None:
-        p["stopLoss"] = {"type": "stop", "stopPrice": stop_price}     # VERIFIED
-    if target_price is not None:
-        p["takeProfit"] = {"limitPrice": target_price}                # VERIFIED
-    p["signalId"] = sid               # our field (dedup); TradersPost ignores unknown keys
-    p["extras"] = {"signalId": sid}
-    p["metadata"] = meta or {}
+    """Top level = ONLY documented TradersPost fields (a live 400 proved strict-ish schema).
+    All ZEUS context + our dedup signalId go in `extras` (the documented passthrough).
+    Entry: ticker/action/quantity/orderType/price/limitPrice/stopLoss/takeProfit.
+    Exit/cancel: minimal {ticker, action} — quantity OMITTED = full close (per docs).
+    Bracket keys VERIFIED: takeProfit.limitPrice + stopLoss{type:stop,stopPrice}.
+    `price` MANDATORY on Tradovate (no market data) or it becomes a market order."""
+    p = {"ticker": TP_SYMBOL[root], "action": action}
+    if action in ("buy", "sell", "add"):
+        p["quantity"] = int(qty)
+        p["orderType"] = order_type
+        if price is not None:
+            p["price"] = price
+        if order_type != "market" and limit_price is not None:
+            p["limitPrice"] = limit_price
+        if stop_price is not None:
+            p["stopLoss"] = {"type": "stop", "stopPrice": stop_price}   # VERIFIED
+        if target_price is not None:
+            p["takeProfit"] = {"limitPrice": target_price}             # VERIFIED
+    extras = dict(meta or {})
+    extras["signalId"] = sid          # dedup key lives in extras (no native TP dedup)
+    p["extras"] = extras
     return p
 
 

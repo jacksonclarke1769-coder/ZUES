@@ -57,15 +57,15 @@ class BridgeSender:
             if new:
                 f.write("ts,signal_id,mode,action,ticker,qty,result,note\n")
             f.write(f"{_now()},{sid},{mode},{payload.get('action')},"
-                    f"{payload.get('ticker')},{payload.get('quantity')},{result},{note}\n")
-        self.j.append("STATE_ASSERT", payload.get("metadata", {}).get("account", "ALL"),
+                    f"{payload.get('ticker')},{payload.get('quantity','')},{result},{note}\n")
+        self.j.append("STATE_ASSERT", payload.get("extras", {}).get("account", "ALL"),
                       payload=dict(action="bridge_webhook", signal_id=sid, mode=mode,
                                    result=result, note=note))
 
     # ---- live latches for the bridge path ----
     def _live_ok(self, payload):
         fails = []
-        meta = payload.get("metadata", {})
+        meta = payload.get("extras", {})
         if not meta.get("account"):
             fails.append("no account in payload")
         if not meta.get("strategy"):
@@ -80,7 +80,7 @@ class BridgeSender:
         """Send (or refuse) one payload. Idempotent: dedup by signalId."""
         if payload is None:
             return dict(sent=False, reason="no payload (ZEUS blocked or build failed)")
-        sid = payload.get("signalId")
+        sid = payload.get("extras", {}).get("signalId") or payload.get("signalId")
         if not sid:
             self._log("MISSING", payload, self.mode, "refused", "no signalId")
             return dict(sent=False, reason="no signalId — refused")

@@ -34,7 +34,7 @@ def test_1_long_bracket(env):
     assert err is None
     assert p["action"] == "buy" and p["quantity"] == 3
     assert p["stopLoss"]["stopPrice"] < p["limitPrice"] < p["takeProfit"]["limitPrice"]
-    assert p["ticker"] == "MNQ" and p["signalId"].startswith("ZB-")
+    assert p["ticker"] == "MNQ" and p["extras"]["signalId"].startswith("ZB-")
 
 
 # 2. short bracket payload correct
@@ -66,7 +66,7 @@ def test_5_duplicate_blocked(env):
     s, j = env
     snd = BS.BridgeSender(store=s, journal=j, mode="test", test_url="http://x")
     p, _ = _entry()
-    snd._mark(p["signalId"], "confirmed")     # pretend first send confirmed
+    snd._mark(p["extras"]["signalId"], "confirmed")     # pretend first send confirmed
     r = snd.send(p)
     assert not r["sent"] and "duplicate" in r["reason"]
 
@@ -159,7 +159,7 @@ def test_13_funded_no_ares_size(env):
 def test_14_emergency_flatten(env):
     p, err = BP.build_flatten(account="MFFU-50K-1", root="MNQ")
     assert err is None and p["action"] == "exit"
-    assert p["metadata"]["emergency"] is True and p["signalId"].startswith("ZB-")
+    assert p["extras"]["emergency"] is True and p["extras"]["signalId"].startswith("ZB-")
 
 
 # 15. retry cannot duplicate orders (same signalId; pending != confirmed)
@@ -171,8 +171,8 @@ def test_15_retry_no_duplicate(env):
     r1 = snd.send(p)                  # network fails -> left 'pending', not confirmed
     assert not r1["sent"]
     # a confirmed send would block; pending allows a genuine retry of the SAME id only
-    assert not snd.already_sent(p["signalId"])
-    snd._mark(p["signalId"], "confirmed")
+    assert not snd.already_sent(p["extras"]["signalId"])
+    snd._mark(p["extras"]["signalId"], "confirmed")
     r2 = snd.send(p)
     assert not r2["sent"] and "duplicate" in r2["reason"]
 
