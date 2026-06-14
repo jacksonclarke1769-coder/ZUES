@@ -1,3 +1,7 @@
 ts,signal_id,mode,action,ticker,qty,result,note
 2026-06-14T05:25:23.352979+00:00,ZB-ec4cf9a65f13a98fc576,test,exit,MNQ,0,failed,ConnectionError(MaxRetryError("HTTPConnectionPool(host='127.0.0.1', port=80): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x105c3a850>: Failed to establish a new connection: [Errno 61] Connection refused'))"))
 2026-06-14T05:30:13.956618+00:00,ZB-ec4cf9a65f13a98fc576,test,exit,MNQ,0,failed,http 400
+2026-06-14T05:52:14.704842+00:00,ZB-ec4cf9a65f13a98fc576,test,exit,MNQ,,confirmed,http 200
+2026-06-14T05:56:36.130036+00:00,ZB-ec4cf9a65f13a98fc576,test,exit,MNQ,,duplicate-blocked,
+2026-06-14T05:57:02.954048+00:00,ZB-ec4cf9a65f13a98fc576,test,exit,MNQ,,duplicate-blocked,
+2026-06-14T05:58:34.066104+00:00,ZB-ae6228eb824f9e5d2289,test,exit,MNQ,,failed,ConnectionError(MaxRetryError("HTTPConnectionPool(host='127.0.0.1', port=80): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x101712850>: Failed to establish a new connection: [Errno 61] Connection refused'))"))

@@ -54,7 +54,9 @@ def main(argv=None):
                           test_url=url, live_url=url)
 
     if a.ping:
-        payload, err = BP.build_flatten(account=a.account, root=a.root, reason="bridge-ping")
+        import time as _t
+        payload, err = BP.build_flatten(account=a.account, root=a.root,
+                                        reason=f"bridge-ping-{int(_t.time())}")  # fresh id each run
         print("PING (exit on flat account) — validates routing, opens nothing.")
     else:
         if None in (a.price, a.stop, a.target):
