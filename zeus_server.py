@@ -422,7 +422,10 @@ def assemble_state():
         # green ONLY if no violation, no lockout, D1c not unexpectedly production
         # green unless: a violation, a lockout, or D1c production-funded active w/o approval
         d1c_ok = not (d1c["funded_mode"] == "PRODUCTION_FUNDED" and not d1c["prod_approved"])
-        dep_green = (not ares_violation and not lockout and d1c_ok)
+        bridge_ok = (store.get_state("execution_route") != "traderspost"
+                     or (store.get_state("webhook_mode") or "dry-run") != "live"
+                     or os.path.exists("evidence/approvals/traderspost-approved.flag"))
+        dep_green = (not ares_violation and not lockout and d1c_ok and bridge_ok)
         state["deployment"] = dict(
             d1c_mode=d1c["mode"], d1c_requested=d1c["requested"],
             d1c_eval_mode=d1c["eval_mode"], d1c_funded_mode=d1c["funded_mode"],
@@ -433,6 +436,14 @@ def assemble_state():
             exec_state=exec_state, broker_smoke=broker_ok,
             account_modes=modes, ares_accounts=list(ares),
             funded_accounts=list(funded_modes), green=dep_green,
+            execution_route="TRADERSPOST" if store.get_state("execution_route") == "traderspost" else "none",
+            webhook_mode=(store.get_state("webhook_mode") or "dry-run").upper(),
+            bridge_last_id=store.get_state("bridge_last_id"),
+            bridge_last_result=store.get_state("bridge_last_result"),
+            bridge_sent_today=int(store.get_state("bridge_sent_today") or 0),
+            bridge_dup_blocked=len(json.loads(store.get_state("bridge_sent") or "{}")),
+            traderspost_approved=os.path.exists(
+                "evidence/approvals/traderspost-approved.flag"),
             next_action=(("DISARM ARES on funded: " + ", ".join(ares_violation))
                          if ares_violation else
                          ("clear BLACK lockout" if lockout else

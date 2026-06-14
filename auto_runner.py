@@ -80,6 +80,15 @@ def resolve_plan(args, store):
         blockers.append("D1c ACTIVE_EVAL_FILTER is eval-only — forbidden on a funded "
                         "account (use staged funded rollout, see d1c-funded-rollout.md)")
 
+    # execution route (TradersPost bridge replaces blocked Tradovate API)
+    execution = getattr(args, "execution", "none")
+    webhook_mode = getattr(args, "webhook_mode", "dry-run")
+    if execution == "traderspost" and webhook_mode == "live":
+        import os as _os
+        if not _os.path.exists(_os.path.join("evidence/approvals",
+                                             "traderspost-approved.flag")):
+            blockers.append("bridge LIVE webhook requested without traderspost-approved.flag")
+
     # execution-mode latches
     exec_mode = "live" if args.live else ("paper" if args.paper else "dry-run")
     live_ok, live_fails = (True, [])
@@ -95,7 +104,8 @@ def resolve_plan(args, store):
         daily_stop=spec["daily_stop"], available_buffer=buf,
         worst_day=spec["worst_day"], size_ok=ok_size,
         exec_mode=exec_mode, d1c=d1c, daily_guard=gstate,
-        live_latches_ok=live_ok, live_failures=live_fails,
+        live_latches_ok=live_ok, live_failures=live_fails, execution=execution,
+        webhook_mode=webhook_mode,
         current_mode=current_mode(store, args.account), et_date=et_date())
     return plan, blockers
 
@@ -114,6 +124,11 @@ def main(argv=None):
     p.add_argument("--d1c-mode", default="shadow",
                    choices=["off", "shadow", "active-eval-filter", "production-funded"],
                    help="D1c defensive Profile-A filter mode (default shadow)")
+    p.add_argument("--execution", default="none",
+                   choices=["none", "traderspost"],
+                   help="execution route (default none = decision-only)")
+    p.add_argument("--webhook-mode", default="dry-run",
+                   choices=["dry-run", "test", "live"], help="bridge webhook mode")
     args = p.parse_args(argv)
 
     store = Store()
@@ -129,6 +144,7 @@ def main(argv=None):
     print(f"  D1c               : {plan['d1c']['mode']} (requested {plan['d1c']['requested']}, "
           f"acct {plan['d1c']['account_type']})")
     print(f"  D1c role          : blocks/suspends Profile A only · never B · never size")
+    print(f"  execution route   : {plan['execution']} · webhook {plan['webhook_mode']}")
     print(f"  daily_guard       : {plan['daily_guard']}")
     if plan["exec_mode"] == "live":
         print(f"  live_latches_ok   : {plan['live_latches_ok']}")
