@@ -29,7 +29,8 @@ import config
 from store import Store
 from journal import Journal
 from instance_lock import InstanceLock, LockHeld
-from auto_safety import EVAL_TIERS, APPROVAL_DIR, DailyGuard
+from auto_safety import (EVAL_TIERS, APPROVAL_DIR, DailyGuard,
+                         resolve_d1c_for_feed, full_auto_preflight, feed_timeframe)
 import bridge_traderspost as BP
 from bridge_sender import BridgeSender
 from flatten import LOCK_KEY
@@ -133,9 +134,16 @@ def main(argv=None):
                    choices=["off", "shadow", "active-eval-filter"])
     p.add_argument("--basis-offset", type=float, default=0.0,
                    help="points added to feed prices to match Tradovate (measure via Stage 2)")
-    p.add_argument("--feed", default="dukascopy", choices=["dukascopy", "tradovate", "tradingview"],
+    p.add_argument("--feed", default="dukascopy",
+                   choices=["dukascopy", "tradovate", "tradingview", "tradingview-5m", "tradingview-1m"],
                    help="dukascopy=credential-free CFD proxy (basis); tradovate=zero-basis API md (needs access); "
-                        "tradingview=REAL CME via Chrome CDP (zero basis, needs launch-tv-chrome.sh + NQ 5m chart)")
+                        "tradingview/-5m=REAL CME 5m via Chrome CDP; tradingview-1m=1m (engine path NOT built — refused)")
+    p.add_argument("--mode", default="eval", choices=["eval", "funded"],
+                   help="ARES eval mode (default) or ZEUS funded mode")
+    p.add_argument("--execution", default="traderspost", choices=["traderspost"],
+                   help="execution route (TradersPost bridge only today)")
+    p.add_argument("--confirm", action="store_true",
+                   help="required (with --live) to arm FULL AUTO; extra human gate")
     p.add_argument("--warmup-source", default="dukascopy", choices=["dukascopy", "tradingview"],
                    dest="warmup_source",
                    help="(tradingview feed) deep warmup source: dukascopy=40d current bars basis-aligned to CME "
@@ -143,23 +151,28 @@ def main(argv=None):
     p.add_argument("--warmup-days", type=int, default=45, dest="warmup_days",
                    help="(tradingview feed) calendar days of warmup history to pull (default 45)")
     a = p.parse_args(argv)
-    d1c_mode = a.d1c_mode.upper().replace("-", "_")
+    requested_d1c = a.d1c_mode.upper().replace("-", "_")
+
+    # The 5m-validated Profile A engine must NOT be fed 1m bars (that changes the strategy).
+    # The 1m->5m aggregator + native-1m D1c stream is a separate, unbuilt+unvalidated piece.
+    if feed_timeframe(a.feed) == 1:
+        print("REFUSED: --feed tradingview-1m drives the engine with 1m bars, which would change "
+              "the 5m-validated Profile A. The 1m engine path (1m->5m aggregation + native-1m D1c) "
+              "is not built/validated. Use --feed tradingview-5m with --d1c-mode shadow.")
+        return 2
+
+    # --- Task 4: D1c may be ACTIVE_EVAL_FILTER only on a real-time 1m feed; else forced SHADOW ---
+    realtime_confirmed = os.environ.get("TV_REALTIME_CONFIRMED") == "1"
+    d1c_mode, d1c_downgrade = resolve_d1c_for_feed(requested_d1c, a.feed, realtime_confirmed)
+    if d1c_downgrade:
+        print(f"  D1c: requested {requested_d1c} -> {d1c_mode} ({d1c_downgrade})")
 
     mode = "live" if a.live else "paper"
-    # --- live gating: both flags required, else refuse live and fall to paper ---
-    if mode == "live":
-        need = ["traderspost-approved.flag", "bracket-verified.flag"]
-        missing = [f for f in need if not os.path.exists(os.path.join(APPROVAL_DIR, f))]
-        url = os.environ.get("TRADERSPOST_LIVE_URL")
-        if missing or not url:
-            print("REFUSED LIVE — fail closed:")
-            for f in missing:
-                print(f"  ✗ missing {APPROVAL_DIR}/{f}")
-            if not url:
-                print("  ✗ TRADERSPOST_LIVE_URL not set")
-            print("  (bracket-verified.flag is set ONLY after Stage 2 proves the stop+target "
-                  "attach at Tradovate. Do not skip it — a naked auto-entry blows the eval.)")
-            return 2
+    # --- full-auto requires the explicit human --confirm gate (data/exec proof checked post-warmup) ---
+    if mode == "live" and not a.confirm:
+        print("REFUSED LIVE: --live requires --confirm (full-auto human gate). Running live without "
+              "confirmation is forbidden.")
+        return 2
 
     try:
         lock = InstanceLock().acquire()
@@ -194,9 +207,9 @@ def main(argv=None):
         feed = LiveBarFeed(config, poll_sec=a.poll)      # zero-basis CME md (needs API access)
         contract = feed.connect()
         data_line = f"Tradovate API market data (zero basis) · {contract.get('name')}"
-    elif a.feed == "tradingview":
+    elif a.feed in ("tradingview", "tradingview-5m"):
         from tv_feed import TradingViewFeed
-        feed = TradingViewFeed(poll_sec=a.poll, warmup=5000,           # REAL CME live tail via Chrome CDP
+        feed = TradingViewFeed(poll_sec=a.poll, warmup=5000,           # REAL CME 5m live tail via Chrome CDP
                                warmup_source=a.warmup_source, warmup_days=a.warmup_days)
         contract = feed.connect()
         data_line = (f"TradingView CDP · REAL CME · {contract.get('name')} @ {contract.get('resolution')}m "
@@ -218,6 +231,10 @@ def main(argv=None):
     if mode == "paper":
         print("  PAPER — webhooks are dry-run LOGGED, NO orders placed.")
     dash_store = Store()       # default DB (data/bot.db) — the one zeus_server dashboard reads
+    # keep the dashboard truthful about the actual execution posture
+    dash_store.set_state(execution_route=a.execution,
+                         webhook_mode=("live" if mode == "live" else "dry-run"),
+                         auto_exec_mode=mode, auto_daily_stop=str(spec["daily_stop"]))
     def _persist_data_status(_=None):
         """Mirror feed.data_status() into the DASHBOARD store so it never shows false-green."""
         if hasattr(feed, "data_status"):
@@ -238,6 +255,24 @@ def main(argv=None):
                   f"· basis {ds['basis']:+.2f} · DATA_READY={ds['DATA_READY']}", flush=True)
             if not ds["DATA_READY"]:
                 print("  DATA NOT READY: " + "; ".join(ds["reasons"]), flush=True)
+        # --- APOLLO: FULL AUTO master gate (only when --live). Fail-closed. ---
+        if mode == "live":
+            dgreen = False
+            try:
+                import zeus_server
+                dgreen = bool(zeus_server.assemble_state()["deployment"].get("green"))
+            except Exception:
+                dgreen = False
+            ds_gate = dict(ds or {}, daily_stop=spec["daily_stop"])
+            ok, fails, eff_d1c, summ = full_auto_preflight(
+                a.account, a.feed, requested_d1c, ds_gate, store=dash_store, dashboard_green=dgreen)
+            if not ok:
+                print("REFUSED FULL AUTO — fail closed:")
+                for f in fails:
+                    print(f"  ✗ {f}")
+                lock.release()
+                return 2
+            print(f"  FULL AUTO preflight PASSED (D1c={eff_d1c}) — arming live webhooks.", flush=True)
         print("  warmed up · going live · watching the NY-AM window…", flush=True)
         for ts, o, h, l, c in feed.live():
             if auto.killed():

@@ -15,9 +15,11 @@ class FakeSender:
         return {"sent": True, "status": 200}
 
 
-def test_one_mnq_forces_qty_1_and_attaches_bracket(monkeypatch):
+def test_one_mnq_forces_qty_1_and_attaches_bracket(monkeypatch, tmp_path):
     monkeypatch.setenv("TRADERSPOST_TEST_URL", "https://example.test/webhook")
     monkeypatch.setattr(bridge_test, "BridgeSender", FakeSender)
+    # write evidence to a tmp dir so the test never pollutes the real evidence/ tree
+    monkeypatch.setattr(bridge_test, "EVID_DIR", str(tmp_path))
     # --qty 5 must be ignored; qty hard-forced to 1
     rc = bridge_test.main(["--account", "MFFU-50K-1", "--one-mnq", "--ref", "20000",
                            "--mode", "test", "--qty", "5"])
@@ -29,7 +31,7 @@ def test_one_mnq_forces_qty_1_and_attaches_bracket(monkeypatch):
     assert p["stopLoss"]["stopPrice"] is not None       # stop attaches
     assert p["takeProfit"]["limitPrice"] is not None    # target attaches
     assert p["extras"]["signalId"]                      # deterministic dedup id
-    assert os.path.exists("evidence/launchlock/traderspost/stage2-1mnq.json")
+    assert os.path.exists(os.path.join(str(tmp_path), "stage2-1mnq.json"))
 
 
 def test_one_mnq_resting_bracket_derived_from_ref():

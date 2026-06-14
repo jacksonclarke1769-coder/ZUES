@@ -182,3 +182,103 @@ def live_latches(account, store=None, dashboard_green=False):
     if not dashboard_green:
         fails.append("dashboard safety not green")
     return (len(fails) == 0), fails
+
+
+# ----------------------------- APOLLO full-auto gate (TradersPost route) -----------------------------
+FULL_AUTO_FLAG = "full-auto-approved.flag"
+TP_PROVEN_FLAG = "../launchlock/traderspost/PROVEN.flag"   # under evidence/ (sibling of approvals/)
+
+
+def feed_timeframe(feed_name):
+    """Map a --feed name to its bar minutes. tradingview-1m -> 1, tradingview(-5m)/dukascopy -> 5."""
+    f = (feed_name or "").lower()
+    if f.endswith("-1m") or f == "tradingview1m":
+        return 1
+    return 5
+
+
+def resolve_d1c_for_feed(requested_mode, feed_name, realtime_confirmed):
+    """D1c may ONLY be ACTIVE_EVAL_FILTER on a real-time 1-minute feed (its validated fidelity).
+    On a 5m feed, or without confirmed real-time data, it is forced to SHADOW. Returns
+    (effective_mode, downgraded_reason_or_None). Never UPGRADES; never touches Profile B."""
+    req = (requested_mode or "OFF").upper().replace("-", "_")
+    if req == "ACTIVE_EVAL_FILTER":
+        if feed_timeframe(feed_name) != 1:
+            return "SHADOW", "feed is %dm (not 1m) — D1c forced SHADOW" % feed_timeframe(feed_name)
+        if not realtime_confirmed:
+            return "SHADOW", "real-time CME entitlement unconfirmed — D1c forced SHADOW"
+    return req, None
+
+
+def traderspost_ready(store=None):
+    """(ok, fails). The live TradersPost route is proven only when the URL is configured AND the
+    operator attested a passed Stage 1-3 by creating the PROVEN flag. Built != proven."""
+    fails = []
+    if not os.environ.get("TRADERSPOST_LIVE_URL"):
+        fails.append("TRADERSPOST_LIVE_URL not set")
+    if not os.path.exists(os.path.join(APPROVAL_DIR, TP_PROVEN_FLAG)):
+        fails.append("TradersPost route not proven (no evidence/launchlock/traderspost/PROVEN.flag — "
+                     "run bridge_test ping/one-mnq/flatten and attest)")
+    return (len(fails) == 0), fails
+
+
+def emergency_flatten_available():
+    """The single emergency-flatten path must be importable before any live automation."""
+    try:
+        import ops_flatten  # noqa: F401
+        return True
+    except Exception:
+        return False
+
+
+def full_auto_preflight(account, feed_name, requested_d1c, data_status, store=None,
+                        dashboard_green=False):
+    """APOLLO master gate for FULL AUTO over the TradersPost route. Returns
+    (ok, fails[], effective_d1c, summary). Fail-closed: any missing proof blocks live."""
+    store = store or Store()
+    ds = data_status or {}
+    fails = []
+    # 1. explicit account
+    if not account:
+        fails.append("no explicit account (silent default forbidden)")
+    # 2. full-auto approval flag
+    if not os.path.exists(os.path.join(APPROVAL_DIR, FULL_AUTO_FLAG)):
+        fails.append("missing %s/%s" % (APPROVAL_DIR, FULL_AUTO_FLAG))
+    # 3. live data ready (real-time, warmup>=2wk, not stale, no resets) — computed by the feed
+    if not ds.get("DATA_READY"):
+        fails.append("DATA not ready: " + "; ".join(ds.get("reasons") or ["no data_status"]))
+    # 4. TradersPost execution proven (URL + PROVEN flag) AND the pre-existing technical flags
+    #    (kept from LAUNCHLOCK — defense in depth, nothing loosened)
+    tp_ok, tp_fails = traderspost_ready(store)
+    if not tp_ok:
+        fails.extend("EXECUTION: " + f for f in tp_fails)
+    for flag in ("traderspost-approved.flag", "bracket-verified.flag"):
+        if not os.path.exists(os.path.join(APPROVAL_DIR, flag)):
+            fails.append("EXECUTION: missing %s/%s" % (APPROVAL_DIR, flag))
+    # 5. dashboard green from source-of-truth
+    if not dashboard_green:
+        fails.append("dashboard not green")
+    # 6. ARES active on this account
+    ares = json.loads(store.get_state("ares") or "{}")
+    if account and account not in ares:
+        fails.append("ARES not armed on %s (arm-eval first)" % account)
+    # 7. daily stop configured for the run (caller passes via data_status['daily_stop'] or store)
+    if not (ds.get("daily_stop") or store.get_state("auto_daily_stop")):
+        fails.append("daily stop not configured")
+    # 8. emergency flatten available
+    if not emergency_flatten_available():
+        fails.append("emergency flatten (ops_flatten) unavailable")
+    # 9. duplicate-protection ledger active (BridgeSender keys every send on signalId)
+    #    structural in bridge_sender; assert the ledger key is reachable
+    try:
+        json.loads(store.get_state("bridge_sent") or "{}")
+    except Exception:
+        fails.append("duplicate ledger unreadable")
+    # D1c fidelity resolution (does not fail the gate; downgrades to SHADOW if not 1m+realtime)
+    eff_d1c, d1c_reason = resolve_d1c_for_feed(
+        requested_d1c, feed_name, bool(ds.get("realtime_confirmed")))
+    summary = dict(account=account, feed=feed_name, feed_tf="%dm" % feed_timeframe(feed_name),
+                   data_ready=bool(ds.get("DATA_READY")), traderspost_ready=tp_ok,
+                   dashboard_green=dashboard_green, requested_d1c=requested_d1c,
+                   effective_d1c=eff_d1c, d1c_downgrade=d1c_reason)
+    return (len(fails) == 0), fails, eff_d1c, summary
