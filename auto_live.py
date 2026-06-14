@@ -32,6 +32,9 @@ from auto_safety import EVAL_TIERS, APPROVAL_DIR, DailyGuard
 import bridge_traderspost as BP
 from bridge_sender import BridgeSender
 from flatten import LOCK_KEY
+from drift_gate import DriftGate
+import d1c_filter
+from datetime import time as _dtime
 
 
 def et_date():
@@ -40,13 +43,23 @@ def et_date():
 
 
 class LiveAuto:
-    def __init__(self, account, tier, mode, store, journal, sender, daily_stop):
+    def __init__(self, account, tier, mode, store, journal, sender, daily_stop,
+                 d1c_mode="ACTIVE_EVAL_FILTER"):
         self.account, self.tier, self.mode = account, tier, mode
         self.store, self.j, self.sender = store, journal, sender
         self.daily_stop = daily_stop
         self.guard = DailyGuard(store)
-        self.sent = 0
-        self.blocked = 0
+        self.d1c_mode = d1c_mode
+        # real CERBERUS-validated D1c. 5m feed -> 360s staleness tolerance.
+        self.gate = DriftGate(enabled=(d1c_mode in ("ACTIVE_EVAL_FILTER", "SHADOW")),
+                              stale_after_s=360)
+        self.sent = self.blocked = self.d1c_blocked = 0
+
+    def feed_gate(self, ts, o, c):
+        """Call every completed bar (ET) so D1c has the 09:30 open + last close."""
+        if ts.time() == _dtime(9, 30):
+            self.gate.on_session_open(ts, o)
+        self.gate.on_bar_close(ts, c)
 
     def killed(self):
         if self.store.get_state(LOCK_KEY):
@@ -71,14 +84,30 @@ class LiveAuto:
                 action="auto_live_blocked", reason=kill, side=sig.get("side")))
             print(f"[auto-live] BLOCKED ({kill}) — no webhook", flush=True)
             return
+        # --- D1c defensive filter (Profile A only) ---
+        if self.d1c_mode in ("ACTIVE_EVAL_FILTER", "SHADOW"):
+            keep = self.gate.allows(sig["side"], ts)
+            drift = self.gate.drift()
+            decision = "KEEP" if keep else "SUSPEND/BLOCK"
+            permit = keep or self.d1c_mode == "SHADOW"
+            d1c_filter.log_decision(
+                self.account, self.d1c_mode, sig.get("liq", "sweep-OTE"), sig["side"],
+                drift, (1 if (drift or 0) > 0 else -1 if (drift or 0) < 0 else 0),
+                decision, f"keep_rate={self.gate.keep_rate()}", permit, source="ares_eval")
+            if self.d1c_mode == "ACTIVE_EVAL_FILTER" and not keep:
+                self.d1c_blocked += 1
+                print(f"[auto-live] D1c BLOCK ({sig['side']}, drift={drift}) — no webhook",
+                      flush=True)
+                return
         spec = EVAL_TIERS[self.tier]
+        d1c_status = (self.gate.heimdall_status() if self.d1c_mode != "OFF" else "OFF")
         payload, err = BP.build_entry(
             account=self.account, strategy="A", setup=sig.get("liq", "sweep-OTE"),
             signal_ts=sig["ts_signal"], side=sig["side"], qty=spec["am"],
             entry=float(sig["entry"]), stop=float(sig["stop"]),
             target=float(sig["target"]), root="MNQ", order_type="limit",
             mode_meta=dict(mode="ARES", tier=self.tier),
-            d1c_meta=dict(mode="OFF", note="live drift not wired — raw validated A"))
+            d1c_meta=dict(mode=self.d1c_mode, status=d1c_status))
         if err:
             print(f"[auto-live] FAIL CLOSED — payload not built: {err}", flush=True)
             return
@@ -96,7 +125,10 @@ def main(argv=None):
     p.add_argument("--tier", required=True, choices=list(EVAL_TIERS))
     p.add_argument("--live", action="store_true", help="fire REAL webhooks (gated)")
     p.add_argument("--poll", type=int, default=60)
+    p.add_argument("--d1c-mode", default="active-eval-filter",
+                   choices=["off", "shadow", "active-eval-filter"])
     a = p.parse_args(argv)
+    d1c_mode = a.d1c_mode.upper().replace("-", "_")
 
     mode = "live" if a.live else "paper"
     # --- live gating: both flags required, else refuse live and fall to paper ---
@@ -128,7 +160,8 @@ def main(argv=None):
 
     sender = BridgeSender(store=Store(), journal=j, mode=("live" if mode == "live" else "dry-run"),
                           live_url=os.environ.get("TRADERSPOST_LIVE_URL"))
-    auto = LiveAuto(a.account, a.tier, mode, Store(), j, sender, spec["daily_stop"])
+    auto = LiveAuto(a.account, a.tier, mode, Store(), j, sender, spec["daily_stop"],
+                    d1c_mode=d1c_mode)
 
     # build the live loop (Dukascopy credential-free feed + SimBot wired to the bridge)
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -145,24 +178,27 @@ def main(argv=None):
     feed.connect()
     print(f"=== ARES AUTO LIVE · {mode.upper()} · {a.account} · tier {a.tier} "
           f"(A={spec['am']} MNQ) ===")
-    print("  data: Dukascopy NQ (CFD proxy, ~1min delayed) · Profile A only · "
-          "D1c OFF (drift not wired live)")
+    print(f"  data: Dukascopy NQ (CFD proxy 5m) · Profile A only · "
+          f"D1c {d1c_mode} (real DriftGate, validated 1m — running on 5m feed)")
     print("  SAFETY: paper unless --live + both flags · SUPERVISE (MFFU semi-auto) · "
           "Ctrl+C to stop")
     if mode == "paper":
         print("  PAPER — webhooks are dry-run LOGGED, NO orders placed.")
     try:
         for ts, o, h, l, c in feed.history():
+            auto.feed_gate(ts, o, c)
             runner.bot.process_bar(ts, o, h, l, c)         # warmup
         print("  warmed up · going live · watching the NY-AM window…", flush=True)
         for ts, o, h, l, c in feed.live():
             if auto.killed():
                 print(f"[auto-live] KILL: {auto.killed()} — halting new entries", flush=True)
+            auto.feed_gate(ts, o, c)
             runner._cur = (0, o, h, l, c)
             runner.bot.process_bar(ts, o, h, l, c)
             runner.bot._persist()
     except KeyboardInterrupt:
-        print(f"\n[auto-live] stopped · {auto.sent} signals routed · {auto.blocked} blocked")
+        print(f"\n[auto-live] stopped · {auto.sent} routed · {auto.blocked} gate-blocked · "
+              f"{auto.d1c_blocked} D1c-blocked · D1c {auto.gate.heimdall_status()}")
     finally:
         lock.release()
     return 0
