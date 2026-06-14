@@ -1,0 +1,57 @@
+{
+  "payload": {
+    "ticker": "MNQ",
+    "action": "buy",
+    "quantity": 1,
+    "orderType": "limit",
+    "price": 20000.0,
+    "limitPrice": 20000.0,
+    "stopLoss": {
+      "type": "stop",
+      "stopPrice": 19980.0
+    },
+    "takeProfit": {
+      "limitPrice": 20040.0
+    },
+    "extras": {
+      "strategy": "A",
+      "setup": "sweep-OTE",
+      "side": "long",
+      "risk_points": 20.0,
+      "risk_usd": 40.0,
+      "account": "MFFU-50K-1",
+      "mode": "ARES",
+      "tier": "50K-conservative",
+      "d1c": {
+        "mode": "ACTIVE_EVAL_FILTER",
+        "status": "GREEN"
+      },
+      "source": "zeus_bridge",
+      "signalId": "ZB-55791d461d397f9a0487"
+    }
+  },
+  "required": {
+    "ticker": "MNQ",
+    "action": "buy",
+    "quantity": 1,
+    "price": 20000.0,
+    "stopLoss": {
+      "type": "stop",
+      "stopPrice": 19980.0
+    },
+    "takeProfit": {
+      "limitPrice": 20040.0
+    },
+    "signalId": "ZB-55791d461d397f9a0487"
+  },
+  "checks": {
+    "ticker present (MNQ contract)": true,
+    "action present": true,
+    "quantity==1 (smallest)": true,
+    "price present": true,
+    "stopLoss.stopPrice present": true,
+    "takeProfit.limitPrice present": true,
+    "signalId (dedup) present": true
+  },
+  "all_pass": true
+}

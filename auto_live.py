@@ -20,6 +20,7 @@ Run (live — only after Stage 2 + both flags):
   TRADERSPOST_LIVE_URL=... python3 auto_live.py --account MFFU-50K-1 --tier 50K-conservative --live
 """
 import argparse
+import json
 import os
 import sys
 from datetime import datetime, timezone
@@ -132,8 +133,15 @@ def main(argv=None):
                    choices=["off", "shadow", "active-eval-filter"])
     p.add_argument("--basis-offset", type=float, default=0.0,
                    help="points added to feed prices to match Tradovate (measure via Stage 2)")
-    p.add_argument("--feed", default="dukascopy", choices=["dukascopy", "tradovate"],
-                   help="dukascopy=credential-free CFD proxy (basis); tradovate=zero-basis API md (needs access)")
+    p.add_argument("--feed", default="dukascopy", choices=["dukascopy", "tradovate", "tradingview"],
+                   help="dukascopy=credential-free CFD proxy (basis); tradovate=zero-basis API md (needs access); "
+                        "tradingview=REAL CME via Chrome CDP (zero basis, needs launch-tv-chrome.sh + NQ 5m chart)")
+    p.add_argument("--warmup-source", default="dukascopy", choices=["dukascopy", "tradingview"],
+                   dest="warmup_source",
+                   help="(tradingview feed) deep warmup source: dukascopy=40d current bars basis-aligned to CME "
+                        "(default, guarantees prev-week/day levels); tradingview=chart cache only (shallow)")
+    p.add_argument("--warmup-days", type=int, default=45, dest="warmup_days",
+                   help="(tradingview feed) calendar days of warmup history to pull (default 45)")
     a = p.parse_args(argv)
     d1c_mode = a.d1c_mode.upper().replace("-", "_")
 
@@ -185,26 +193,51 @@ def main(argv=None):
         from paper_live import LiveBarFeed
         feed = LiveBarFeed(config, poll_sec=a.poll)      # zero-basis CME md (needs API access)
         contract = feed.connect()
-        print(f"  feed: Tradovate API market data (zero basis) · {contract.get('name')}")
+        data_line = f"Tradovate API market data (zero basis) · {contract.get('name')}"
+    elif a.feed == "tradingview":
+        from tv_feed import TradingViewFeed
+        feed = TradingViewFeed(poll_sec=a.poll, warmup=5000,           # REAL CME live tail via Chrome CDP
+                               warmup_source=a.warmup_source, warmup_days=a.warmup_days)
+        contract = feed.connect()
+        data_line = (f"TradingView CDP · REAL CME · {contract.get('name')} @ {contract.get('resolution')}m "
+                     f"· warmup={a.warmup_source} {a.warmup_days}d")
     else:
         feed = DukascopyLiveFeed(poll_sec=a.poll, warmup_days=40)
         feed.connect()
+        data_line = "Dukascopy NQ (CFD proxy 5m, has basis)"
     print(f"=== ARES AUTO LIVE · {mode.upper()} · {a.account} · tier {a.tier} "
           f"(A={spec['am']} MNQ) ===")
-    print(f"  data: Dukascopy NQ (CFD proxy 5m) · Profile A only · "
+    print(f"  data: {data_line} · Profile A only · "
           f"D1c {d1c_mode} (real DriftGate, validated 1m — running on 5m feed)")
     print("  SAFETY: paper unless --live + both flags · SUPERVISE (MFFU semi-auto) · "
           "Ctrl+C to stop")
     if a.basis_offset:
-        print(f"  basis offset: {a.basis_offset:+.2f} pts added to all prices (Dukascopy->Tradovate)")
-    elif mode == "live":
+        print(f"  basis offset: {a.basis_offset:+.2f} pts added to all prices")
+    elif mode == "live" and a.feed == "dukascopy":
         print("  WARNING: basis_offset=0 — calibrate it from Stage 2 before live (Dukascopy is a proxy)")
     if mode == "paper":
         print("  PAPER — webhooks are dry-run LOGGED, NO orders placed.")
+    dash_store = Store()       # default DB (data/bot.db) — the one zeus_server dashboard reads
+    def _persist_data_status(_=None):
+        """Mirror feed.data_status() into the DASHBOARD store so it never shows false-green."""
+        if hasattr(feed, "data_status"):
+            ds = feed.data_status()
+            dash_store.set_state(data_status=json.dumps(ds))
+            return ds
+        return None
+
     try:
+        n_warm = 0
         for ts, o, h, l, c in feed.history():
             auto.feed_gate(ts, o, c)
             runner.bot.process_bar(ts, o, h, l, c)         # warmup
+            n_warm += 1
+        ds = _persist_data_status(store)
+        if ds is not None:
+            print(f"  warmup: {n_warm} bars · span {ds['span_days']}d · warmup_ok={ds['warmup_ok']} "
+                  f"· basis {ds['basis']:+.2f} · DATA_READY={ds['DATA_READY']}", flush=True)
+            if not ds["DATA_READY"]:
+                print("  DATA NOT READY: " + "; ".join(ds["reasons"]), flush=True)
         print("  warmed up · going live · watching the NY-AM window…", flush=True)
         for ts, o, h, l, c in feed.live():
             if auto.killed():
@@ -213,6 +246,7 @@ def main(argv=None):
             runner._cur = (0, o, h, l, c)
             runner.bot.process_bar(ts, o, h, l, c)
             runner.bot._persist()
+            _persist_data_status(store)
     except KeyboardInterrupt:
         print(f"\n[auto-live] stopped · {auto.sent} routed · {auto.blocked} gate-blocked · "
               f"{auto.d1c_blocked} D1c-blocked · D1c {auto.gate.heimdall_status()}")

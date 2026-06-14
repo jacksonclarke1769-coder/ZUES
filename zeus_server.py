@@ -425,7 +425,30 @@ def assemble_state():
         bridge_ok = (store.get_state("execution_route") != "traderspost"
                      or (store.get_state("webhook_mode") or "dry-run") != "live"
                      or os.path.exists("evidence/approvals/traderspost-approved.flag"))
-        dep_green = (not ares_violation and not lockout and d1c_ok and bridge_ok)
+        # --- LAUNCHLOCK: never show green unless DATA + EXECUTION are proven ---
+        ds = json.loads(store.get_state("data_status") or "{}")
+        data_ready = bool(ds.get("DATA_READY"))
+        # execution proven = a real send was recorded AND the operator attested the live route
+        tp_proven = (store.get_state("bridge_last_result") is not None
+                     and os.path.exists("evidence/launchlock/traderspost/PROVEN.flag"))
+        dep_blockers = []
+        if not data_ready:
+            dep_blockers.append("DATA: " + "; ".join(ds.get("reasons") or ["no data heartbeat from feed"]))
+        if not tp_proven:
+            dep_blockers.append("EXECUTION: TradersPost route not proven (need a recorded send + "
+                                "evidence/launchlock/traderspost/PROVEN.flag)")
+        if not d1c_ok:
+            dep_blockers.append("D1c production-funded active without approval")
+        if not bridge_ok:
+            dep_blockers.append("bridge live without traderspost-approved.flag")
+        # tri-state: RED on hard violation/lockout; GREEN only when fully proven; else YELLOW
+        if ares_violation or lockout:
+            dep_status = "RED"
+        elif data_ready and tp_proven and d1c_ok and bridge_ok:
+            dep_status = "GREEN"
+        else:
+            dep_status = "YELLOW"
+        dep_green = (dep_status == "GREEN")
         state["deployment"] = dict(
             d1c_mode=d1c["mode"], d1c_requested=d1c["requested"],
             d1c_eval_mode=d1c["eval_mode"], d1c_funded_mode=d1c["funded_mode"],
@@ -436,6 +459,8 @@ def assemble_state():
             exec_state=exec_state, broker_smoke=broker_ok,
             account_modes=modes, ares_accounts=list(ares),
             funded_accounts=list(funded_modes), green=dep_green,
+            status=dep_status, data_ready=data_ready, data_status=ds,
+            traderspost_proven=tp_proven, blockers=dep_blockers,
             execution_route="TRADERSPOST" if store.get_state("execution_route") == "traderspost" else "none",
             webhook_mode=(store.get_state("webhook_mode") or "dry-run").upper(),
             bridge_last_id=store.get_state("bridge_last_id"),
