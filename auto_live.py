@@ -44,12 +44,13 @@ def et_date():
 
 class LiveAuto:
     def __init__(self, account, tier, mode, store, journal, sender, daily_stop,
-                 d1c_mode="ACTIVE_EVAL_FILTER"):
+                 d1c_mode="ACTIVE_EVAL_FILTER", basis_offset=0.0):
         self.account, self.tier, self.mode = account, tier, mode
         self.store, self.j, self.sender = store, journal, sender
         self.daily_stop = daily_stop
         self.guard = DailyGuard(store)
         self.d1c_mode = d1c_mode
+        self.basis_offset = basis_offset   # points added to feed prices to match Tradovate
         # real CERBERUS-validated D1c. 5m feed -> 360s staleness tolerance.
         self.gate = DriftGate(enabled=(d1c_mode in ("ACTIVE_EVAL_FILTER", "SHADOW")),
                               stale_after_s=360)
@@ -104,8 +105,10 @@ class LiveAuto:
         payload, err = BP.build_entry(
             account=self.account, strategy="A", setup=sig.get("liq", "sweep-OTE"),
             signal_ts=sig["ts_signal"], side=sig["side"], qty=spec["am"],
-            entry=float(sig["entry"]), stop=float(sig["stop"]),
-            target=float(sig["target"]), root="MNQ", order_type="limit",
+            entry=float(sig["entry"]) + self.basis_offset,
+            stop=float(sig["stop"]) + self.basis_offset,
+            target=float(sig["target"]) + self.basis_offset,
+            root="MNQ", order_type="limit",
             mode_meta=dict(mode="ARES", tier=self.tier),
             d1c_meta=dict(mode=self.d1c_mode, status=d1c_status))
         if err:
@@ -127,6 +130,10 @@ def main(argv=None):
     p.add_argument("--poll", type=int, default=60)
     p.add_argument("--d1c-mode", default="active-eval-filter",
                    choices=["off", "shadow", "active-eval-filter"])
+    p.add_argument("--basis-offset", type=float, default=0.0,
+                   help="points added to feed prices to match Tradovate (measure via Stage 2)")
+    p.add_argument("--feed", default="dukascopy", choices=["dukascopy", "tradovate"],
+                   help="dukascopy=credential-free CFD proxy (basis); tradovate=zero-basis API md (needs access)")
     a = p.parse_args(argv)
     d1c_mode = a.d1c_mode.upper().replace("-", "_")
 
@@ -161,7 +168,7 @@ def main(argv=None):
     sender = BridgeSender(store=Store(), journal=j, mode=("live" if mode == "live" else "dry-run"),
                           live_url=os.environ.get("TRADERSPOST_LIVE_URL"))
     auto = LiveAuto(a.account, a.tier, mode, Store(), j, sender, spec["daily_stop"],
-                    d1c_mode=d1c_mode)
+                    d1c_mode=d1c_mode, basis_offset=a.basis_offset)
 
     # build the live loop (Dukascopy credential-free feed + SimBot wired to the bridge)
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -174,14 +181,24 @@ def main(argv=None):
     runner._orig = runner._on_decision
     runner.bot.trade_from = pd.Timestamp.now("UTC").tz_convert(NY)
 
-    feed = DukascopyLiveFeed(poll_sec=a.poll, warmup_days=40)
-    feed.connect()
+    if a.feed == "tradovate":
+        from paper_live import LiveBarFeed
+        feed = LiveBarFeed(config, poll_sec=a.poll)      # zero-basis CME md (needs API access)
+        contract = feed.connect()
+        print(f"  feed: Tradovate API market data (zero basis) · {contract.get('name')}")
+    else:
+        feed = DukascopyLiveFeed(poll_sec=a.poll, warmup_days=40)
+        feed.connect()
     print(f"=== ARES AUTO LIVE · {mode.upper()} · {a.account} · tier {a.tier} "
           f"(A={spec['am']} MNQ) ===")
     print(f"  data: Dukascopy NQ (CFD proxy 5m) · Profile A only · "
           f"D1c {d1c_mode} (real DriftGate, validated 1m — running on 5m feed)")
     print("  SAFETY: paper unless --live + both flags · SUPERVISE (MFFU semi-auto) · "
           "Ctrl+C to stop")
+    if a.basis_offset:
+        print(f"  basis offset: {a.basis_offset:+.2f} pts added to all prices (Dukascopy->Tradovate)")
+    elif mode == "live":
+        print("  WARNING: basis_offset=0 — calibrate it from Stage 2 before live (Dukascopy is a proxy)")
     if mode == "paper":
         print("  PAPER — webhooks are dry-run LOGGED, NO orders placed.")
     try:
