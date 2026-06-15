@@ -425,15 +425,27 @@ def assemble_state():
         bridge_ok = (store.get_state("execution_route") != "traderspost"
                      or (store.get_state("webhook_mode") or "dry-run") != "live"
                      or os.path.exists("evidence/approvals/traderspost-approved.flag"))
-        # --- LAUNCHLOCK: never show green unless DATA + EXECUTION are proven ---
+        # --- LAUNCHLOCK + HEIMDALL: never show green unless DATA + EXECUTION + NERVOUS SYSTEM proven ---
         ds = json.loads(store.get_state("data_status") or "{}")
         data_ready = bool(ds.get("DATA_READY"))
+        data_state = ds.get("data_state")
         # execution proven = a real send was recorded AND the operator attested the live route
         tp_proven = (store.get_state("bridge_last_result") is not None
                      and os.path.exists("evidence/launchlock/traderspost/PROVEN.flag"))
+        # HEIMDALL dead-man — process heartbeat freshness
+        try:
+            from heimdall_monitor import deadman_status
+            dm = deadman_status()
+        except Exception as _e:
+            dm = dict(alive=False, state="RED", reason="dead-man unavailable: %s" % _e, age_s=None)
+        dm_ok = bool(dm.get("alive"))
+        hb_present = dm.get("age_s") is not None      # distinguishes "stalled" from "not running"
+        dm_red = hb_present and not dm_ok             # a running process that went stale = danger
         dep_blockers = []
         if not data_ready:
             dep_blockers.append("DATA: " + "; ".join(ds.get("reasons") or ["no data heartbeat from feed"]))
+        if not dm_ok:
+            dep_blockers.append("HEARTBEAT: " + dm.get("reason", "dead-man not healthy"))
         if not tp_proven:
             dep_blockers.append("EXECUTION: TradersPost route not proven (need a recorded send + "
                                 "evidence/launchlock/traderspost/PROVEN.flag)")
@@ -441,10 +453,10 @@ def assemble_state():
             dep_blockers.append("D1c production-funded active without approval")
         if not bridge_ok:
             dep_blockers.append("bridge live without traderspost-approved.flag")
-        # tri-state: RED on hard violation/lockout; GREEN only when fully proven; else YELLOW
-        if ares_violation or lockout:
+        # tri-state: RED on hard violation/lockout/dead process; GREEN only when fully proven; else YELLOW
+        if ares_violation or lockout or dm_red:
             dep_status = "RED"
-        elif data_ready and tp_proven and d1c_ok and bridge_ok:
+        elif data_ready and tp_proven and d1c_ok and bridge_ok and dm_ok:
             dep_status = "GREEN"
         else:
             dep_status = "YELLOW"
@@ -460,6 +472,11 @@ def assemble_state():
             account_modes=modes, ares_accounts=list(ares),
             funded_accounts=list(funded_modes), green=dep_green,
             status=dep_status, data_ready=data_ready, data_status=ds,
+            data_state=data_state, reset_count=ds.get("reset_count"),
+            last_reset=ds.get("last_reset"), reconnecting=ds.get("reconnecting"),
+            last_bar_age_s=ds.get("last_bar_age_s"), bars_since_reset=ds.get("bars_since_reset"),
+            heartbeat=dict(state=dm.get("state"), age_s=dm.get("age_s"), alive=dm_ok,
+                           reason=dm.get("reason"), present=hb_present),
             traderspost_proven=tp_proven, blockers=dep_blockers,
             execution_route="TRADERSPOST" if store.get_state("execution_route") == "traderspost" else "none",
             webhook_mode=(store.get_state("webhook_mode") or "dry-run").upper(),

@@ -286,6 +286,67 @@ def test_live_close_rule_matches_resolution():
     assert int(f5.expect_res) == 5
 
 
+# ----------------------------- reconnect-tolerant readiness (GREEN/YELLOW/RED) -----------------------------
+def _live_feed():
+    f = TradingViewFeed(cdp=FakeCDP(), warmup_source="tradingview")
+    f.first_bar_ts = _et("2026-05-26 09:30")
+    f.last_bar_ts = _et("2026-06-12 16:00")
+    return f
+
+
+def _fresh_now():
+    return _et("2026-06-12 16:02").tz_convert("UTC")   # 2 min after last bar
+
+
+def test_state_green_when_healthy():
+    assert _live_feed().data_state(_fresh_now())[0] == "GREEN"
+
+
+def test_single_reset_yellow_then_green_after_stability():
+    f = _live_feed()
+    f.reset_count = 1; f.last_reset_ts = f.last_bar_ts; f.bars_since_reset = 0
+    assert f.data_state(_fresh_now())[0] == "YELLOW"        # stabilizing 0/3 -> entries blocked
+    f.bars_since_reset = 3
+    assert f.data_state(_fresh_now())[0] == "GREEN"         # recovered after stability window
+
+
+def test_reconnecting_is_yellow():
+    f = _live_feed(); f._reconnecting = True
+    assert f.data_state(_fresh_now())[0] == "YELLOW"
+
+
+def test_stale_feed_is_red():
+    f = _live_feed()
+    now = _et("2026-06-12 16:30").tz_convert("UTC")         # 30 min > STALE_RED_S
+    assert f.data_state(now)[0] == "RED"
+
+
+def test_too_many_resets_is_red():
+    f = _live_feed(); f.reset_count = f.MAX_RESETS + 1
+    assert f.data_state(_fresh_now())[0] == "RED"
+
+
+def test_data_ready_only_green_and_realtime(monkeypatch):
+    monkeypatch.setenv("TV_REALTIME_CONFIRMED", "1")
+    f = _live_feed()
+    assert f.data_status(_fresh_now())["DATA_READY"] is True
+    f._reconnecting = True                                  # YELLOW must block readiness
+    assert f.data_status(_fresh_now())["DATA_READY"] is False
+
+
+def test_classify_dup_ooo_unclosed_ok():
+    f = _live_feed()
+    now = pd.Timestamp.now("UTC")
+    seen_ts = _et("2026-06-12 15:00")
+    f.seen.add(seen_ts.isoformat())
+    assert f._classify(seen_ts, now, 1) == "dup"            # duplicate rejected
+    f.last_yielded_ts = _et("2026-06-12 15:30")
+    assert f._classify(_et("2026-06-12 15:25"), now, 1) == "ooo"   # out-of-order rejected
+    assert f._classify(_et("2026-06-12 15:35"), now, 1) == "ok"
+    forming = _to_et(int(now.timestamp()))
+    assert f._classify(forming, now, 5) == "unclosed"
+
+
 def test_closed_bar_predicate():
     """The exact gate live() uses: a bar is emitted only once now >= open + 5m."""
     now = pd.Timestamp.now("UTC")

@@ -69,6 +69,25 @@ def test_kill_flatten_fires_once(tmp_path):
     assert _eod_calls(s) == []     # 10:00 -> no EOD
 
 
+def test_guardian_writes_heartbeat_and_stays_armed_across_reconnect(tmp_path):
+    import heimdall_monitor as H
+    s = FakeSender()
+    store = Store(str(tmp_path / "g.db"))
+    store.set_state(data_status='{"data_state":"GREEN","DATA_READY":true,"reset_count":2}')
+    hbp = str(tmp_path / "hb.json")
+    g = FlattenGuardian("X", sender=s, store=store, journal=None, clock=lambda: at(10, 0),
+                        heartbeat_path=hbp, hb_meta=dict(mode="paper", d1c_mode="SHADOW"))
+    g.tick()
+    hb = H.read_heartbeat(hbp)
+    assert hb["guardian"] == "armed" and hb["data_state"] == "GREEN"
+    assert hb["reset_count"] == 2 and hb["d1c_mode"] == "SHADOW"
+    # a feed reconnect (reset_count bumps, state dips to YELLOW) must NOT disarm the guardian
+    store.set_state(data_status='{"data_state":"YELLOW","reset_count":3}')
+    g.tick()
+    hb2 = H.read_heartbeat(hbp)
+    assert hb2["guardian"] == "armed" and hb2["data_state"] == "YELLOW"
+
+
 def test_fire_once_survives_restart(tmp_path):
     db = str(tmp_path / "g.db")
     s1 = FakeSender()

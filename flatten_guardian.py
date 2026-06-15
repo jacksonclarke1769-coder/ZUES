@@ -14,11 +14,13 @@ DB objects (Journal holds a persistent, thread-bound connection) are built INSID
 thread via `build`; tests inject sender/store and call tick() directly on one thread.
 """
 import json
+import os
 import threading
 from datetime import datetime, timezone
 
 from scheduler import Scheduler
 from flatten import LOCK_KEY
+from heimdall_monitor import write_heartbeat, HEARTBEAT_PATH
 
 
 def _utcnow():
@@ -27,8 +29,11 @@ def _utcnow():
 
 class FlattenGuardian:
     def __init__(self, account, *, build=None, sender=None, store=None, journal=None,
-                 scheduler=None, poll_sec=20, root="MNQ", clock=_utcnow):
+                 scheduler=None, poll_sec=20, root="MNQ", clock=_utcnow,
+                 heartbeat_path=HEARTBEAT_PATH, hb_meta=None):
         self.account = account
+        self.heartbeat_path = heartbeat_path
+        self.hb_meta = hb_meta or {}
         self._build = build              # callable -> (sender, store, journal), run in-thread
         self.sender = sender
         self.store = store
@@ -89,8 +94,25 @@ class FlattenGuardian:
                 pass
         return res
 
+    def _heartbeat(self, now):
+        """Write the process heartbeat. Feed health is mirrored from the store's data_status."""
+        ds = {}
+        try:
+            ds = json.loads(self.store.get_state("data_status") or "{}")
+        except Exception:
+            pass
+        fields = dict(self.hb_meta)
+        fields.update(
+            pid=os.getpid(), account=self.account, guardian="armed",
+            data_state=ds.get("data_state"), data_ready=ds.get("DATA_READY"),
+            last_bar=ds.get("last_bar"), last_bar_age_s=ds.get("last_bar_age_s"),
+            reset_count=ds.get("reset_count"), reconnecting=ds.get("reconnecting"),
+            last_webhook=self.store.get_state("bridge_last_result"),
+            flatten_fired=self.store.get_state("auto_flatten_fired"))
+        write_heartbeat(fields, self.heartbeat_path, now)
+
     def tick(self):
-        """One wall-clock check. Idempotent / fire-once per ET date."""
+        """One wall-clock check. Idempotent / fire-once per ET date. Always writes the heartbeat."""
         now = self.clock()
         et_date = self.sched.et(now).date().isoformat()
         if self.sched.flatten_due(now):
@@ -100,6 +122,7 @@ class FlattenGuardian:
         if kill and self._kill_date != et_date:
             self._kill_date = et_date
             self._flatten("KILL:%s" % kill)
+        self._heartbeat(now)
 
     def _run(self):
         self._ensure()

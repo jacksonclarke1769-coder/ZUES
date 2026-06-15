@@ -156,6 +156,9 @@ class TradingViewFeed:
 
     MIN_WARMUP_DAYS = 14          # hard minimum: 2 full trading weeks (prev-week levels)
     MIN_BASIS_OVERLAP = 20        # need this many overlapping bars to TRUST a fresh basis
+    STABILITY_BARS = 3            # fresh monotonic bars required after a reset before GREEN
+    MAX_RESETS = 10               # resets/session above this -> RED (pipeline likely broken)
+    STALE_RED_S = 300             # no new bar for this long -> RED (block trades)
 
     def __init__(self, poll_sec=20, warmup=5000, expect_root="NQ", expect_res="5",
                  host="localhost", port=9222, cdp=None,
@@ -179,10 +182,16 @@ class TradingViewFeed:
         self.basis_overlap = 0                 # # of overlapping bars behind the measurement
         self.basis_confident = False           # True only when a solid live overlap set it
         self.basis_from_cache = False          # True when reused from the last good persisted value
-        # --- health / liveness tracking ---
+        # --- health / liveness / reconnect tracking ---
         self.reset_count = 0
         self.first_bar_ts = None
         self.last_bar_ts = None
+        self.last_reset_ts = None
+        self.bars_since_reset = 0
+        self.last_yielded_ts = None      # monotonic guard (reject out-of-order)
+        self.out_of_order = 0
+        self.gaps = 0
+        self._reconnecting = False
 
     def _track(self, bars):
         for ts, *_ in bars:
@@ -282,56 +291,103 @@ class TradingViewFeed:
         return [(ts, o + b, h + b, l + b, c + b) for (ts, o, h, l, c) in d_bars]
 
     def live(self):
-        """Infinite generator of newly-CLOSED bars (closed once now >= bar_open + resolution)."""
+        """Infinite generator of newly-CLOSED bars. Rejects duplicates and out-of-order bars,
+        tracks resets/gaps, and never corrupts the buffer on a reconnect (bars resume monotonically)."""
         close_min = int(self.expect_res)        # 1m feed -> 1min close rule; 5m feed -> 5min
+        max_gap = pd.Timedelta(minutes=close_min * 3)
         while True:
             try:
                 bars = self._fetch(50)
+                self._reconnecting = False      # a successful fetch means we are connected
                 now = pd.Timestamp.now("UTC")
                 for ts, o, h, l, c in bars:
-                    key = ts.isoformat()
-                    if key not in self.seen and now >= ts.tz_convert("UTC") + pd.Timedelta(minutes=close_min):
-                        self.seen.add(key)
-                        self._track([(ts, o, h, l, c)])
-                        yield ts, o, h, l, c
+                    cls = self._classify(ts, now, close_min)
+                    if cls in ("dup", "unclosed"):
+                        continue
+                    if cls == "ooo":
+                        self.out_of_order += 1                         # older than last emitted -> reject
+                        continue
+                    if self.last_yielded_ts is not None and (ts - self.last_yielded_ts) > max_gap:
+                        self.gaps += 1                                 # missed bars across a gap
+                    self.seen.add(ts.isoformat())
+                    self.last_yielded_ts = ts
+                    self.bars_since_reset += 1
+                    self._track([(ts, o, h, l, c)])
+                    yield ts, o, h, l, c
             except Exception as e:
                 self.reset_count += 1
+                self.last_reset_ts = pd.Timestamp.now("UTC")
+                self.bars_since_reset = 0
+                self._reconnecting = True
                 print("[tvfeed] poll error: %s — reconnecting (#%d)" % (e, self.reset_count), flush=True)
                 self.cdp.close()
             _t.sleep(self.poll)
 
+    def _classify(self, ts, now, close_min):
+        """How a candidate bar should be handled: dup | unclosed | ooo (out-of-order) | ok."""
+        if ts.isoformat() in self.seen:
+            return "dup"
+        if now < ts.tz_convert("UTC") + pd.Timedelta(minutes=close_min):
+            return "unclosed"
+        if self.last_yielded_ts is not None and ts <= self.last_yielded_ts:
+            return "ooo"
+        return "ok"
+
+    def data_state(self, now=None):
+        """(state, reason). GREEN=ready · YELLOW=recovered, stabilizing (no new entries) · RED=stale/broken.
+        Reset-tolerant: a short reset goes YELLOW and returns to GREEN after STABILITY_BARS fresh bars,
+        but a stale feed, too many resets, bad warmup, or untrusted basis stays RED."""
+        now = now or pd.Timestamp.now("UTC")
+        if self.last_bar_ts is None:
+            return "RED", "no bars yet"
+        age = (now - self.last_bar_ts.tz_convert("UTC")).total_seconds()
+        span_days = (self.last_bar_ts - self.first_bar_ts).days if self.first_bar_ts is not None else 0
+        basis_trusted = (self.warmup_source != "dukascopy" or not self.auto_basis
+                         or self.basis_confident or self.basis_from_cache)
+        if age > self.STALE_RED_S:
+            return "RED", "stale %ds" % int(age)
+        if span_days < self.MIN_WARMUP_DAYS:
+            return "RED", "warmup %dd < %dd" % (span_days, self.MIN_WARMUP_DAYS)
+        if not basis_trusted:
+            return "RED", "basis untrusted"
+        if self.reset_count > self.MAX_RESETS:
+            return "RED", "%d resets > cap %d" % (self.reset_count, self.MAX_RESETS)
+        if self._reconnecting:
+            return "YELLOW", "reconnecting"
+        if self.last_reset_ts is not None and self.bars_since_reset < self.STABILITY_BARS:
+            return "YELLOW", "stabilizing %d/%d bars after reset" % (self.bars_since_reset, self.STABILITY_BARS)
+        return "GREEN", "ok"
+
     def data_status(self, now=None):
-        """Computed liveness/readiness snapshot. DATA_READY is conservative & fail-closed."""
+        """Tri-state liveness snapshot. DATA_READY = (state GREEN AND real-time confirmed)."""
         import os
         now = now or pd.Timestamp.now("UTC")
+        state, reason = self.data_state(now)
         span_days = 0
         if self.first_bar_ts is not None and self.last_bar_ts is not None:
             span_days = (self.last_bar_ts - self.first_bar_ts).days
-        warmup_ok = span_days >= self.MIN_WARMUP_DAYS
-        stale_secs = None
-        stale = True
+        last_age = None
         if self.last_bar_ts is not None:
-            stale_secs = (now - self.last_bar_ts.tz_convert("UTC")).total_seconds()
-            stale = stale_secs > 900            # >15m since last bar
-        # real-time CME entitlement CANNOT be auto-verified -> require explicit operator confirm
+            last_age = (now - self.last_bar_ts.tz_convert("UTC")).total_seconds()
         realtime_confirmed = os.environ.get("TV_REALTIME_CONFIRMED") == "1"
-        no_reset = self.reset_count == 0
-        data_ready = bool(warmup_ok and realtime_confirmed and (not stale) and no_reset)
+        data_ready = bool(state == "GREEN" and realtime_confirmed)
         reasons = []
-        if not warmup_ok:
-            reasons.append("warmup %dd < %dd min" % (span_days, self.MIN_WARMUP_DAYS))
+        if state != "GREEN":
+            reasons.append("%s: %s" % (state, reason))
         if not realtime_confirmed:
             reasons.append("real-time CME entitlement UNVERIFIED (set TV_REALTIME_CONFIRMED=1 to confirm)")
-        if stale:
-            reasons.append("stale bars (last %s)" % (("%ds" % int(stale_secs)) if stale_secs is not None else "none"))
-        if not no_reset:
-            reasons.append("%d connection reset(s) this session" % self.reset_count)
         return dict(
             source="tradingview-cdp (warmup:%s)" % self.warmup_source,
             symbol=self.symbol, resolution=self.resolution,
-            bars=len(self.seen), span_days=span_days, warmup_ok=warmup_ok,
-            realtime_confirmed=realtime_confirmed, stale=stale, reset_count=self.reset_count,
+            data_state=state, state_reason=reason,
+            bars=len(self.seen), span_days=span_days, warmup_ok=span_days >= self.MIN_WARMUP_DAYS,
+            realtime_confirmed=realtime_confirmed,
+            last_bar=str(self.last_bar_ts), last_bar_age_s=(round(last_age) if last_age is not None else None),
+            stale=(last_age is not None and last_age > self.STALE_RED_S),
+            reset_count=self.reset_count, last_reset=str(self.last_reset_ts),
+            bars_since_reset=self.bars_since_reset, reconnecting=self._reconnecting,
+            out_of_order=self.out_of_order, gaps=self.gaps,
             basis=round(self.basis, 3), basis_overlap=self.basis_overlap,
             basis_confident=self.basis_confident, basis_from_cache=self.basis_from_cache,
-            first_bar=str(self.first_bar_ts), last_bar=str(self.last_bar_ts),
+            first_bar=str(self.first_bar_ts),
             DATA_READY=data_ready, reasons=reasons)

@@ -46,7 +46,9 @@ def et_date():
 
 class LiveAuto:
     def __init__(self, account, tier, mode, store, journal, sender, daily_stop,
-                 d1c_mode="ACTIVE_EVAL_FILTER", basis_offset=0.0, d1c_stale_after_s=360):
+                 d1c_mode="ACTIVE_EVAL_FILTER", basis_offset=0.0, d1c_stale_after_s=360,
+                 entry_gate=None):
+        self.entry_gate = entry_gate   # infrastructure readiness gate (data GREEN + dead-man alive)
         self.account, self.tier, self.mode = account, tier, mode
         self.store, self.j, self.sender = store, journal, sender
         self.daily_stop = daily_stop
@@ -87,6 +89,15 @@ class LiveAuto:
                 action="auto_live_blocked", reason=kill, side=sig.get("side")))
             print(f"[auto-live] BLOCKED ({kill}) — no webhook", flush=True)
             return
+        # infrastructure readiness gate: block entries on YELLOW/RED data or a dead nervous system
+        if self.entry_gate is not None:
+            ready, why = self.entry_gate()
+            if not ready:
+                self.blocked += 1
+                self.j.append("STATE_ASSERT", self.account, payload=dict(
+                    action="auto_live_blocked", reason="entry gate: " + why, side=sig.get("side")))
+                print(f"[auto-live] BLOCKED (entry gate: {why}) — no webhook", flush=True)
+                return
         # --- D1c defensive filter (Profile A only) ---
         if self.d1c_mode in ("ACTIVE_EVAL_FILTER", "SHADOW"):
             keep = self.gate.allows(sig["side"], ts)
@@ -281,15 +292,24 @@ def main(argv=None):
         # --- wall-clock EOD + kill auto-flatten (feed-independent; closes a live position even
         #     if the bar feed dies before 14:30). Builds its own DB objects inside its thread. ---
         from flatten_guardian import FlattenGuardian
+        from heimdall_monitor import deadman_status, entry_ready
         _gmode = "live" if mode == "live" else "dry-run"
         _gurl = os.environ.get("TRADERSPOST_LIVE_URL")
         guardian = FlattenGuardian(
             a.account, root="MNQ",
+            hb_meta=dict(mode=mode, account=a.account, tier=a.tier, d1c_mode=d1c_mode,
+                         execution=a.execution, ares_tier=a.tier),
             build=lambda: (BridgeSender(store=Store(), journal=Journal(), mode=_gmode, live_url=_gurl),
                            Store(), Journal()))
         guardian.start()
         print(f"  flatten guardian armed (wall-clock EOD 14:30 + kill, feed-independent, {_gmode})",
               flush=True)
+        # entry readiness gate: only route entries when data is GREEN and the dead-man is alive
+        def _entry_ready():
+            dstate = feed.data_state() if hasattr(feed, "data_state") else ("GREEN", "")
+            return entry_ready(dstate, deadman_status())
+        auto.entry_gate = _entry_ready
+        print("  entry gate armed (block entries unless data GREEN + dead-man alive)", flush=True)
         print("  warmed up · going live · watching the NY-AM window…", flush=True)
         if dual_1m:
             # native 1m -> D1c (validated fidelity); aggregated 5m -> Profile A engine

@@ -50,7 +50,10 @@ def _ready_env(tmp_path, monkeypatch):
     store = Store(str(tmp_path / "t.db"))
     store.set_state(ares_mode=json.dumps({"MFFU-50K-1": {"tier": "50K-conservative"}}),
                     bridge_sent="{}")
-    ds = dict(DATA_READY=True, realtime_confirmed=True, reasons=[], daily_stop=700.0)
+    # dead-man healthy by default (override per-test to exercise the failure paths)
+    monkeypatch.setattr("heimdall_monitor.deadman_status",
+                        lambda *a, **k: dict(alive=True, state="OK", reason="fresh"))
+    ds = dict(DATA_READY=True, data_state="GREEN", realtime_confirmed=True, reasons=[], daily_stop=700.0)
     return store, ds
 
 
@@ -106,6 +109,25 @@ def test_preflight_refuses_when_ares_not_armed(tmp_path, monkeypatch):
                                             "SHADOW", ds, store=store, dashboard_green=True)
     assert not ok
     assert any("ARES not armed" in f for f in fails)
+
+
+def test_preflight_fails_when_deadman_dead(tmp_path, monkeypatch):
+    store, ds = _ready_env(tmp_path, monkeypatch)
+    monkeypatch.setattr("heimdall_monitor.deadman_status",
+                        lambda *a, **k: dict(alive=False, state="RED", reason="heartbeat stale 999s"))
+    ok, fails, _, _ = A.full_auto_preflight("MFFU-50K-1", "tradingview-1m",
+                                            "ACTIVE_EVAL_FILTER", ds, store=store, dashboard_green=True)
+    assert not ok
+    assert any("DEAD-MAN" in f for f in fails)
+
+
+def test_preflight_fails_when_data_state_not_green(tmp_path, monkeypatch):
+    store, ds = _ready_env(tmp_path, monkeypatch)
+    ds["data_state"] = "YELLOW"        # reconnect stabilizing
+    ok, fails, _, _ = A.full_auto_preflight("MFFU-50K-1", "tradingview-1m",
+                                            "ACTIVE_EVAL_FILTER", ds, store=store, dashboard_green=True)
+    assert not ok
+    assert any("DATA state YELLOW" in f for f in fails)
 
 
 def test_preflight_downgrades_d1c_on_5m_even_when_passing(tmp_path, monkeypatch):

@@ -244,9 +244,19 @@ def full_auto_preflight(account, feed_name, requested_d1c, data_status, store=No
     # 2. full-auto approval flag
     if not os.path.exists(os.path.join(APPROVAL_DIR, FULL_AUTO_FLAG)):
         fails.append("missing %s/%s" % (APPROVAL_DIR, FULL_AUTO_FLAG))
-    # 3. live data ready (real-time, warmup>=2wk, not stale, no resets) — computed by the feed
+    # 3. live data ready (real-time, warmup>=2wk, not stale, reconnect-stable) — computed by the feed
     if not ds.get("DATA_READY"):
         fails.append("DATA not ready: " + "; ".join(ds.get("reasons") or ["no data_status"]))
+    if ds.get("data_state") and ds.get("data_state") != "GREEN":
+        fails.append("DATA state %s (need GREEN; reconnect must be stable)" % ds.get("data_state"))
+    # 3b. HEIMDALL dead-man — full auto requires a live, fresh process heartbeat
+    try:
+        from heimdall_monitor import deadman_status
+        dm = deadman_status()
+    except Exception as _e:
+        dm = dict(alive=False, reason="dead-man unavailable: %s" % _e)
+    if not dm.get("alive"):
+        fails.append("DEAD-MAN: " + dm.get("reason", "heartbeat not healthy"))
     # 4. TradersPost execution proven (URL + PROVEN flag) AND the pre-existing technical flags
     #    (kept from LAUNCHLOCK — defense in depth, nothing loosened)
     tp_ok, tp_fails = traderspost_ready(store)
