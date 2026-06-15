@@ -247,6 +247,7 @@ def main(argv=None):
             return ds
         return None
 
+    guardian = None
     try:
         n_warm = 0
         for ts, o, h, l, c in feed.history():
@@ -277,6 +278,18 @@ def main(argv=None):
                 lock.release()
                 return 2
             print(f"  FULL AUTO preflight PASSED (D1c={eff_d1c}) — arming live webhooks.", flush=True)
+        # --- wall-clock EOD + kill auto-flatten (feed-independent; closes a live position even
+        #     if the bar feed dies before 14:30). Builds its own DB objects inside its thread. ---
+        from flatten_guardian import FlattenGuardian
+        _gmode = "live" if mode == "live" else "dry-run"
+        _gurl = os.environ.get("TRADERSPOST_LIVE_URL")
+        guardian = FlattenGuardian(
+            a.account, root="MNQ",
+            build=lambda: (BridgeSender(store=Store(), journal=Journal(), mode=_gmode, live_url=_gurl),
+                           Store(), Journal()))
+        guardian.start()
+        print(f"  flatten guardian armed (wall-clock EOD 14:30 + kill, feed-independent, {_gmode})",
+              flush=True)
         print("  warmed up · going live · watching the NY-AM window…", flush=True)
         if dual_1m:
             # native 1m -> D1c (validated fidelity); aggregated 5m -> Profile A engine
@@ -306,6 +319,8 @@ def main(argv=None):
         print(f"\n[auto-live] stopped · {auto.sent} routed · {auto.blocked} gate-blocked · "
               f"{auto.d1c_blocked} D1c-blocked · D1c {auto.gate.heimdall_status()}")
     finally:
+        if guardian is not None:
+            guardian.stop()
         lock.release()
     return 0
 

@@ -6,6 +6,7 @@ import pytest
 
 import tv_feed
 from tv_feed import TradingViewFeed, _to_et
+from store import Store
 
 
 class FakeCDP:
@@ -155,24 +156,48 @@ def test_measure_basis_median_offset():
     tv = [(_et(ts), 0, 0, 0, 105.0)]
     duka = [(_et(ts), 0, 0, 0, 100.0)]
     feed = TradingViewFeed(cdp=FakeCDP(), warmup_source="tradingview")
-    assert feed._measure_basis(tv, duka) == 5.0
+    assert feed._measure_basis(tv, duka) == (5.0, 1)
 
 
-def test_dukascopy_warmup_applies_basis_to_levels():
-    # TV chart cache (recent overlap) sits +10 above the Duka proxy
-    overlap = "2026-06-12 16:00"
-    tv_cache = [_old_bar(overlap, 110, 110, 110, 110)]
-    duka_hist = [
-        (_et("2026-06-01 09:30"), 100, 101, 99, 100.5),
-        (_et(overlap), 100, 100, 100, 100),          # same ts as TV cache, 10 below
-    ]
-    feed = TradingViewFeed(cdp=FakeCDP(bars=tv_cache), warmup_source="dukascopy",
-                           duka_feed=FakeDuka(duka_hist))
+def _solid_overlap(offset, n=25, start="2026-06-12 09:30"):
+    """n overlapping 5m bars where TV close = Duka close + offset (for a confident basis)."""
+    tv, duka = [], []
+    t0 = _et(start)
+    for i in range(n):
+        ts = t0 + pd.Timedelta(minutes=5 * i)
+        duka.append((ts, 100, 100, 100, 100.0))
+        tv.append(_old_bar(ts.strftime("%Y-%m-%d %H:%M"), 100 + offset, 100 + offset,
+                           100 + offset, 100.0 + offset))
+    return tv, duka
+
+
+def test_dukascopy_warmup_trusts_solid_overlap(tmp_path):
+    # >= MIN_BASIS_OVERLAP matching bars at +7 -> trusted, persisted, applied
+    tv, duka = _solid_overlap(7.0, n=25)
+    bstore = Store(str(tmp_path / "b.db"))
+    feed = TradingViewFeed(cdp=FakeCDP(bars=tv), warmup_source="dukascopy",
+                           duka_feed=FakeDuka(duka), basis_store=bstore)
     out = feed.history()
-    assert feed.basis == 10.0                          # measured TV - Duka
-    # every warmup bar shifted up by the basis -> aligned to the CME (TV) frame
-    assert out[0][4] == 110.5                          # 100.5 + 10
-    assert len(feed.seen) == 2
+    assert feed.basis == 7.0 and feed.basis_confident is True
+    assert out[0][4] == 107.0                          # 100 + 7
+    assert float(bstore.get_state("tv_cme_basis")) == 7.0   # persisted
+
+
+def test_dukascopy_warmup_keeps_persisted_when_overlap_thin(tmp_path):
+    # only 1 overlapping bar (noisy) -> must NOT clobber the good persisted +27.7
+    overlap = "2026-06-12 16:00"
+    tv_cache = [_old_bar(overlap, 110, 110, 110, 110)]   # would measure +10 (1 bar, thin)
+    duka_hist = [(_et("2026-06-01 09:30"), 100, 101, 99, 100.5),
+                 (_et(overlap), 100, 100, 100, 100)]
+    bstore = Store(str(tmp_path / "b.db"))
+    bstore.set_state(tv_cme_basis="27.7")               # the clean prior value
+    feed = TradingViewFeed(cdp=FakeCDP(bars=tv_cache), warmup_source="dukascopy",
+                           duka_feed=FakeDuka(duka_hist), basis_store=bstore)
+    out = feed.history()
+    assert feed.basis == 27.7 and feed.basis_from_cache is True   # kept, not clobbered
+    assert feed.basis_confident is False
+    assert float(bstore.get_state("tv_cme_basis")) == 27.7        # persisted value untouched
+    assert out[0][4] == 100.5 + 27.7
 
 
 # ----------------------------- data_status / DATA_READY -----------------------------

@@ -155,11 +155,12 @@ class TradingViewFeed:
     """Realtime 5m bars off a live TradingView chart via CDP. Data only — never sends orders."""
 
     MIN_WARMUP_DAYS = 14          # hard minimum: 2 full trading weeks (prev-week levels)
+    MIN_BASIS_OVERLAP = 20        # need this many overlapping bars to TRUST a fresh basis
 
     def __init__(self, poll_sec=20, warmup=5000, expect_root="NQ", expect_res="5",
                  host="localhost", port=9222, cdp=None,
                  warmup_source="dukascopy", warmup_days=45, auto_basis=True,
-                 duka_feed=None):
+                 duka_feed=None, basis_store=None):
         self.poll = int(poll_sec)
         self.warmup = int(warmup)
         self.expect_root = str(expect_root).upper()
@@ -173,7 +174,11 @@ class TradingViewFeed:
         self.warmup_days = int(warmup_days)
         self.auto_basis = bool(auto_basis)
         self._duka_feed = duka_feed            # injectable for tests
+        self._basis_store = basis_store        # injectable for tests (default = real Store)
         self.basis = 0.0                       # pts added to Dukascopy warmup to match CME frame
+        self.basis_overlap = 0                 # # of overlapping bars behind the measurement
+        self.basis_confident = False           # True only when a solid live overlap set it
+        self.basis_from_cache = False          # True when reused from the last good persisted value
         # --- health / liveness tracking ---
         self.reset_count = 0
         self.first_bar_ts = None
@@ -229,11 +234,13 @@ class TradingViewFeed:
         return bars
 
     def _measure_basis(self, tv_bars, duka_bars):
-        """Median (TV_close - Duka_close) over overlapping timestamps. 0.0 if no overlap."""
+        """(median TV_close-Duka_close, overlap_count) over shared timestamps. (0.0, 0) if none."""
         dmap = {ts.isoformat(): c for (ts, o, h, l, c) in duka_bars}
         diffs = sorted(ctv - dmap[ts.isoformat()]
                        for (ts, o, h, l, ctv) in tv_bars if ts.isoformat() in dmap)
-        return float(diffs[len(diffs) // 2]) if diffs else 0.0
+        if not diffs:
+            return 0.0, 0
+        return float(diffs[len(diffs) // 2]), len(diffs)
 
     def _dukascopy_warmup(self):
         """Deep warmup from Dukascopy (credential-free, current), offset to the CME (TV) frame."""
@@ -246,22 +253,30 @@ class TradingViewFeed:
         tv_bars = self._fetch(self.warmup)        # chart's loaded bars (recent overlap) for basis
         if str(self.resolution) == "1":           # 1m chart -> roll up so timestamps overlap Duka 5m
             tv_bars = aggregate_5m(tv_bars)
-        basis = self._measure_basis(tv_bars, d_bars) if self.auto_basis else 0.0
-        # The CFD->CME basis is a (slowly-drifting) price-frame offset, resolution-independent.
-        # Persist it when we get a real overlap; reuse the last good value when we can't (e.g. a 1m
-        # chart's short cache + a laggy Dukascopy tail produce zero overlapping timestamps).
+        # The CFD->CME basis is a slowly-drifting, resolution-independent price-frame offset.
+        # TRUST a fresh measurement only with a SOLID overlap (>=MIN_BASIS_OVERLAP); otherwise keep
+        # the last good persisted value. Never let a thin/noisy overlap clobber a clean reading.
+        basis = 0.0
         if self.auto_basis:
+            measured, n = self._measure_basis(tv_bars, d_bars)
+            self.basis_overlap = n
+            prev = None
             try:
                 from store import Store as _S
-                if basis:
-                    _S().set_state(tv_cme_basis=str(basis))
+                bstore = self._basis_store or _S()
+                pv = bstore.get_state("tv_cme_basis")
+                prev = float(pv) if pv is not None else None
+                if n >= self.MIN_BASIS_OVERLAP:
+                    basis = measured
+                    self.basis_confident = True
+                    bstore.set_state(tv_cme_basis=str(measured))   # confident -> refresh persisted
+                elif prev is not None:
+                    basis = prev                                   # low confidence -> keep last good
+                    self.basis_from_cache = True
                 else:
-                    prev = _S().get_state("tv_cme_basis")
-                    if prev:
-                        basis = float(prev)
-                        self.basis_from_cache = True
+                    basis = measured                               # nothing better available
             except Exception:
-                pass
+                basis = measured if n >= self.MIN_BASIS_OVERLAP else (prev or measured)
         self.basis = basis
         b = self.basis
         return [(ts, o + b, h + b, l + b, c + b) for (ts, o, h, l, c) in d_bars]
@@ -316,6 +331,7 @@ class TradingViewFeed:
             symbol=self.symbol, resolution=self.resolution,
             bars=len(self.seen), span_days=span_days, warmup_ok=warmup_ok,
             realtime_confirmed=realtime_confirmed, stale=stale, reset_count=self.reset_count,
-            basis=round(self.basis, 3),
+            basis=round(self.basis, 3), basis_overlap=self.basis_overlap,
+            basis_confident=self.basis_confident, basis_from_cache=self.basis_from_cache,
             first_bar=str(self.first_bar_ts), last_bar=str(self.last_bar_ts),
             DATA_READY=data_ready, reasons=reasons)
