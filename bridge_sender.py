@@ -121,6 +121,24 @@ class BridgeSender:
         self._log(sid, payload, self.mode, "failed", last or "")
         return dict(sent=False, reason=f"send failed after retries: {last}")
 
+    def flatten(self, account, root="MNQ", reason="emergency"):
+        """Emergency flatten = CANCEL working orders THEN EXIT the position.
+
+        TradersPost `exit` only closes the position; it leaves attached bracket legs WORKING
+        (orphan stop/target that can re-open a position). So we first send `cancel` (cancels all
+        working orders for the ticker), then `exit`. Cancel-first removes the stop/target before
+        the market exit, avoiding a stop/exit double-fill. Returns both results + an `ok` flag.
+        Pass a fresh `reason` (e.g. a timestamp) so a retry is not dedup-blocked."""
+        import bridge_traderspost as BP
+        cancel_p, _ = BP.build_cancel(account=account, strategy="EMERGENCY",
+                                      signal_ts=reason, root=root)
+        cancel_res = self.send(cancel_p)
+        exit_p, _ = BP.build_flatten(account=account, root=root, reason=reason)
+        exit_res = self.send(exit_p)
+        done = self.mode != "live"
+        ok = (cancel_res.get("sent") or done) and (exit_res.get("sent") or done)
+        return dict(cancel=cancel_res, exit=exit_res, ok=bool(ok))
+
 
 # ---------------- ZEUS gate -> build -> send orchestration ----------------
 

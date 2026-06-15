@@ -48,7 +48,7 @@ def _ready_env(tmp_path, monkeypatch):
     monkeypatch.setattr(A, "APPROVAL_DIR", str(appr))
     monkeypatch.setenv("TRADERSPOST_LIVE_URL", "https://example.test/live")
     store = Store(str(tmp_path / "t.db"))
-    store.set_state(ares=json.dumps({"MFFU-50K-1": {"tier": "50K-conservative"}}),
+    store.set_state(ares_mode=json.dumps({"MFFU-50K-1": {"tier": "50K-conservative"}}),
                     bridge_sent="{}")
     ds = dict(DATA_READY=True, realtime_confirmed=True, reasons=[], daily_stop=700.0)
     return store, ds
@@ -101,7 +101,7 @@ def test_preflight_refuses_when_dashboard_not_green(tmp_path, monkeypatch):
 
 def test_preflight_refuses_when_ares_not_armed(tmp_path, monkeypatch):
     store, ds = _ready_env(tmp_path, monkeypatch)
-    store.set_state(ares="{}")                       # not armed on the account
+    store.set_state(ares_mode="{}")                       # not armed on the account
     ok, fails, _, _ = A.full_auto_preflight("MFFU-50K-1", "tradingview-5m",
                                             "SHADOW", ds, store=store, dashboard_green=True)
     assert not ok

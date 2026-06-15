@@ -2,3 +2,7 @@ config.py
 data/*.db
 __pycache__/
 *.pyc
+
+# live-arming / gate flags — deliberate LOCAL action, never committed
+evidence/approvals/*.flag
+evidence/launchlock/**/*.flag

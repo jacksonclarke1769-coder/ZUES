@@ -84,10 +84,16 @@ def main(argv=None):
                                         reason=f"bridge-ping-{int(_t.time())}")  # fresh id each run
         print("Stage 1 PING (exit on flat account) — validates routing, opens nothing.")
     elif a.flatten:
-        stage = "stage3-flatten"
-        payload, err = BP.build_flatten(account=a.account, root=a.root,
-                                        reason=f"stage3-flatten-{int(_t.time())}")
-        print("Stage 3 FLATTEN — closes position + cancels working orders on the account.")
+        # Stage 3: CANCEL working orders + EXIT position (clean flatten, no orphan legs)
+        print("Stage 3 FLATTEN — cancel working orders THEN exit position (no orphans).")
+        res = sender.flatten(a.account, root=a.root, reason=f"stage3-flatten-{int(_t.time())}")
+        print("cancel:", res["cancel"])
+        print("exit:  ", res["exit"])
+        save_evidence("stage3-flatten", {"cancel": "see result", "exit": "see result"}, res,
+                      extra=dict(mode=a.mode, account=a.account))
+        if a.mode == "live" and not res["ok"]:
+            print("(flatten not fully confirmed — check the reasons above; fail-closed by design)")
+        return 0 if res["ok"] or a.mode == "test" else 1
     elif a.one_mnq:
         stage = "stage2-1mnq"
         # derive a controlled, NON-marketable resting bracket from --ref if explicit prices absent

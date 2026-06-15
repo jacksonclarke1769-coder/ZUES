@@ -46,16 +46,16 @@ def et_date():
 
 class LiveAuto:
     def __init__(self, account, tier, mode, store, journal, sender, daily_stop,
-                 d1c_mode="ACTIVE_EVAL_FILTER", basis_offset=0.0):
+                 d1c_mode="ACTIVE_EVAL_FILTER", basis_offset=0.0, d1c_stale_after_s=360):
         self.account, self.tier, self.mode = account, tier, mode
         self.store, self.j, self.sender = store, journal, sender
         self.daily_stop = daily_stop
         self.guard = DailyGuard(store)
         self.d1c_mode = d1c_mode
         self.basis_offset = basis_offset   # points added to feed prices to match Tradovate
-        # real CERBERUS-validated D1c. 5m feed -> 360s staleness tolerance.
+        # real CERBERUS-validated D1c. 1m feed -> 120s (validated); 5m feed -> 360s tolerance.
         self.gate = DriftGate(enabled=(d1c_mode in ("ACTIVE_EVAL_FILTER", "SHADOW")),
-                              stale_after_s=360)
+                              stale_after_s=d1c_stale_after_s)
         self.sent = self.blocked = self.d1c_blocked = 0
 
     def feed_gate(self, ts, o, c):
@@ -153,13 +153,9 @@ def main(argv=None):
     a = p.parse_args(argv)
     requested_d1c = a.d1c_mode.upper().replace("-", "_")
 
-    # The 5m-validated Profile A engine must NOT be fed 1m bars (that changes the strategy).
-    # The 1m->5m aggregator + native-1m D1c stream is a separate, unbuilt+unvalidated piece.
-    if feed_timeframe(a.feed) == 1:
-        print("REFUSED: --feed tradingview-1m drives the engine with 1m bars, which would change "
-              "the 5m-validated Profile A. The 1m engine path (1m->5m aggregation + native-1m D1c) "
-              "is not built/validated. Use --feed tradingview-5m with --d1c-mode shadow.")
-        return 2
+    # tradingview-1m: read native 1m (D1c) and AGGREGATE 1m->5m for the engine (Profile A stays 5m).
+    # Aggregation is verified to match TradingView's native 5m bar-for-bar, so Profile A is unchanged.
+    dual_1m = (feed_timeframe(a.feed) == 1)
 
     # --- Task 4: D1c may be ACTIVE_EVAL_FILTER only on a real-time 1m feed; else forced SHADOW ---
     realtime_confirmed = os.environ.get("TV_REALTIME_CONFIRMED") == "1"
@@ -189,7 +185,8 @@ def main(argv=None):
     sender = BridgeSender(store=Store(), journal=j, mode=("live" if mode == "live" else "dry-run"),
                           live_url=os.environ.get("TRADERSPOST_LIVE_URL"))
     auto = LiveAuto(a.account, a.tier, mode, Store(), j, sender, spec["daily_stop"],
-                    d1c_mode=d1c_mode, basis_offset=a.basis_offset)
+                    d1c_mode=d1c_mode, basis_offset=a.basis_offset,
+                    d1c_stale_after_s=(120 if dual_1m else 360))
 
     # build the live loop (Dukascopy credential-free feed + SimBot wired to the bridge)
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -214,6 +211,13 @@ def main(argv=None):
         contract = feed.connect()
         data_line = (f"TradingView CDP · REAL CME · {contract.get('name')} @ {contract.get('resolution')}m "
                      f"· warmup={a.warmup_source} {a.warmup_days}d")
+    elif a.feed == "tradingview-1m":
+        from tv_feed import TradingViewFeed
+        feed = TradingViewFeed(poll_sec=a.poll, warmup=5000, expect_res="1",   # native 1m -> D1c; agg 5m -> engine
+                               warmup_source=a.warmup_source, warmup_days=a.warmup_days)
+        contract = feed.connect()
+        data_line = (f"TradingView CDP · REAL CME · {contract.get('name')} @ 1m->5m DUAL "
+                     f"(engine 5m + D1c 1m) · warmup={a.warmup_source} {a.warmup_days}d")
     else:
         feed = DukascopyLiveFeed(poll_sec=a.poll, warmup_days=40)
         feed.connect()
@@ -274,14 +278,30 @@ def main(argv=None):
                 return 2
             print(f"  FULL AUTO preflight PASSED (D1c={eff_d1c}) — arming live webhooks.", flush=True)
         print("  warmed up · going live · watching the NY-AM window…", flush=True)
-        for ts, o, h, l, c in feed.live():
-            if auto.killed():
-                print(f"[auto-live] KILL: {auto.killed()} — halting new entries", flush=True)
-            auto.feed_gate(ts, o, c)
-            runner._cur = (0, o, h, l, c)
-            runner.bot.process_bar(ts, o, h, l, c)
-            runner.bot._persist()
-            _persist_data_status(store)
+        if dual_1m:
+            # native 1m -> D1c (validated fidelity); aggregated 5m -> Profile A engine
+            from tv_feed import Bar5Aggregator
+            agg = Bar5Aggregator()
+            for ts, o, h, l, c in feed.live():                # native 1m bars
+                if auto.killed():
+                    print(f"[auto-live] KILL: {auto.killed()} — halting new entries", flush=True)
+                auto.feed_gate(ts, o, c)                       # D1c on every 1m close (+09:30 open)
+                done = agg.add(ts, o, h, l, c)
+                if done:
+                    d_ts, do, dh, dl, dc, _ = done
+                    runner._cur = (0, do, dh, dl, dc)
+                    runner.bot.process_bar(d_ts, do, dh, dl, dc)   # engine on completed 5m
+                    runner.bot._persist()
+                _persist_data_status(store)
+        else:
+            for ts, o, h, l, c in feed.live():
+                if auto.killed():
+                    print(f"[auto-live] KILL: {auto.killed()} — halting new entries", flush=True)
+                auto.feed_gate(ts, o, c)
+                runner._cur = (0, o, h, l, c)
+                runner.bot.process_bar(ts, o, h, l, c)
+                runner.bot._persist()
+                _persist_data_status(store)
     except KeyboardInterrupt:
         print(f"\n[auto-live] stopped · {auto.sent} routed · {auto.blocked} gate-blocked · "
               f"{auto.d1c_blocked} D1c-blocked · D1c {auto.gate.heimdall_status()}")

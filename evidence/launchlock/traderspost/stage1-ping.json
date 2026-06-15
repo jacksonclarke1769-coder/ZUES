@@ -1,0 +1,24 @@
+{
+  "stage": "stage1-ping",
+  "ts": 1781520230,
+  "payload": {
+    "ticker": "MNQ",
+    "action": "exit",
+    "extras": {
+      "strategy": "EMERGENCY",
+      "reason": "bridge-ping-1781520229",
+      "account": "MFFU-50K-1",
+      "emergency": true,
+      "source": "zeus_bridge",
+      "signalId": "ZB-fe6319b22f86c941b2c9"
+    }
+  },
+  "result": {
+    "sent": true,
+    "status": 200
+  },
+  "extra": {
+    "mode": "live",
+    "account": "MFFU-50K-1"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "stage": "stage3-flatten",
+  "ts": 1781520314,
+  "payload": {
+    "cancel": "see result",
+    "exit": "see result"
+  },
+  "result": {
+    "cancel": {
+      "sent": true,
+      "status": 200
+    },
+    "exit": {
+      "sent": true,
+      "status": 200
+    },
+    "ok": true
+  },
+  "extra": {
+    "mode": "live",
+    "account": "MFFU-50K-1"
+  }
+}

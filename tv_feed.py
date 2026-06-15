@@ -38,6 +38,52 @@ def _read_bars_js(limit):
     )
 
 
+class Bar5Aggregator:
+    """Roll completed 1m bars up into 5m bars (bucket = timestamp floored to 5 min). add()
+    returns a COMPLETED 5m bar (ts at bucket open) the moment a 1m bar from a new bucket
+    arrives; otherwise None. Verified to match TradingView's native 5m bars exactly."""
+
+    def __init__(self):
+        self.key = None
+        self.o = self.h = self.l = self.c = None
+        self.v = 0.0
+
+    def add(self, ts, o, h, l, c, v=0.0):
+        key = ts.floor("5min")
+        done = None
+        if self.key is None:
+            self.key, self.o, self.h, self.l, self.c, self.v = key, o, h, l, c, v
+        elif key == self.key:
+            self.h = max(self.h, h); self.l = min(self.l, l); self.c = c; self.v += v
+        else:
+            done = (self.key, self.o, self.h, self.l, self.c, self.v)
+            self.key, self.o, self.h, self.l, self.c, self.v = key, o, h, l, c, v
+        return done
+
+    def flush(self):
+        if self.key is None:
+            return None
+        out = (self.key, self.o, self.h, self.l, self.c, self.v)
+        self.key = None
+        return out
+
+
+def aggregate_5m(bars):
+    """List of (ts,o,h,l,c[,v]) 1m bars -> list of completed (ts,o,h,l,c) 5m bars."""
+    agg = Bar5Aggregator()
+    out = []
+    for b in bars:
+        ts, o, h, l, c = b[0], b[1], b[2], b[3], b[4]
+        v = b[5] if len(b) > 5 else 0.0
+        done = agg.add(ts, o, h, l, c, v)
+        if done:
+            out.append(done[:5])
+    final = agg.flush()
+    if final:
+        out.append(final[:5])
+    return out
+
+
 def _to_et(unix_ts):
     t = int(unix_ts)
     if t > 1_000_000_000_000:        # milliseconds -> seconds
@@ -196,21 +242,40 @@ class TradingViewFeed:
             from paper_live import DukascopyLiveFeed
             duka = DukascopyLiveFeed(warmup_days=self.warmup_days)
         duka.connect()
-        d_bars = duka.history()                   # [(ts_ET,o,h,l,c)], current, ~warmup_days deep
+        d_bars = duka.history()                   # [(ts_ET,o,h,l,c)] 5m, current, ~warmup_days deep
         tv_bars = self._fetch(self.warmup)        # chart's loaded bars (recent overlap) for basis
-        self.basis = self._measure_basis(tv_bars, d_bars) if self.auto_basis else 0.0
+        if str(self.resolution) == "1":           # 1m chart -> roll up so timestamps overlap Duka 5m
+            tv_bars = aggregate_5m(tv_bars)
+        basis = self._measure_basis(tv_bars, d_bars) if self.auto_basis else 0.0
+        # The CFD->CME basis is a (slowly-drifting) price-frame offset, resolution-independent.
+        # Persist it when we get a real overlap; reuse the last good value when we can't (e.g. a 1m
+        # chart's short cache + a laggy Dukascopy tail produce zero overlapping timestamps).
+        if self.auto_basis:
+            try:
+                from store import Store as _S
+                if basis:
+                    _S().set_state(tv_cme_basis=str(basis))
+                else:
+                    prev = _S().get_state("tv_cme_basis")
+                    if prev:
+                        basis = float(prev)
+                        self.basis_from_cache = True
+            except Exception:
+                pass
+        self.basis = basis
         b = self.basis
         return [(ts, o + b, h + b, l + b, c + b) for (ts, o, h, l, c) in d_bars]
 
     def live(self):
-        """Infinite generator of newly-CLOSED 5m bars (closed once now >= bar_open + 5m)."""
+        """Infinite generator of newly-CLOSED bars (closed once now >= bar_open + resolution)."""
+        close_min = int(self.expect_res)        # 1m feed -> 1min close rule; 5m feed -> 5min
         while True:
             try:
                 bars = self._fetch(50)
                 now = pd.Timestamp.now("UTC")
                 for ts, o, h, l, c in bars:
                     key = ts.isoformat()
-                    if key not in self.seen and now >= ts.tz_convert("UTC") + pd.Timedelta(minutes=5):
+                    if key not in self.seen and now >= ts.tz_convert("UTC") + pd.Timedelta(minutes=close_min):
                         self.seen.add(key)
                         self._track([(ts, o, h, l, c)])
                         yield ts, o, h, l, c

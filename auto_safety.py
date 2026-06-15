@@ -258,8 +258,8 @@ def full_auto_preflight(account, feed_name, requested_d1c, data_status, store=No
     # 5. dashboard green from source-of-truth
     if not dashboard_green:
         fails.append("dashboard not green")
-    # 6. ARES active on this account
-    ares = json.loads(store.get_state("ares") or "{}")
+    # 6. ARES active on this account (ares_mode.py stores under "ares_mode")
+    ares = json.loads(store.get_state("ares_mode") or "{}")
     if account and account not in ares:
         fails.append("ARES not armed on %s (arm-eval first)" % account)
     # 7. daily stop configured for the run (caller passes via data_status['daily_stop'] or store)

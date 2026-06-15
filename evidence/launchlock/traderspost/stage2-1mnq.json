@@ -1,0 +1,41 @@
+{
+  "stage": "stage2-1mnq",
+  "ts": 1781520280,
+  "payload": {
+    "ticker": "MNQ",
+    "action": "buy",
+    "quantity": 1,
+    "orderType": "limit",
+    "price": 30562.0,
+    "limitPrice": 30562.0,
+    "stopLoss": {
+      "type": "stop",
+      "stopPrice": 30502.0
+    },
+    "takeProfit": {
+      "limitPrice": 30602.0
+    },
+    "extras": {
+      "strategy": "BRIDGE-TEST",
+      "setup": "stage2-1mnq",
+      "side": "long",
+      "risk_points": 60.0,
+      "risk_usd": 120.0,
+      "account": "MFFU-50K-1",
+      "mode": "ARES",
+      "test": true,
+      "stage": "stage2-1mnq",
+      "d1c": {},
+      "source": "zeus_bridge",
+      "signalId": "ZB-6330481f0200d48fab1a"
+    }
+  },
+  "result": {
+    "sent": true,
+    "status": 200
+  },
+  "extra": {
+    "mode": "live",
+    "account": "MFFU-50K-1"
+  }
+}

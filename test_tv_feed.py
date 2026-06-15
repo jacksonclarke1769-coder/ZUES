@@ -114,6 +114,41 @@ def _et(iso):
     return pd.Timestamp(iso, tz=tv_feed.NY)
 
 
+# ----------------------------- 1m -> 5m aggregation -----------------------------
+def test_aggregator_rolls_five_1m_into_one_5m():
+    from tv_feed import Bar5Aggregator
+    agg = Bar5Aggregator()
+    out = []
+    # 09:30..09:34 (one 5m bucket) then 09:35 (new bucket -> emits the 09:30 bar)
+    ones = [
+        ("2026-06-15 09:30", 100, 105, 99, 101, 10),
+        ("2026-06-15 09:31", 101, 106, 100, 102, 12),
+        ("2026-06-15 09:32", 102, 108, 101, 107, 8),
+        ("2026-06-15 09:33", 107, 109, 104, 105, 9),
+        ("2026-06-15 09:34", 105, 110, 103, 106, 11),
+        ("2026-06-15 09:35", 106, 107, 105, 106, 5),   # new bucket -> flush prior
+    ]
+    for iso, o, h, l, c, v in ones:
+        done = agg.add(_et(iso), o, h, l, c, v)
+        if done:
+            out.append(done)
+    assert len(out) == 1
+    ts, o, h, l, c, v = out[0]
+    assert ts == _et("2026-06-15 09:30")
+    assert (o, h, l, c, v) == (100, 110, 99, 106, 50)   # O=first H=max L=min C=last V=sum
+
+
+def test_aggregate_5m_helper_matches_buckets():
+    from tv_feed import aggregate_5m
+    bars = [(_et("2026-06-15 09:30"), 1, 2, 0.5, 1.5, 3),
+            (_et("2026-06-15 09:34"), 1.5, 3, 1, 2.8, 4),
+            (_et("2026-06-15 09:35"), 2.8, 2.9, 2.0, 2.1, 2)]
+    out = aggregate_5m(bars)            # flush() includes the final (forming) bucket too
+    assert len(out) == 2
+    assert out[0][0] == _et("2026-06-15 09:30")
+    assert out[0][1:] == (1, 3, 0.5, 2.8)   # O,H,L,C of the 09:30 bucket
+
+
 def test_measure_basis_median_offset():
     # overlapping timestamps; TV close is +5 above Duka close
     ts = "2026-06-12 09:30"
@@ -208,6 +243,22 @@ def test_live_skips_already_seen():
     out = feed._fetch(50)
     assert len(out) == 1
     assert out[0][0].isoformat() in feed.seen
+
+
+def test_live_close_rule_matches_resolution():
+    """A 1m feed must emit a bar ~1 min after open, not wait 5 min (D1c needs timely 1m)."""
+    now = pd.Timestamp.now("UTC")
+    # bar opened 90s ago: closed for a 1m feed, NOT yet for a 5m feed
+    bar = [int((now - pd.Timedelta(seconds=90)).timestamp()), 100, 101, 99, 100.5, 5]
+    f1 = TradingViewFeed(poll_sec=0, expect_res="1", warmup_source="tradingview",
+                         cdp=FakeCDP(bars=[bar]))
+    got1 = list(itertools.islice(f1.live(), 1))
+    assert len(got1) == 1                      # 1m feed emits the 90s-old bar
+    f5 = TradingViewFeed(poll_sec=0, expect_res="5", warmup_source="tradingview",
+                         cdp=FakeCDP(bars=[bar]))
+    # 5m feed: 90s-old bar is still forming -> _fetch returns it but live() must not emit it
+    assert f5._fetch(50)[0][0] == _to_et(bar[0])
+    assert int(f5.expect_res) == 5
 
 
 def test_closed_bar_predicate():

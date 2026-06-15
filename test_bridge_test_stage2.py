@@ -49,6 +49,24 @@ def test_one_mnq_resting_bracket_derived_from_ref():
     assert payload["takeProfit"]["limitPrice"] == 20010.0
 
 
+def test_flatten_cancels_then_exits():
+    """Emergency flatten must send CANCEL (remove bracket legs) THEN EXIT (close position)."""
+    from bridge_sender import BridgeSender
+    sent = []
+
+    class CapturingSender(BridgeSender):
+        def send(self, payload, retries=2, timeout=8):
+            sent.append(payload)
+            return {"sent": True, "status": 200}
+
+    s = CapturingSender(mode="test", test_url="https://example.test/webhook")
+    res = s.flatten("MFFU-50K-1", root="MNQ", reason="t1")
+    assert [p["action"] for p in sent] == ["cancel", "exit"]   # cancel FIRST, then exit
+    assert all(p["ticker"] for p in sent)
+    assert all(p["extras"]["signalId"] for p in sent)          # both dedup-keyed
+    assert res["ok"] is True
+
+
 def test_one_mnq_refuses_without_url(monkeypatch):
     monkeypatch.delenv("TRADERSPOST_TEST_URL", raising=False)
     monkeypatch.setattr(bridge_test, "BridgeSender", FakeSender)
