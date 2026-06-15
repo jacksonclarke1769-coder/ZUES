@@ -88,6 +88,21 @@ def test_guardian_writes_heartbeat_and_stays_armed_across_reconnect(tmp_path):
     assert hb2["guardian"] == "armed" and hb2["data_state"] == "YELLOW"
 
 
+def test_guardian_forces_stale_data_to_red(tmp_path):
+    """A frozen feed (snapshot says GREEN but last_bar is old) must be re-persisted RED by the
+    guardian's wall-clock freshness check — closes the stale-feed false-green path."""
+    import json as _json
+    s = FakeSender()
+    store = Store(str(tmp_path / "g.db"))
+    store.set_state(data_status=_json.dumps(
+        {"data_state": "GREEN", "DATA_READY": True, "last_bar": "2026-06-15 08:00:00-04:00"}))
+    g = FlattenGuardian("X", sender=s, store=store, journal=None,
+                        clock=lambda: at(8, 20), heartbeat_path=str(tmp_path / "hb.json"))  # 20 min stale
+    g.tick()
+    ds = _json.loads(store.get_state("data_status"))
+    assert ds["data_state"] == "RED" and ds["DATA_READY"] is False
+
+
 def test_fire_once_survives_restart(tmp_path):
     db = str(tmp_path / "g.db")
     s1 = FakeSender()

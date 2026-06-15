@@ -59,6 +59,22 @@ def test_entry_ready_ok_when_green_and_alive():
     assert ok and why == "ok"
 
 
+def test_apply_freshness_forces_red_on_frozen_feed():
+    # 08:00 ET = 12:00 UTC; at 12:10 UTC the snapshot is 10 min stale -> must read RED
+    now = datetime(2026, 6, 15, 12, 10, tzinfo=timezone.utc)
+    ds = {"data_state": "GREEN", "DATA_READY": True, "last_bar": "2026-06-15 08:00:00-04:00"}
+    out = H.apply_freshness(ds, now=now)
+    assert out["data_state"] == "RED" and out["DATA_READY"] is False
+    assert out["last_bar_age_s"] >= 300
+
+
+def test_apply_freshness_keeps_green_when_fresh():
+    now = datetime(2026, 6, 15, 12, 1, tzinfo=timezone.utc)   # 1 min after the 08:00 ET bar
+    ds = {"data_state": "GREEN", "DATA_READY": True, "last_bar": "2026-06-15 08:00:00-04:00"}
+    out = H.apply_freshness(ds, now=now)
+    assert out["data_state"] == "GREEN" and out["DATA_READY"] is True
+
+
 def test_dashboard_red_on_stale_heartbeat(monkeypatch):
     import zeus_server
     monkeypatch.setattr("heimdall_monitor.deadman_status",

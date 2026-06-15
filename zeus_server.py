@@ -426,7 +426,8 @@ def assemble_state():
                      or (store.get_state("webhook_mode") or "dry-run") != "live"
                      or os.path.exists("evidence/approvals/traderspost-approved.flag"))
         # --- LAUNCHLOCK + HEIMDALL: never show green unless DATA + EXECUTION + NERVOUS SYSTEM proven ---
-        ds = json.loads(store.get_state("data_status") or "{}")
+        from heimdall_monitor import apply_freshness as _fresh
+        ds = _fresh(json.loads(store.get_state("data_status") or "{}"))   # read-time staleness override
         data_ready = bool(ds.get("DATA_READY"))
         data_state = ds.get("data_state")
         # execution proven = a real send was recorded AND the operator attested the live route

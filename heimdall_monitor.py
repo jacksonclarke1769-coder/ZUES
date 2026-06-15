@@ -15,6 +15,37 @@ from datetime import datetime, timezone
 HEARTBEAT_PATH = "out/heimdall/heartbeat.json"
 WARN_S = 60        # heartbeat older than this -> WARN (a few missed ~20s ticks)
 RED_S = 180        # heartbeat older than this -> RED (process likely frozen/crashed)
+STALE_DATA_RED_S = 300   # last bar older than this (wall-clock) -> data RED, even if snapshot says GREEN
+
+
+def apply_freshness(ds, now=None):
+    """Read-time staleness override for a feed that STOPPED ADVANCING (process alive, bars stopped).
+
+    The feed only re-persists data_status when it processes a NEW bar, so a frozen feed leaves a
+    stale snapshot that still reads GREEN. Recompute the last-bar age against NOW and force RED if
+    too old. Returns a (possibly) corrected copy of ds. Closes the stale-feed false-green path."""
+    if not ds:
+        return ds
+    now = now or datetime.now(timezone.utc)
+    lb = ds.get("last_bar")
+    if not lb or lb in ("None", "NaT", ""):
+        return ds
+    try:
+        last = datetime.fromisoformat(lb)
+        if last.tzinfo is None:
+            last = last.replace(tzinfo=timezone.utc)
+    except Exception:
+        return ds
+    age = (now - last).total_seconds()
+    ds = dict(ds)
+    ds["last_bar_age_s"] = round(age)
+    if age > STALE_DATA_RED_S and ds.get("data_state") != "RED":
+        ds["data_state"] = "RED"
+        ds["DATA_READY"] = False
+        ds["state_reason"] = "stale %ds (wall-clock)" % int(age)
+        ds["stale"] = True
+        ds["reasons"] = ["RED: stale %ds (wall-clock — feed stopped advancing)" % int(age)]
+    return ds
 
 
 def write_heartbeat(fields, path=HEARTBEAT_PATH, now=None):

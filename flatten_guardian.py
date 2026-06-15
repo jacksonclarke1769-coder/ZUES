@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 
 from scheduler import Scheduler
 from flatten import LOCK_KEY
-from heimdall_monitor import write_heartbeat, HEARTBEAT_PATH
+from heimdall_monitor import write_heartbeat, HEARTBEAT_PATH, apply_freshness
 
 
 def _utcnow():
@@ -94,6 +94,18 @@ class FlattenGuardian:
                 pass
         return res
 
+    def _refresh_data_state(self, now):
+        """Wall-clock freshness enforcement: catch a frozen feed (bars stopped, process alive) and
+        re-persist data_status as RED so the dashboard/heartbeat can't show stale-GREEN."""
+        try:
+            raw = self.store.get_state("data_status")
+            if not raw:
+                return
+            corrected = apply_freshness(json.loads(raw), now)
+            self.store.set_state(data_status=json.dumps(corrected))
+        except Exception:
+            pass
+
     def _heartbeat(self, now):
         """Write the process heartbeat. Feed health is mirrored from the store's data_status."""
         ds = {}
@@ -122,6 +134,7 @@ class FlattenGuardian:
         if kill and self._kill_date != et_date:
             self._kill_date = et_date
             self._flatten("KILL:%s" % kill)
+        self._refresh_data_state(now)     # wall-clock freshness BEFORE writing the heartbeat
         self._heartbeat(now)
 
     def _run(self):
