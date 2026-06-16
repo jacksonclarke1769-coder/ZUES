@@ -43,7 +43,7 @@ def _ready_env(tmp_path, monkeypatch):
     appr.mkdir()
     (tmp_path / "launchlock" / "traderspost").mkdir(parents=True)
     for f in ("full-auto-approved.flag", "traderspost-approved.flag", "bracket-verified.flag",
-              "feed-soak-passed.flag"):
+              "feed-soak-passed.flag", "controlled-tv-live-test-approved.flag"):
         (appr / f).write_text("ok")
     (tmp_path / "launchlock" / "traderspost" / "PROVEN.flag").write_text("ok")
     monkeypatch.setattr(A, "APPROVAL_DIR", str(appr))
@@ -66,6 +66,36 @@ def test_preflight_passes_on_proper_soaked_feed(tmp_path, monkeypatch):
         store=store, dashboard_green=True)
     assert ok, fails
     assert eff_d1c == "SHADOW"               # 5m feed -> D1c downgraded, but full auto still passes
+
+
+def test_controlled_test_passes_on_browser_feed_with_flag(tmp_path, monkeypatch):
+    # SUPERVISED controlled test MAY use the browser feed (test flag + all other gates present)
+    store, ds = _ready_env(tmp_path, monkeypatch)
+    ok, fails, eff_d1c, summ = A.full_auto_preflight(
+        "MFFU-50K-1", "tradingview-1m", "ACTIVE_EVAL_FILTER", ds,
+        store=store, dashboard_green=True, controlled_test=True)
+    assert ok, fails
+    assert eff_d1c == "ACTIVE_EVAL_FILTER"          # 1m + realtime -> legal
+
+
+def test_controlled_test_fails_without_test_flag(tmp_path, monkeypatch):
+    store, ds = _ready_env(tmp_path, monkeypatch)
+    os.remove(os.path.join(A.APPROVAL_DIR, "controlled-tv-live-test-approved.flag"))
+    ok, fails, _, _ = A.full_auto_preflight(
+        "MFFU-50K-1", "tradingview-1m", "ACTIVE_EVAL_FILTER", ds,
+        store=store, dashboard_green=True, controlled_test=True)
+    assert not ok
+    assert any("controlled-tv-live-test-approved.flag" in f for f in fails)
+
+
+def test_production_browser_feed_still_blocked_even_with_test_flag(tmp_path, monkeypatch):
+    # the controlled test flag must NOT open production full auto on a browser feed
+    store, ds = _ready_env(tmp_path, monkeypatch)
+    ok, fails, _, _ = A.full_auto_preflight(
+        "MFFU-50K-1", "tradingview-1m", "ACTIVE_EVAL_FILTER", ds,
+        store=store, dashboard_green=True, controlled_test=False)
+    assert not ok
+    assert any("browser/CDP" in f for f in fails)
 
 
 def test_preflight_fails_on_browser_feed(tmp_path, monkeypatch):

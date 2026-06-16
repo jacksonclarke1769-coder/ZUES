@@ -155,6 +155,9 @@ def main(argv=None):
                    help="execution route (TradersPost bridge only today)")
     p.add_argument("--confirm", action="store_true",
                    help="required (with --live) to arm FULL AUTO; extra human gate")
+    p.add_argument("--controlled-tv-live-test", dest="controlled_tv_live_test", action="store_true",
+                   help="SUPERVISED single-session live test on the TradingView browser feed "
+                        "(needs controlled-tv-live-test-approved.flag; production browser-feed block stays)")
     p.add_argument("--warmup-source", default="dukascopy", choices=["dukascopy", "tradingview"],
                    dest="warmup_source",
                    help="(tradingview feed) deep warmup source: dukascopy=40d current bars basis-aligned to CME "
@@ -281,14 +284,19 @@ def main(argv=None):
                 dgreen = False
             ds_gate = dict(ds or {}, daily_stop=spec["daily_stop"])
             ok, fails, eff_d1c, summ = full_auto_preflight(
-                a.account, a.feed, requested_d1c, ds_gate, store=dash_store, dashboard_green=dgreen)
+                a.account, a.feed, requested_d1c, ds_gate, store=dash_store, dashboard_green=dgreen,
+                controlled_test=a.controlled_tv_live_test)
+            modlabel = "CONTROLLED TV LIVE TEST" if a.controlled_tv_live_test else "FULL AUTO"
             if not ok:
-                print("REFUSED FULL AUTO — fail closed:")
+                print(f"REFUSED {modlabel} — fail closed:")
                 for f in fails:
                     print(f"  ✗ {f}")
                 lock.release()
                 return 2
-            print(f"  FULL AUTO preflight PASSED (D1c={eff_d1c}) — arming live webhooks.", flush=True)
+            print(f"  {modlabel} preflight PASSED (D1c={eff_d1c}) — arming live webhooks.", flush=True)
+            if a.controlled_tv_live_test:
+                print("  ⚠ SUPERVISED TEST on browser feed — operator MUST watch; not production full auto.",
+                      flush=True)
         # --- wall-clock EOD + kill auto-flatten (feed-independent; closes a live position even
         #     if the bar feed dies before 14:30). Builds its own DB objects inside its thread. ---
         from flatten_guardian import FlattenGuardian
