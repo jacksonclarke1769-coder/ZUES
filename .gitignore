@@ -7,3 +7,4 @@ __pycache__/
 evidence/approvals/*.flag
 evidence/launchlock/**/*.flag
 out/heimdall/
+logs/

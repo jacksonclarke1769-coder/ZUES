@@ -42,7 +42,8 @@ def _ready_env(tmp_path, monkeypatch):
     appr = tmp_path / "approvals"
     appr.mkdir()
     (tmp_path / "launchlock" / "traderspost").mkdir(parents=True)
-    for f in ("full-auto-approved.flag", "traderspost-approved.flag", "bracket-verified.flag"):
+    for f in ("full-auto-approved.flag", "traderspost-approved.flag", "bracket-verified.flag",
+              "feed-soak-passed.flag"):
         (appr / f).write_text("ok")
     (tmp_path / "launchlock" / "traderspost" / "PROVEN.flag").write_text("ok")
     monkeypatch.setattr(A, "APPROVAL_DIR", str(appr))
@@ -57,13 +58,34 @@ def _ready_env(tmp_path, monkeypatch):
     return store, ds
 
 
-def test_preflight_passes_when_everything_proven(tmp_path, monkeypatch):
+def test_preflight_passes_on_proper_soaked_feed(tmp_path, monkeypatch):
+    # full auto can pass on a proper, soak-passed API feed (tradovate is 5m -> D1c runs SHADOW)
     store, ds = _ready_env(tmp_path, monkeypatch)
     ok, fails, eff_d1c, summ = A.full_auto_preflight(
-        "MFFU-50K-1", "tradingview-1m", "ACTIVE_EVAL_FILTER", ds,
+        "MFFU-50K-1", "tradovate", "ACTIVE_EVAL_FILTER", ds,
         store=store, dashboard_green=True)
     assert ok, fails
-    assert eff_d1c == "ACTIVE_EVAL_FILTER"
+    assert eff_d1c == "SHADOW"               # 5m feed -> D1c downgraded, but full auto still passes
+
+
+def test_preflight_fails_on_browser_feed(tmp_path, monkeypatch):
+    # everything else proven, but a TradingView browser/CDP feed must FAIL (SEMI_AUTO_ONLY)
+    store, ds = _ready_env(tmp_path, monkeypatch)
+    ok, fails, _, _ = A.full_auto_preflight(
+        "MFFU-50K-1", "tradingview-1m", "ACTIVE_EVAL_FILTER", ds,
+        store=store, dashboard_green=True)
+    assert not ok
+    assert any("FEED" in f and "browser/CDP" in f for f in fails)
+
+
+def test_preflight_fails_proper_feed_without_soak(tmp_path, monkeypatch):
+    store, ds = _ready_env(tmp_path, monkeypatch)
+    os.remove(os.path.join(A.APPROVAL_DIR, "feed-soak-passed.flag"))
+    ok, fails, _, _ = A.full_auto_preflight(
+        "MFFU-50K-1", "tradovate", "ACTIVE_EVAL_FILTER", ds,
+        store=store, dashboard_green=True)
+    assert not ok
+    assert any("soak-pass" in f for f in fails)
 
 
 def test_preflight_refuses_without_full_auto_flag(tmp_path, monkeypatch):
@@ -133,8 +155,8 @@ def test_preflight_fails_when_data_state_not_green(tmp_path, monkeypatch):
 def test_preflight_downgrades_d1c_on_5m_even_when_passing(tmp_path, monkeypatch):
     store, ds = _ready_env(tmp_path, monkeypatch)
     ok, fails, eff_d1c, summ = A.full_auto_preflight(
-        "MFFU-50K-1", "tradingview-5m", "ACTIVE_EVAL_FILTER", ds,
+        "MFFU-50K-1", "tradovate", "ACTIVE_EVAL_FILTER", ds,   # proper feed, 5m -> D1c SHADOW
         store=store, dashboard_green=True)
     assert ok, fails
-    assert eff_d1c == "SHADOW"                        # forced shadow on 5m
+    assert eff_d1c == "SHADOW"                        # forced shadow on a 5m feed
     assert summ["d1c_downgrade"]

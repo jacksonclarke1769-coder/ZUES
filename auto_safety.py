@@ -257,6 +257,14 @@ def full_auto_preflight(account, feed_name, requested_d1c, data_status, store=No
         dm = dict(alive=False, reason="dead-man unavailable: %s" % _e)
     if not dm.get("alive"):
         fails.append("DEAD-MAN: " + dm.get("reason", "heartbeat not healthy"))
+    # 3c. FEED SOURCE — unattended full auto needs a PROVEN, soak-passed, non-browser feed.
+    #     TradingView browser/CDP froze twice (DATAPIPE) -> SEMI_AUTO_ONLY, must fail here.
+    if (not feed_name) or str(feed_name).startswith("tradingview"):
+        fails.append("FEED: '%s' is browser/CDP (SEMI_AUTO_ONLY — froze twice); unattended full auto "
+                     "requires a proper API feed (tradovate/databento)" % (feed_name or "none"))
+    elif not os.path.exists(os.path.join(APPROVAL_DIR, "feed-soak-passed.flag")):
+        fails.append("FEED: '%s' has no soak-pass on record "
+                     "(evidence/approvals/feed-soak-passed.flag)" % feed_name)
     # 4. TradersPost execution proven (URL + PROVEN flag) AND the pre-existing technical flags
     #    (kept from LAUNCHLOCK — defense in depth, nothing loosened)
     tp_ok, tp_fails = traderspost_ready(store)
