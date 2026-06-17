@@ -275,33 +275,10 @@ def main(argv=None):
                   f"· basis {ds['basis']:+.2f} · DATA_READY={ds['DATA_READY']}", flush=True)
             if not ds["DATA_READY"]:
                 print("  DATA NOT READY: " + "; ".join(ds["reasons"]), flush=True)
-        # --- APOLLO: FULL AUTO master gate (only when --live). Fail-closed. ---
-        if mode == "live":
-            dgreen = False
-            try:
-                import zeus_server
-                dgreen = bool(zeus_server.assemble_state()["deployment"].get("green"))
-            except Exception:
-                dgreen = False
-            ds_gate = dict(ds or {}, daily_stop=spec["daily_stop"])
-            ok, fails, eff_d1c, summ = full_auto_preflight(
-                a.account, a.feed, requested_d1c, ds_gate, store=dash_store, dashboard_green=dgreen,
-                controlled_test=a.controlled_tv_live_test)
-            modlabel = "CONTROLLED TV LIVE TEST" if a.controlled_tv_live_test else "FULL AUTO"
-            if not ok:
-                print(f"REFUSED {modlabel} — fail closed:")
-                for f in fails:
-                    print(f"  ✗ {f}")
-                lock.release()
-                return 2
-            print(f"  {modlabel} preflight PASSED (D1c={eff_d1c}) — arming live webhooks.", flush=True)
-            if a.controlled_tv_live_test:
-                print("  ⚠ SUPERVISED TEST on browser feed — operator MUST watch; not production full auto.",
-                      flush=True)
-        # --- wall-clock EOD + kill auto-flatten (feed-independent; closes a live position even
-        #     if the bar feed dies before 14:30). Builds its own DB objects inside its thread. ---
+        # --- guardian (EOD/kill flatten) + entry gate, armed BEFORE the live feed runs ---
         from flatten_guardian import FlattenGuardian
         from heimdall_monitor import deadman_status, entry_ready
+        from tv_feed import Bar5Aggregator
         _gmode = "live" if mode == "live" else "dry-run"
         _gurl = os.environ.get("TRADERSPOST_LIVE_URL")
         guardian = FlattenGuardian(
@@ -313,37 +290,73 @@ def main(argv=None):
         guardian.start()
         print(f"  flatten guardian armed (wall-clock EOD 14:30 + kill, feed-independent, {_gmode})",
               flush=True)
-        # entry readiness gate: only route entries when data is GREEN and the dead-man is alive
+        # entries are blocked until ARMED (live arms only after the preflight passes); paper trades now.
+        armed = {"v": (mode != "live")}
+
         def _entry_ready():
+            if not armed["v"]:
+                return False, "arming — preflight not passed"
             dstate = feed.data_state() if hasattr(feed, "data_state") else ("GREEN", "")
             return entry_ready(dstate, deadman_status())
         auto.entry_gate = _entry_ready
-        print("  entry gate armed (block entries unless data GREEN + dead-man alive)", flush=True)
-        print("  warmed up · going live · watching the NY-AM window…", flush=True)
-        if dual_1m:
-            # native 1m -> D1c (validated fidelity); aggregated 5m -> Profile A engine
-            from tv_feed import Bar5Aggregator
-            agg = Bar5Aggregator()
-            for ts, o, h, l, c in feed.live():                # native 1m bars
-                if auto.killed():
-                    print(f"[auto-live] KILL: {auto.killed()} — halting new entries", flush=True)
-                auto.feed_gate(ts, o, c)                       # D1c on every 1m close (+09:30 open)
-                done = agg.add(ts, o, h, l, c)
+        print("  entry gate armed (block entries unless armed + data GREEN + dead-man alive)", flush=True)
+
+        # one shared live generator + one per-bar processor (warm-to-GREEN and the main loop both use it)
+        _agg = Bar5Aggregator() if dual_1m else None
+        live_gen = feed.live()
+
+        def _process(ts, o, h, l, c):
+            if auto.killed():
+                print(f"[auto-live] KILL: {auto.killed()} — halting new entries", flush=True)
+            auto.feed_gate(ts, o, c)                           # D1c on every bar (+09:30 open)
+            if dual_1m:
+                done = _agg.add(ts, o, h, l, c)                # native 1m -> D1c; aggregated 5m -> engine
                 if done:
                     d_ts, do, dh, dl, dc, _ = done
                     runner._cur = (0, do, dh, dl, dc)
-                    runner.bot.process_bar(d_ts, do, dh, dl, dc)   # engine on completed 5m
+                    runner.bot.process_bar(d_ts, do, dh, dl, dc)
                     runner.bot._persist()
-                _persist_data_status(store)
-        else:
-            for ts, o, h, l, c in feed.live():
-                if auto.killed():
-                    print(f"[auto-live] KILL: {auto.killed()} — halting new entries", flush=True)
-                auto.feed_gate(ts, o, c)
+            else:
                 runner._cur = (0, o, h, l, c)
                 runner.bot.process_bar(ts, o, h, l, c)
                 runner.bot._persist()
-                _persist_data_status(store)
+            _persist_data_status(store)
+
+        # --- LIVE: warm the live feed to GREEN, THEN run the preflight (the Dukascopy warmup tail is
+        #     stale by design; the live TV feed is current, so wait for it to catch up before arming) ---
+        if mode == "live":
+            import time as _t
+            print("  waiting for live feed to reach GREEN before arming…", flush=True)
+            t_end = _t.time() + 300
+            for ts, o, h, l, c in live_gen:
+                _process(ts, o, h, l, c)
+                st, _why = (feed.data_state() if hasattr(feed, "data_state") else ("GREEN", ""))
+                if st == "GREEN" or _t.time() > t_end:
+                    break
+            dgreen = False
+            try:
+                import zeus_server
+                dgreen = bool(zeus_server.assemble_state()["deployment"].get("green"))
+            except Exception:
+                dgreen = False
+            ds_gate = dict(_persist_data_status(store) or {}, daily_stop=spec["daily_stop"])
+            ok, fails, eff_d1c, summ = full_auto_preflight(
+                a.account, a.feed, requested_d1c, ds_gate, store=dash_store, dashboard_green=dgreen,
+                controlled_test=a.controlled_tv_live_test)
+            modlabel = "CONTROLLED TV LIVE TEST" if a.controlled_tv_live_test else "FULL AUTO"
+            if not ok:
+                print(f"REFUSED {modlabel} — fail closed:")
+                for f in fails:
+                    print(f"  ✗ {f}")
+                return 2
+            armed["v"] = True
+            print(f"  {modlabel} preflight PASSED (D1c={eff_d1c}) — ARMED, live webhooks active.", flush=True)
+            if a.controlled_tv_live_test:
+                print("  ⚠ SUPERVISED TEST on browser feed — operator MUST watch.", flush=True)
+
+        print("  going live · watching the NY-AM window…", flush=True)
+        for ts, o, h, l, c in live_gen:
+            _process(ts, o, h, l, c)
     except KeyboardInterrupt:
         print(f"\n[auto-live] stopped · {auto.sent} routed · {auto.blocked} gate-blocked · "
               f"{auto.d1c_blocked} D1c-blocked · D1c {auto.gate.heimdall_status()}")

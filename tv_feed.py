@@ -156,6 +156,7 @@ class TradingViewFeed:
 
     MIN_WARMUP_DAYS = 14          # hard minimum: 2 full trading weeks (prev-week levels)
     MIN_BASIS_OVERLAP = 20        # need this many overlapping bars to TRUST a fresh basis
+    MAX_BASIS_PTS = 150           # CFD<->CME basis is structurally small; bigger = stale/bad data
     STABILITY_BARS = 3            # fresh monotonic bars required after a reset before GREEN
     MAX_RESETS = 10               # resets/session above this -> RED (pipeline likely broken)
     STALE_RED_S = 300             # no new bar for this long -> RED (block trades)
@@ -268,6 +269,10 @@ class TradingViewFeed:
         basis = 0.0
         if self.auto_basis:
             measured, n = self._measure_basis(tv_bars, d_bars)
+            # sanity: an absurd basis means stale/misaligned data (e.g. a laggy Dukascopy tail
+            # matching old timestamps) -> distrust it so it can't clobber the good persisted value.
+            if abs(measured) > self.MAX_BASIS_PTS:
+                n = 0
             self.basis_overlap = n
             prev = None
             try:
