@@ -155,9 +155,10 @@ def main(argv=None):
                    help="execution route (TradersPost bridge only today)")
     p.add_argument("--confirm", action="store_true",
                    help="required (with --live) to arm FULL AUTO; extra human gate")
-    p.add_argument("--controlled-tv-live-test", dest="controlled_tv_live_test", action="store_true",
+    p.add_argument("--controlled-tv-full-live-test", "--controlled-tv-live-test",
+                   dest="controlled_tv_live_test", action="store_true",
                    help="SUPERVISED single-session live test on the TradingView browser feed "
-                        "(needs controlled-tv-live-test-approved.flag; production browser-feed block stays)")
+                        "(needs controlled-tv-full-live-test-approved.flag; production browser-feed block stays)")
     p.add_argument("--warmup-source", default="dukascopy", choices=["dukascopy", "tradingview"],
                    dest="warmup_source",
                    help="(tradingview feed) deep warmup source: dukascopy=40d current bars basis-aligned to CME "

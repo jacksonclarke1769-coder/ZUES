@@ -85,7 +85,7 @@ def test_controlled_test_fails_without_test_flag(tmp_path, monkeypatch):
         "MFFU-50K-1", "tradingview-1m", "ACTIVE_EVAL_FILTER", ds,
         store=store, dashboard_green=True, controlled_test=True)
     assert not ok
-    assert any("controlled-tv-live-test-approved.flag" in f for f in fails)
+    assert any("controlled-tv" in f and "test-approved.flag" in f for f in fails)
 
 
 def test_production_browser_feed_still_blocked_even_with_test_flag(tmp_path, monkeypatch):

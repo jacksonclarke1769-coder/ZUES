@@ -231,7 +231,8 @@ def emergency_flatten_available():
         return False
 
 
-CONTROLLED_TEST_FLAG = "controlled-tv-live-test-approved.flag"
+CONTROLLED_TEST_FLAGS = ("controlled-tv-full-live-test-approved.flag",
+                         "controlled-tv-live-test-approved.flag")   # either approves the supervised test
 
 
 def full_auto_preflight(account, feed_name, requested_d1c, data_status, store=None,
@@ -251,9 +252,11 @@ def full_auto_preflight(account, feed_name, requested_d1c, data_status, store=No
     if not account:
         fails.append("no explicit account (silent default forbidden)")
     # 2. approval flag — controlled test uses a one-time test flag, production uses the full-auto flag
-    approval = CONTROLLED_TEST_FLAG if controlled_test else FULL_AUTO_FLAG
-    if not os.path.exists(os.path.join(APPROVAL_DIR, approval)):
-        fails.append("missing %s/%s" % (APPROVAL_DIR, approval))
+    if controlled_test:
+        if not any(os.path.exists(os.path.join(APPROVAL_DIR, f)) for f in CONTROLLED_TEST_FLAGS):
+            fails.append("missing %s/%s" % (APPROVAL_DIR, CONTROLLED_TEST_FLAGS[0]))
+    elif not os.path.exists(os.path.join(APPROVAL_DIR, FULL_AUTO_FLAG)):
+        fails.append("missing %s/%s" % (APPROVAL_DIR, FULL_AUTO_FLAG))
     # 3. live data ready (real-time, warmup>=2wk, not stale, reconnect-stable) — computed by the feed
     if not ds.get("DATA_READY"):
         fails.append("DATA not ready: " + "; ".join(ds.get("reasons") or ["no data_status"]))

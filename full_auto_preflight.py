@@ -19,6 +19,10 @@ def main(argv=None):
     p.add_argument("--feed", default="tradingview-1m")
     p.add_argument("--tier", default="50K-conservative")
     p.add_argument("--d1c-mode", dest="d1c", default="active-eval-filter")
+    p.add_argument("--controlled-tv-full-live-test", "--controlled-tv-live-test",
+                   dest="controlled", action="store_true",
+                   help="evaluate the SUPERVISED controlled-test gate (allows browser feed) "
+                        "instead of the production gate")
     a = p.parse_args(argv)
 
     ds = apply_freshness(json.loads(Store().get_state("data_status") or "{}"))
@@ -28,9 +32,11 @@ def main(argv=None):
         dgreen = False
     ok, fails, eff_d1c, summ = auto_safety.full_auto_preflight(
         a.account, a.feed, a.d1c.upper().replace("-", "_"),
-        dict(ds, daily_stop=700), store=Store(), dashboard_green=dgreen)
+        dict(ds, daily_stop=700), store=Store(), dashboard_green=dgreen,
+        controlled_test=a.controlled)
 
-    print("================ FULL-AUTO PREFLIGHT ================")
+    mode = "CONTROLLED TV LIVE TEST" if a.controlled else "PRODUCTION FULL-AUTO"
+    print("================ %s PREFLIGHT ================" % mode)
     print("account: %s · feed: %s · dashboard_green: %s" % (a.account, a.feed, dgreen))
     print("data_state: %s · DATA_READY: %s · effective D1c: %s" %
           (ds.get("data_state"), ds.get("DATA_READY"), eff_d1c))
