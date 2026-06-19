@@ -11,9 +11,12 @@ official CME holiday calendar each January (weekly procedure has the line item).
 from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 
+from market_calendar import is_market_holiday as _is_market_holiday
+
 ET = ZoneInfo("America/New_York")
 
-# CME equity-index futures 2026 — VERIFY EACH JANUARY (cmegroup.com holiday calendar)
+# Reference/sanity table only — the live trading-day gate now uses the SELF-MAINTAINING
+# market_calendar (any year, no annual update). Kept to cross-check the calendar for 2026.
 HOLIDAYS_2026 = {
     date(2026, 1, 1),    # New Year's Day
     date(2026, 1, 19),   # MLK
@@ -37,7 +40,7 @@ class Scheduler:
 
     def __init__(self, entry_start=time(9, 30), entry_end=time(11, 30),
                  flatten_at=time(14, 30), half_day_flatten=time(12, 45),
-                 eod_at=time(17, 10), holidays=HOLIDAYS_2026, half_days=HALF_DAYS_2026):
+                 eod_at=time(17, 10), holidays=None, half_days=HALF_DAYS_2026):
         self.entry_start = entry_start
         self.entry_end = entry_end
         self.flatten_at = flatten_at
@@ -57,7 +60,11 @@ class Scheduler:
     # ---------------- calendar ----------------
 
     def is_trading_day(self, d):
-        return d.weekday() < 5 and d not in self.holidays
+        if d.weekday() >= 5:
+            return False
+        if self.holidays is not None:          # explicit override (tests / custom calendars)
+            return d not in self.holidays
+        return not _is_market_holiday(d)        # default: self-maintaining US market calendar (any year)
 
     def is_half_day(self, d):
         return d in self.half_days

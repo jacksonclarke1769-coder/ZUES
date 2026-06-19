@@ -184,7 +184,7 @@ def live_latches(account, store=None, dashboard_green=False):
     return (len(fails) == 0), fails
 
 
-# ----------------------------- APOLLO full-auto gate (TradersPost route) -----------------------------
+# ------------------------- APOLLO supervised-live-auto gate (TradersPost route) -------------------------
 FULL_AUTO_FLAG = "full-auto-approved.flag"
 TP_PROVEN_FLAG = "../launchlock/traderspost/PROVEN.flag"   # under evidence/ (sibling of approvals/)
 
@@ -236,8 +236,8 @@ CONTROLLED_TEST_FLAGS = ("controlled-tv-full-live-test-approved.flag",
 
 
 def full_auto_preflight(account, feed_name, requested_d1c, data_status, store=None,
-                        dashboard_green=False, controlled_test=False):
-    """APOLLO master gate for FULL AUTO over the TradersPost route. Returns
+                        dashboard_green=False, controlled_test=False, today=None):
+    """APOLLO master gate for SUPERVISED LIVE AUTO over the TradersPost route. Returns
     (ok, fails[], effective_d1c, summary). Fail-closed: any missing proof blocks live.
 
     controlled_test=True = a SUPERVISED, operator-present, single-session live test on the
@@ -248,10 +248,24 @@ def full_auto_preflight(account, feed_name, requested_d1c, data_status, store=No
     store = store or Store()
     ds = data_status or {}
     fails = []
+    # 0. TRADING CALENDAR — never arm on a weekend or US market holiday. Profile A is a NY-AM
+    #    cash-session strategy; on a holiday (e.g. Juneteenth) the cash market is closed and the
+    #    setup conditions don't exist. Fail-closed on any non-trading day.
+    if today is None:
+        import datetime as _dt
+        from zoneinfo import ZoneInfo as _ZI
+        today = _dt.datetime.now(_dt.timezone.utc).astimezone(_ZI("America/New_York")).date()
+    try:
+        from scheduler import Scheduler as _Sched
+        if not _Sched().is_trading_day(today):
+            fails.append("CALENDAR: %s is not a trading day (weekend / market holiday) — no live auto"
+                         % today)
+    except Exception as _e:
+        fails.append("CALENDAR: trading-day check failed (%s) — fail closed" % _e)
     # 1. explicit account
     if not account:
         fails.append("no explicit account (silent default forbidden)")
-    # 2. approval flag — controlled test uses a one-time test flag, production uses the full-auto flag
+    # 2. approval flag — controlled test uses a one-time test flag, production uses the supervised-live-auto flag
     if controlled_test:
         if not any(os.path.exists(os.path.join(APPROVAL_DIR, f)) for f in CONTROLLED_TEST_FLAGS):
             fails.append("missing %s/%s" % (APPROVAL_DIR, CONTROLLED_TEST_FLAGS[0]))
@@ -262,7 +276,7 @@ def full_auto_preflight(account, feed_name, requested_d1c, data_status, store=No
         fails.append("DATA not ready: " + "; ".join(ds.get("reasons") or ["no data_status"]))
     if ds.get("data_state") and ds.get("data_state") != "GREEN":
         fails.append("DATA state %s (need GREEN; reconnect must be stable)" % ds.get("data_state"))
-    # 3b. HEIMDALL dead-man — full auto requires a live, fresh process heartbeat
+    # 3b. HEIMDALL dead-man — supervised live auto requires a live, fresh process heartbeat
     try:
         from heimdall_monitor import deadman_status
         dm = deadman_status()
@@ -274,8 +288,9 @@ def full_auto_preflight(account, feed_name, requested_d1c, data_status, store=No
     #     twice -> SEMI_AUTO_ONLY). A controlled, supervised test MAY use the browser feed.
     if not controlled_test:
         if (not feed_name) or str(feed_name).startswith("tradingview"):
-            fails.append("FEED: '%s' is browser/CDP (SEMI_AUTO_ONLY — froze twice); unattended full auto "
-                         "requires a proper API feed (tradovate/databento)" % (feed_name or "none"))
+            fails.append("FEED: '%s' is browser/CDP (froze twice — not unattended-grade); the production "
+                         "supervised-live-auto path requires a proper API feed (tradovate/databento)"
+                         % (feed_name or "none"))
         elif not os.path.exists(os.path.join(APPROVAL_DIR, "feed-soak-passed.flag")):
             fails.append("FEED: '%s' has no soak-pass on record "
                          "(evidence/approvals/feed-soak-passed.flag)" % feed_name)

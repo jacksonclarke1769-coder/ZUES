@@ -154,7 +154,7 @@ def main(argv=None):
     p.add_argument("--execution", default="traderspost", choices=["traderspost"],
                    help="execution route (TradersPost bridge only today)")
     p.add_argument("--confirm", action="store_true",
-                   help="required (with --live) to arm FULL AUTO; extra human gate")
+                   help="required (with --live) to arm SUPERVISED LIVE AUTO; extra human gate")
     p.add_argument("--controlled-tv-full-live-test", "--controlled-tv-live-test",
                    dest="controlled_tv_live_test", action="store_true",
                    help="SUPERVISED single-session live test on the TradingView browser feed "
@@ -179,9 +179,9 @@ def main(argv=None):
         print(f"  D1c: requested {requested_d1c} -> {d1c_mode} ({d1c_downgrade})")
 
     mode = "live" if a.live else "paper"
-    # --- full-auto requires the explicit human --confirm gate (data/exec proof checked post-warmup) ---
+    # --- supervised live auto requires the explicit human --confirm gate (data/exec proof checked post-warmup) ---
     if mode == "live" and not a.confirm:
-        print("REFUSED LIVE: --live requires --confirm (full-auto human gate). Running live without "
+        print("REFUSED LIVE: --live requires --confirm (supervised-live-auto human gate). Running live without "
               "confirmation is forbidden.")
         return 2
 
@@ -237,7 +237,8 @@ def main(argv=None):
         feed = DukascopyLiveFeed(poll_sec=a.poll, warmup_days=40)
         feed.connect()
         data_line = "Dukascopy NQ (CFD proxy 5m, has basis)"
-    print(f"=== ARES AUTO LIVE · {mode.upper()} · {a.account} · tier {a.tier} "
+    posture = "SUPERVISED LIVE AUTO" if mode == "live" else "PAPER (dry-run)"
+    print(f"=== ARES {posture} · {mode.upper()} · {a.account} · tier {a.tier} "
           f"(A={spec['am']} MNQ) ===")
     print(f"  data: {data_line} · Profile A only · "
           f"D1c {d1c_mode} (real DriftGate, validated 1m — running on 5m feed)")
@@ -253,7 +254,8 @@ def main(argv=None):
     # keep the dashboard truthful about the actual execution posture
     dash_store.set_state(execution_route=a.execution,
                          webhook_mode=("live" if mode == "live" else "dry-run"),
-                         auto_exec_mode=mode, auto_daily_stop=str(spec["daily_stop"]))
+                         auto_exec_mode=mode, auto_daily_stop=str(spec["daily_stop"]),
+                         auto_exec_posture=posture)   # human-facing execution-posture label
     def _persist_data_status(_=None):
         """Mirror feed.data_status() into the DASHBOARD store so it never shows false-green."""
         if hasattr(feed, "data_status"):
@@ -293,17 +295,44 @@ def main(argv=None):
         # entries are blocked until ARMED (live arms only after the preflight passes); paper trades now.
         armed = {"v": (mode != "live")}
 
+        from scheduler import Scheduler as _Sched
+        from zoneinfo import ZoneInfo as _ZI
+
         def _entry_ready():
             if not armed["v"]:
                 return False, "arming — preflight not passed"
+            # holiday gate (defense in depth): never trade a weekend / US market holiday
+            _today = datetime.now(timezone.utc).astimezone(_ZI("America/New_York")).date()
+            if not _Sched().is_trading_day(_today):
+                return False, "market holiday / non-trading day (%s)" % _today
             dstate = feed.data_state() if hasattr(feed, "data_state") else ("GREEN", "")
             return entry_ready(dstate, deadman_status())
         auto.entry_gate = _entry_ready
-        print("  entry gate armed (block entries unless armed + data GREEN + dead-man alive)", flush=True)
+        print("  entry gate armed (block entries unless armed + data GREEN + dead-man alive + trading day)",
+              flush=True)
 
         # one shared live generator + one per-bar processor (warm-to-GREEN and the main loop both use it)
         _agg = Bar5Aggregator() if dual_1m else None
         live_gen = feed.live()
+        _qty = spec["am"]                  # ARES A-tier size (e.g. 3 MNQ for A3)
+        _bar = {"i": 0}                    # monotonic engine-bar index for the fill tracker
+        _rec = {"n": 0}                    # tracker.rows already appended to the calendar ledger
+
+        def _record_resolved():
+            """Append any newly-RESOLVED trades to the dashboard P&L calendar ledger.
+            Uses the proven PaperTracker outcome (stop/TP1/TP2/EOD -> result_R); display-only."""
+            import trade_results
+            _rec["n"] = trade_results.record_resolved(
+                runner.tracker.rows, _rec["n"], mode, a.account, _qty)
+
+        def _engine_bar(bts, bo, bh, bl, bc):
+            runner.tracker.on_bar(_bar["i"], bts, bo, bh, bl, bc)   # advance open watches -> resolve exits
+            runner._cur = (_bar["i"], bo, bh, bl, bc)
+            runner.bot.process_bar(bts, bo, bh, bl, bc)            # may open a watch via _on_decision
+            runner.bot._persist()
+            runner.tracker.persist(store)
+            _record_resolved()
+            _bar["i"] += 1
 
         def _process(ts, o, h, l, c):
             if auto.killed():
@@ -313,13 +342,9 @@ def main(argv=None):
                 done = _agg.add(ts, o, h, l, c)                # native 1m -> D1c; aggregated 5m -> engine
                 if done:
                     d_ts, do, dh, dl, dc, _ = done
-                    runner._cur = (0, do, dh, dl, dc)
-                    runner.bot.process_bar(d_ts, do, dh, dl, dc)
-                    runner.bot._persist()
+                    _engine_bar(d_ts, do, dh, dl, dc)
             else:
-                runner._cur = (0, o, h, l, c)
-                runner.bot.process_bar(ts, o, h, l, c)
-                runner.bot._persist()
+                _engine_bar(ts, o, h, l, c)
             _persist_data_status(store)
 
         # --- LIVE: warm the live feed to GREEN, THEN run the preflight (the Dukascopy warmup tail is
@@ -343,7 +368,7 @@ def main(argv=None):
             ok, fails, eff_d1c, summ = full_auto_preflight(
                 a.account, a.feed, requested_d1c, ds_gate, store=dash_store, dashboard_green=dgreen,
                 controlled_test=a.controlled_tv_live_test)
-            modlabel = "CONTROLLED TV LIVE TEST" if a.controlled_tv_live_test else "FULL AUTO"
+            modlabel = "CONTROLLED TV LIVE TEST" if a.controlled_tv_live_test else "SUPERVISED LIVE AUTO"
             if not ok:
                 print(f"REFUSED {modlabel} — fail closed:")
                 for f in fails:

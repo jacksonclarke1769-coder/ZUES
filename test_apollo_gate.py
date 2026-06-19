@@ -1,8 +1,12 @@
 """APOLLO full-auto gate + D1c-feed enforcement tests (no network, no live)."""
+import datetime
 import json
 import os
 
 import pytest
+
+TRADING_DAY = datetime.date(2026, 6, 22)   # a normal Monday — pin calendar-gate in pass tests
+MARKET_HOLIDAY = datetime.date(2026, 6, 19)  # Juneteenth (in Scheduler.holidays)
 
 import auto_safety as A
 from store import Store
@@ -63,7 +67,7 @@ def test_preflight_passes_on_proper_soaked_feed(tmp_path, monkeypatch):
     store, ds = _ready_env(tmp_path, monkeypatch)
     ok, fails, eff_d1c, summ = A.full_auto_preflight(
         "MFFU-50K-1", "tradovate", "ACTIVE_EVAL_FILTER", ds,
-        store=store, dashboard_green=True)
+        store=store, dashboard_green=True, today=TRADING_DAY)
     assert ok, fails
     assert eff_d1c == "SHADOW"               # 5m feed -> D1c downgraded, but full auto still passes
 
@@ -73,9 +77,28 @@ def test_controlled_test_passes_on_browser_feed_with_flag(tmp_path, monkeypatch)
     store, ds = _ready_env(tmp_path, monkeypatch)
     ok, fails, eff_d1c, summ = A.full_auto_preflight(
         "MFFU-50K-1", "tradingview-1m", "ACTIVE_EVAL_FILTER", ds,
-        store=store, dashboard_green=True, controlled_test=True)
+        store=store, dashboard_green=True, controlled_test=True, today=TRADING_DAY)
     assert ok, fails
     assert eff_d1c == "ACTIVE_EVAL_FILTER"          # 1m + realtime -> legal
+
+
+def test_preflight_refuses_on_market_holiday(tmp_path, monkeypatch):
+    # Juneteenth (and any weekend/holiday) must hard-block live auto — Profile A is NY-AM cash only
+    store, ds = _ready_env(tmp_path, monkeypatch)
+    ok, fails, _, _ = A.full_auto_preflight(
+        "MFFU-50K-1", "tradovate", "ACTIVE_EVAL_FILTER", ds,
+        store=store, dashboard_green=True, today=MARKET_HOLIDAY)
+    assert not ok
+    assert any("CALENDAR" in f and "holiday" in f for f in fails)
+
+
+def test_preflight_refuses_on_weekend(tmp_path, monkeypatch):
+    store, ds = _ready_env(tmp_path, monkeypatch)
+    ok, fails, _, _ = A.full_auto_preflight(
+        "MFFU-50K-1", "tradovate", "ACTIVE_EVAL_FILTER", ds,
+        store=store, dashboard_green=True, today=datetime.date(2026, 6, 20))  # Saturday
+    assert not ok
+    assert any("CALENDAR" in f for f in fails)
 
 
 def test_controlled_test_fails_without_test_flag(tmp_path, monkeypatch):
@@ -186,7 +209,7 @@ def test_preflight_downgrades_d1c_on_5m_even_when_passing(tmp_path, monkeypatch)
     store, ds = _ready_env(tmp_path, monkeypatch)
     ok, fails, eff_d1c, summ = A.full_auto_preflight(
         "MFFU-50K-1", "tradovate", "ACTIVE_EVAL_FILTER", ds,   # proper feed, 5m -> D1c SHADOW
-        store=store, dashboard_green=True)
+        store=store, dashboard_green=True, today=TRADING_DAY)
     assert ok, fails
     assert eff_d1c == "SHADOW"                        # forced shadow on a 5m feed
     assert summ["d1c_downgrade"]
