@@ -8,3 +8,7 @@ evidence/approvals/*.flag
 evidence/launchlock/**/*.flag
 out/heimdall/
 logs/
+
+# research data cache (regenerable, large) + runtime P&L ledger (written by the live runner)
+data/nightwatch/
+out/ares/trade_results.csv
