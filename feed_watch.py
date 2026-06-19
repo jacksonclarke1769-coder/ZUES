@@ -7,7 +7,7 @@ with a cooldown, an attempt cap, and a market-hours guard (no thrashing reloads 
 
 Read-only on trading state. Does NOT place orders or touch strategy/D1c/sizing. A heal causes a brief
 feed reset, which the runner's reconnect-tolerant readiness handles (YELLOW -> GREEN). On any
-degradation it also writes a SEMI_AUTO_ONLY marker. Full auto stays gated elsewhere.
+degradation it also writes a SEMI_AUTO_ONLY marker. Supervised live auto stays gated elsewhere.
 
 Run:  python3 feed_watch.py --heal             # monitor + auto-heal, 60s
       python3 feed_watch.py --once             # single check (spot-report, no heal)

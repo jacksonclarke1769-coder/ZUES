@@ -1,4 +1,4 @@
-"""CLI for the FULL-AUTO preflight gate. Reads the live data_status (freshness-corrected) + the
+"""CLI for the SUPERVISED LIVE AUTO preflight gate. Reads the live data_status (freshness-corrected) + the
 dashboard green state, runs auto_safety.full_auto_preflight, and prints the exact blockers.
 Read-only — it never arms anything. Exit 0 = GO, 1 = BLOCKED.
 
@@ -14,7 +14,7 @@ from heimdall_monitor import apply_freshness
 
 
 def main(argv=None):
-    p = argparse.ArgumentParser(description="full-auto preflight (read-only)")
+    p = argparse.ArgumentParser(description="supervised live auto preflight (read-only)")
     p.add_argument("--account", required=True)
     p.add_argument("--feed", default="tradingview-1m")
     p.add_argument("--tier", default="50K-conservative")
@@ -35,12 +35,12 @@ def main(argv=None):
         dict(ds, daily_stop=700), store=Store(), dashboard_green=dgreen,
         controlled_test=a.controlled)
 
-    mode = "CONTROLLED TV LIVE TEST" if a.controlled else "PRODUCTION FULL-AUTO"
+    mode = "CONTROLLED TV LIVE TEST" if a.controlled else "SUPERVISED LIVE AUTO"
     print("================ %s PREFLIGHT ================" % mode)
     print("account: %s · feed: %s · dashboard_green: %s" % (a.account, a.feed, dgreen))
     print("data_state: %s · DATA_READY: %s · effective D1c: %s" %
           (ds.get("data_state"), ds.get("DATA_READY"), eff_d1c))
-    print("RESULT: %s" % ("FULL AUTO GO" if ok else "BLOCKED"))
+    print("RESULT: %s" % ("SUPERVISED LIVE AUTO — GO" if ok else "BLOCKED"))
     if fails:
         print("blockers:")
         for f in fails:

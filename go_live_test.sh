@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# CONTROLLED supervised TradingView FULL-AUTO live test — operator runs this and STAYS PRESENT.
+# CONTROLLED SUPERVISED LIVE AUTO test on the TradingView feed — operator runs this and STAYS PRESENT.
 # It arms real MFFU-50K-1 orders (A3/B2, -$700 daily stop, D1c active). The runner's preflight
 # still enforces every safety gate and REFUSES if anything is not green. Ctrl-C stops it.
 set -uo pipefail
 cd ~/trading-team/bot/nq-liq-bot
 
-echo "================  CONTROLLED FULL-AUTO LIVE TEST  ================"
+echo "================  CONTROLLED SUPERVISED LIVE AUTO TEST  ================"
 echo "Account: MFFU-50K-1 · A3/B2 · -\$700 daily stop · D1c active · TradingView feed (supervised)"
 echo "This places REAL orders automatically on Profile A signals. You supervise; stay present."
 echo

@@ -236,12 +236,20 @@ def assemble_state():
     exp_mnq = sum(a.get("open_qty", 0) for a in accounts)
     alloc_a = sum(a.get("alloc_a", 0) for a in accounts)
     alloc_b = sum(a.get("alloc_b", 0) for a in accounts)
+    # live runner truth: read the REAL process heartbeat (not the legacy store key) so the header
+    # reflects an actually-running live session instead of the frozen config posture.
+    from heimdall_monitor import deadman_status as _deadman
+    _dm = _deadman()
+    _hb_alive = bool(_dm.get("alive"))
+    _hb_ts = (now - timedelta(seconds=_dm["age_s"])).isoformat() if _dm.get("age_s") is not None else None
+    _live_run = _hb_alive and (store.get_state("webhook_mode") == "live")
     tier = ("BLACK" if any(a[0] == "BLACK" for a in alerts) else
             "RED" if any(a[0] == "RED" for a in alerts) else
             "ORANGE" if any(a[0] == "ORANGE" for a in alerts) else
             "YELLOW" if any(a[0] == "YELLOW" for a in alerts) else "GREEN")
     mode = ("LOCKED" if lockout else
             "DEMO-PREVIEW" if CFG["demo"] else
+            "LIVE" if _live_run else
             "PAPER" if not accounts else "SIM")
     trading = (tier not in ("RED", "BLACK")) and sch.is_trading_day(
         sch.et(now).date()) and not lockout
@@ -264,7 +272,7 @@ def assemble_state():
                   next_session=_next_session(sch, now),
                   voice=voice(mode, lockout, alerts, trading, worst_edge)),
         header=dict(tier=tier, lockout=lockout,
-                    heartbeat=store.get_state("heartbeat_ts"),
+                    heartbeat=_hb_ts,
                     broker_sync=store.get_state("broker_sync_ts"),
                     last_journal=snap["journal"]["last_seq_ts"],
                     in_entry_window=sch.in_entry_window(now)),
@@ -442,6 +450,9 @@ def assemble_state():
         dm_ok = bool(dm.get("alive"))
         hb_present = dm.get("age_s") is not None      # distinguishes "stalled" from "not running"
         dm_red = hb_present and not dm_ok             # a running process that went stale = danger
+        # human-facing execution posture (liveness-gated so it can't claim it's running when it isn't)
+        exec_posture = (store.get_state("auto_exec_posture") or "IDLE (not running)") if dm_ok \
+            else "IDLE (not running)"
         dep_blockers = []
         if not data_ready:
             dep_blockers.append("DATA: " + "; ".join(ds.get("reasons") or ["no data heartbeat from feed"]))
@@ -469,7 +480,7 @@ def assemble_state():
             d1c_banner=("D1c ACTIVE EVAL FILTER · NOT FUNDED PRODUCTION · NOT ATHENA PROMOTION"
                         if d1c["eval_mode"] == "ACTIVE_EVAL_FILTER" else
                         f"D1c {d1c['eval_mode']}"),
-            exec_state=exec_state, broker_smoke=broker_ok,
+            exec_state=exec_state, exec_posture=exec_posture, broker_smoke=broker_ok,
             account_modes=modes, ares_accounts=list(ares),
             funded_accounts=list(funded_modes), green=dep_green,
             status=dep_status, data_ready=data_ready, data_status=ds,
@@ -651,6 +662,19 @@ def api_state():
 @APP.route("/api/oracle")
 def api_oracle():
     return jsonify(oracle_report())
+
+
+def calendar_pnl():
+    """Per-day realised P&L for the dashboard calendar (Topstep-style). Display-only —
+    recomputed every request from the trade-results ledger the bot appends to as trades
+    resolve; nothing here can fake a day. Shares one implementation with the recorder."""
+    import trade_results
+    return trade_results.by_day()
+
+
+@APP.route("/api/calendar")
+def api_calendar():
+    return jsonify(calendar_pnl())
 
 
 @APP.route("/api/trade/<cl>")

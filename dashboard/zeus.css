@@ -146,3 +146,31 @@ pre{font:300 11.5px/1.6 var(--mono);color:var(--bone);white-space:pre-wrap}
   padding:8px 16px;margin-bottom:12px;text-align:center}
 .ares-strip.viol{border-color:var(--red);background:rgba(231,60,60,.14);
   color:var(--red);animation:throb 1.6s infinite}
+
+/* ---------- 📅 P&L Calendar (Topstep-style) ---------- */
+.cal-wrap{max-width:1000px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cal-title{font:700 22px/1 var(--disp);letter-spacing:.12em;color:var(--gold-hi)}
+.cal-nav{display:flex;gap:8px}
+.cal-nav button{background:var(--panel2);border:1px solid var(--hair);color:var(--stone);
+  font:500 11px var(--mono);padding:6px 14px;cursor:pointer}
+.cal-nav button:hover{color:var(--gold-hi);border-color:var(--gold)}
+.cal-kpis{margin-bottom:14px}
+.cal-dowrow{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:7px}
+.cal-dow{text-align:center;font:600 10px var(--disp);letter-spacing:.16em;color:var(--gold)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.cal-cell{min-height:84px;border:1px solid var(--hair);background:var(--panel);border-radius:6px;
+  padding:7px 8px;position:relative;display:flex;flex-direction:column}
+.cal-cell.pad{border:none;background:transparent}
+.cal-cell.empty{opacity:.4}
+.cal-cell.pos{background:linear-gradient(180deg,rgba(61,220,132,.16),var(--panel));border-color:var(--green)}
+.cal-cell.neg{background:linear-gradient(180deg,rgba(231,60,60,.16),var(--panel));border-color:var(--red)}
+.cal-cell.dim{border-color:var(--gold-dim)}
+.cal-dom{font:600 12px var(--mono);color:var(--stone)}
+.cal-pnl{font:600 18px/1.1 var(--mono);margin-top:auto}
+.cal-pnl.pos{color:var(--green)}.cal-pnl.neg{color:var(--red)}.cal-pnl.dim{color:var(--bone)}
+.cal-tr{font-size:10.5px;color:var(--stone);margin-top:2px}
+.cal-tag{position:absolute;top:7px;right:7px;font:600 8px var(--disp);letter-spacing:.1em;
+  padding:1px 5px;border:1px solid}
+.cal-tag.paper{color:var(--yellow);border-color:var(--yellow)}
+.cal-tag.live{color:var(--green);border-color:var(--green)}

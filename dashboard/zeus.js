@@ -18,8 +18,10 @@ function renderHeader(clientMs){
   $("#voice").textContent = S.meta.voice;
   const m=S.meta,h=S.header;
   const tierCls={GREEN:"g",YELLOW:"y",ORANGE:"o",RED:"r",BLACK:"k"}[h.tier]||"";
+  const posture = (S.deployment && S.deployment.exec_posture) || "IDLE (not running)";
   $("#chips").innerHTML = [
     [`MODE <b>${m.mode}</b>`, m.mode==="LOCKED"?"k":""],
+    [`EXECUTION <b>${posture}</b>`, posture.includes("SUPERVISED")?"g":(posture.includes("PAPER")?"y":"")],
     [`TRADING <b>${m.trading_allowed?"PERMITTED":"FORBIDDEN"}</b>`, m.trading_allowed?"g":"r"],
     [`ALERT TIER <b>${h.tier}</b>`, tierCls],
     [`SESSION <b>${h.in_entry_window?"ENTRY WINDOW OPEN":"GATES CLOSED"}</b>`, h.in_entry_window?"g":""],
@@ -239,6 +241,66 @@ function renderTrades(){
   document.querySelectorAll("[data-tf]").forEach(b=>b.onclick=()=>{FILTER.trades=b.dataset.tf;renderTrades();});
 }
 
+/* 📅 CALENDAR — daily realised P&L (Topstep-style, display-only) */
+const CAL_MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const CAL_DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+let CAL=null, CAL_VIEW=null;
+
+async function renderCalendar(){
+  try{ CAL = await (await fetch("/api/calendar")).json(); }catch(e){ CAL={}; }
+  if(!CAL_VIEW){
+    const keys=Object.keys(CAL).sort();
+    const base=keys.length?new Date(keys[keys.length-1]+"T12:00:00"):new Date();
+    CAL_VIEW={y:base.getFullYear(), m:base.getMonth()};
+  }
+  drawCalendar();
+}
+function calShift(delta){
+  let {y,m}=CAL_VIEW; m+=delta;
+  if(m<0){m=11;y--;} if(m>11){m=0;y++;}
+  CAL_VIEW={y,m}; drawCalendar();
+}
+function drawCalendar(){
+  const {y,m}=CAL_VIEW, pad2=(n)=>String(n).padStart(2,"0");
+  const key=(d)=>`${y}-${pad2(m+1)}-${pad2(d)}`;
+  const ndays=new Date(y,m+1,0).getDate(), startDow=new Date(y,m,1).getDay();
+  let total=0,won=0,lost=0,traded=0,paper=0,live=0;
+  for(let d=1;d<=ndays;d++){ const e=CAL[key(d)]; if(!e)continue;
+    total+=e.pnl; traded++; if(e.pnl>0)won++; else if(e.pnl<0)lost++;
+    (e.mode==="live")?live++:paper++; }
+  let cells="";
+  for(let i=0;i<startDow;i++) cells+=`<div class="cal-cell pad"></div>`;
+  for(let d=1;d<=ndays;d++){
+    const e=CAL[key(d)];
+    if(!e){ cells+=`<div class="cal-cell empty"><span class="cal-dom">${d}</span></div>`; continue; }
+    const s=cls(e.pnl);
+    const tag=e.mode==="live"?`<span class="cal-tag live">LIVE</span>`:`<span class="cal-tag paper">PAPER</span>`;
+    cells+=`<div class="cal-cell ${s}"><span class="cal-dom">${d}</span>${tag}`
+         +`<span class="cal-pnl ${s}">${usd(e.pnl)}</span>`
+         +`<span class="cal-tr">${e.trades} trade${e.trades===1?"":"s"}</span></div>`;
+  }
+  for(let i=startDow+ndays;i%7!==0;i++) cells+=`<div class="cal-cell pad"></div>`;
+  const winRate=traded?Math.round(100*won/traded):0;
+  $("#page-calendar").innerHTML = `
+   <div class="cal-wrap">
+    <div class="cal-head">
+      <div class="cal-title">${CAL_MONTHS[m]} ${y}</div>
+      <div class="cal-nav"><button id="cal-prev">‹ Prev</button><button id="cal-next">Next ›</button></div>
+    </div>
+    <div class="grid g4 kpis cal-kpis">
+      <div class="panel kpi"><div class="big ${cls(total)}">${usd(total)}</div><div class="dim">Month net</div></div>
+      <div class="panel kpi"><div class="big">${traded}</div><div class="dim">Trading days</div></div>
+      <div class="panel kpi"><div class="big">${won}W / ${lost}L</div><div class="dim">${winRate}% green days</div></div>
+      <div class="panel kpi"><div class="big">${paper} / ${live}</div><div class="dim">Paper / Live days</div></div>
+    </div>
+    <div class="cal-dowrow">${CAL_DOW.map(d=>`<div class="cal-dow">${d}</div>`).join("")}</div>
+    <div class="cal-grid">${cells}</div>
+    <div class="note">Daily realised P&L from the trade-results ledger (out/ares/trade_results.csv). PAPER days are simulated fills (no real money); LIVE days are routed orders. Gross unless noted.</div>
+   </div>`;
+  $("#cal-prev").onclick=()=>calShift(-1);
+  $("#cal-next").onclick=()=>calShift(1);
+}
+
 /* Ⅴ JOURNAL */
 function renderJournal(){
   const jn=S.journal;
@@ -339,6 +401,7 @@ document.querySelectorAll("#rail button").forEach(b=>b.onclick=()=>{
   b.classList.add("on");
   $("#page-"+b.dataset.page).classList.add("on");
   if(b.dataset.page==="oracle") renderOracle();
+  if(b.dataset.page==="calendar") renderCalendar();
 });
 let TIMER=null;
 function startTimer(){ clearInterval(TIMER);
