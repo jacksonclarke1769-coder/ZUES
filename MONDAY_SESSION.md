@@ -28,7 +28,21 @@ On Monday every line must be ✓ EXCEPT `TRADERSPOST_LIVE_URL` (you supply it at
 If `git clean` is ✗, that's fine for safety but resolve if you want a clean board. If
 `ET trading day` is ✗ at this point something is wrong with the clock — do NOT trade.
 
-## Launch — supervised live auto on the TradingView feed (one command)
+## ▶ Monday plan = PAPER session (A + B + P3 + ARGUS) — one command
+This is the recommended Monday: run the full stack in **paper** to earn its proof. No live money,
+no flag. The launcher does preflight → brings up the TV feed → probes it → runs the paper session
+(Ctrl-C to stop); the runner has Profile A (Exit #3) + Profile B (ORB) + P3 + ARGUS all on.
+```
+bash tools/monday_paper.sh
+```
+After the session, audit it (ARGUS verdict + A/B P&L split + parity):
+```
+python3 tools/monday_audit.py --date today --parity
+```
+A clean result = `SESSION CLEAN — NO SETUP` (or `TRADE TAKEN` with A/B two-leg P&L on the calendar,
+all **hypothetical** = paper). Only after a clean paper session do you consider the live path below.
+
+## Launch — supervised LIVE auto (ONLY after paper proof + operator creates the flag)
 ```
 bash go_live_test.sh
 ```
