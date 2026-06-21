@@ -63,3 +63,35 @@ def test_eod_close_resolves(tmp_path):
     t.on_bar(1, "2026-06-22 09:50", 100, 101, 99, 100)          # filled
     t.on_bar(2, "2026-06-22 16:05", 100, 102, 99, 101)          # post-RTH -> EOD close at 101
     assert t.closed == 1 and t.recorded[0]["pnl"] != 0
+
+
+# ---- persistence (restart-safe) ----
+def test_open_watch_survives_restart(tmp_path):
+    from store import Store
+    st = Store(str(tmp_path / "s.db")); p = str(tmp_path / "tr.csv")
+    t = ProfileBPaperTracker(st, "MFFU-50K-1", "paper", dpp=2.0, path=p)
+    t.on_signal(SIG, qty=1, bar_i=0, ts="2026-06-22 09:45")
+    t.on_bar(1, "2026-06-22 09:50", 100, 101, 99, 100)          # FILLED, not yet resolved
+    assert len(t.open) == 1 and t.open[0]["filled"] == 1
+    t2 = ProfileBPaperTracker(st, "MFFU-50K-1", "paper", dpp=2.0, path=p)   # "restart"
+    assert len(t2.open) == 1 and t2.open[0]["filled"] == 1      # watch restored
+    t2.on_bar(2, "2026-06-22 09:55", 101, 104, 100, 103)        # resolves in the restored tracker
+    assert t2.closed == 1
+
+
+def test_no_double_record_across_restart(tmp_path):
+    import csv
+    from store import Store
+    st = Store(str(tmp_path / "s.db")); p = str(tmp_path / "tr.csv")
+    t = ProfileBPaperTracker(st, "MFFU-50K-1", "paper", dpp=2.0, path=p)
+    t.on_signal(SIG, qty=1, bar_i=0, ts="2026-06-22 09:45")
+    t.on_bar(1, "2026-06-22 09:50", 100, 101, 99, 100)
+    t.on_bar(2, "2026-06-22 09:55", 101, 104, 100, 103)         # resolved + recorded
+    assert t.closed == 1
+    # restart with a STALE snapshot that still has the resolved watch -> must NOT re-record
+    t2 = ProfileBPaperTracker(st, "MFFU-50K-1", "paper", dpp=2.0, path=p)
+    t2.open = [dict(side="long", d=1, entry=100.0, stop=98.0, target=103.0, qty=1,
+                    sbar=0, ts="2026-06-22 09:45", filled=1)]
+    t2.on_bar(2, "2026-06-22 09:55", 101, 104, 100, 103)        # key dedup blocks the re-record
+    n = sum(1 for _ in csv.DictReader(open(p)))
+    assert n == 1                                              # exactly one B row, not two

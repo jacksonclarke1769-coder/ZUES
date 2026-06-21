@@ -14,6 +14,9 @@ RTH_END = 16 * 60
 B_COST_PTS = 0.75            # frozen Profile B cost (slippage + commission, points)
 
 
+SNAP_KEY = "b_tracker_snapshot"
+
+
 class ProfileBPaperTracker:
     def __init__(self, store, account, mode, dpp=2.0, fill_window=6, max_hold=24,
                  path=trade_results.PATH):
@@ -26,7 +29,36 @@ class ProfileBPaperTracker:
         self.path = path
         self.open = []          # pending/working B trades
         self.closed = 0
-        self.recorded = []      # audit of recorded rows
+        self.recorded = []      # audit of recorded rows (this run)
+        self.recorded_keys = set()   # idempotency: a B trade is booked at most once across restarts
+        self._restore()         # survive a restart: reload open watches + closed count
+
+    @staticmethod
+    def _key(w):
+        return f"{w['ts']}|{w['side']}|{w['sbar']}"
+
+    # ---- restart safety (mirrors Profile A's PaperTracker) ----
+    def snapshot(self):
+        return dict(open=self.open, closed=self.closed, recorded_keys=sorted(self.recorded_keys))
+
+    def persist(self):
+        if self.store is not None:
+            try:
+                self.store.set_state(**{SNAP_KEY: self.snapshot()})
+            except Exception:                            # noqa: BLE001 — tracking never breaks the loop
+                pass
+
+    def _restore(self):
+        if self.store is None:
+            return
+        try:
+            snap = self.store.get_state(SNAP_KEY)
+            if snap:
+                self.open = list(snap.get("open", []))
+                self.closed = int(snap.get("closed", 0))
+                self.recorded_keys = set(snap.get("recorded_keys", []))
+        except Exception:                                # noqa: BLE001
+            pass
 
     def on_signal(self, sig, qty, bar_i, ts):
         if int(qty) <= 0:
@@ -35,6 +67,7 @@ class ProfileBPaperTracker:
         self.open.append(dict(side=sig["side"], d=d, entry=float(sig["entry"]),
                               stop=float(sig["stop"]), target=float(sig["target"]),
                               qty=int(qty), sbar=int(bar_i), ts=str(ts), filled=None))
+        self.persist()
 
     def on_bar(self, bar_i, ts, o, h, l, c):
         ts = pd.Timestamp(ts)
@@ -63,8 +96,13 @@ class ProfileBPaperTracker:
             self._record(w, ex, reason)
             self.closed += 1
         self.open = keep
+        self.persist()
 
     def _record(self, w, ex, reason):
+        key = self._key(w)
+        if key in self.recorded_keys:                    # already booked (restart) -> never double-record
+            return None
+        self.recorded_keys.add(key)
         risk = abs(w["entry"] - w["stop"]) or 1e-9
         gross_pts = (ex - w["entry"]) * w["d"]
         net_pts = gross_pts - B_COST_PTS
