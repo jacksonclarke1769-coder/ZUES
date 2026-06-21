@@ -289,6 +289,8 @@ def main(argv=None):
                    help="ARES eval mode (default) or ZEUS funded mode")
     p.add_argument("--execution", default="traderspost", choices=["traderspost"],
                    help="execution route (TradersPost bridge only today)")
+    p.add_argument("--no-profile-b", action="store_true", help="disable Profile B (A-only fallback)")
+    p.add_argument("--no-p3", action="store_true", help="disable the P3 cushion brake")
     p.add_argument("--confirm", action="store_true",
                    help="required (with --live) to arm SUPERVISED LIVE AUTO; extra human gate")
     p.add_argument("--controlled-tv-full-live-test", "--controlled-tv-live-test",
@@ -342,7 +344,9 @@ def main(argv=None):
                               engine_timeframe="5m")
     auto = LiveAuto(a.account, a.tier, mode, Store(), j, sender, spec["daily_stop"],
                     d1c_mode=d1c_mode, basis_offset=a.basis_offset,
-                    d1c_stale_after_s=(120 if dual_1m else 360), logger=_dlogger)
+                    d1c_stale_after_s=(120 if dual_1m else 360), logger=_dlogger,
+                    profile_b=not getattr(a, "no_profile_b", False),
+                    p3_enabled=not getattr(a, "no_p3", False))
 
     # build the live loop (Dukascopy credential-free feed + SimBot wired to the bridge)
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
