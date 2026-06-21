@@ -37,6 +37,8 @@ from flatten import LOCK_KEY
 from drift_gate import DriftGate
 import d1c_filter
 from datetime import time as _dtime
+from p3_brake import P3Brake
+from strategy_engine_profileB import ProfileBEngine
 
 
 def et_date():
@@ -47,9 +49,17 @@ def et_date():
 class LiveAuto:
     def __init__(self, account, tier, mode, store, journal, sender, daily_stop,
                  d1c_mode="ACTIVE_EVAL_FILTER", basis_offset=0.0, d1c_stale_after_s=360,
-                 entry_gate=None, logger=None):
+                 entry_gate=None, logger=None, cushion_fn=None, p3_enabled=True,
+                 profile_b=True):
         self.logger = logger           # ARGUS decision logger (auditability; fail-safe, optional)
         self.entry_gate = entry_gate   # infrastructure readiness gate (data GREEN + dead-man alive)
+        # P3 cushion brake + Profile B (research-validated; gated like everything else, paper-first)
+        self.p3 = P3Brake()
+        self.p3_enabled = p3_enabled
+        self.cushion_fn = cushion_fn   # () -> (cushion$, dd_allowance$) or None
+        self.profile_b = profile_b
+        self.b_engine = ProfileBEngine()
+        self.b_sent = self.b_blocked = 0
         self.account, self.tier, self.mode = account, tier, mode
         self.store, self.j, self.sender = store, journal, sender
         self.daily_stop = daily_stop
@@ -85,6 +95,17 @@ class LiveAuto:
                 getattr(self.logger, fn)(*a, **k)
         except Exception:                                # noqa: BLE001
             pass
+
+    def _apply_p3(self):
+        """Update the P3 brake from the live cushion. Returns braked (bool). Inert (no brake)
+        if disabled or the cushion is unavailable — P3 only ever REDUCES size near the floor."""
+        if not self.p3_enabled or self.cushion_fn is None:
+            return False
+        try:
+            cushion, dd = self.cushion_fn()
+            return self.p3.update(cushion, dd)
+        except Exception:                                # noqa: BLE001
+            return False
 
     def on_decision(self, sig, placed, reason, ts):
         """SimBot fires this. placed=True means it passed the SimBot risk gate
@@ -133,6 +154,9 @@ class LiveAuto:
                            d1c_checked=True, d1c_allowed=False)
                 return
         spec = EVAL_TIERS[self.tier]
+        # P3 cushion brake: near the floor, cut A to max(am//2,1) (and B to 0, handled in on_b_signal)
+        braked = self._apply_p3()
+        a_size, _ = self.p3.size(spec["am"], spec.get("bm", 0))
         d1c_status = (self.gate.heimdall_status() if self.d1c_mode != "OFF" else "OFF")
         # CONFIGLOCK: resolve the official exit model fail-closed (never silently SINGLE_TARGET).
         from runtime_config import resolve_exit_model, ConfigLockError
@@ -144,7 +168,7 @@ class LiveAuto:
             return
         common = dict(
             account=self.account, strategy="A", setup=sig.get("liq", "sweep-OTE"),
-            signal_ts=sig["ts_signal"], side=sig["side"], qty=spec["am"],
+            signal_ts=sig["ts_signal"], side=sig["side"], qty=a_size,
             entry=float(sig["entry"]) + self.basis_offset,
             stop=float(sig["stop"]) + self.basis_offset,
             target=float(sig["target"]) + self.basis_offset,
@@ -168,8 +192,8 @@ class LiveAuto:
             ok = res.get("sent")
         if ok or self.mode != "live":
             self.sent += 1
-        print(f"[auto-live] {sig['side']} {spec['am']}MNQ {_exit_model} @ "
-              f"{sig['entry']:.2f} stop {sig['stop']:.2f} tgt {sig['target']:.2f} "
+        print(f"[auto-live] A {sig['side']} {a_size}MNQ{' (P3-braked)' if braked else ''} "
+              f"{_exit_model} @ {sig['entry']:.2f} stop {sig['stop']:.2f} tgt {sig['target']:.2f} "
               f"-> {res.get('reason', 'sent')}",
               flush=True)
         # ARGUS: record the resolved decision (exitlock-block vs paper/live signal) with Exit #3 fields
@@ -190,6 +214,57 @@ class LiveAuto:
                        tp2_qty=_lf.get("tp2_qty"), tp2_target=_lf.get("tp2_target"),
                        signal_id_base=sig["ts_signal"], webhook_sent=bool(ok),
                        traderspost_status=_reason, live=(self.mode == "live"))
+
+    def on_b_signal(self, sig, ts):
+        """Profile B (ORB) entry. NEVER consults D1c. Single bracket (its own ATR stop/target,
+        NOT Exit #3). Gated by kill-switch / entry-gate / daily-stop / P3 brake (B=0 near floor).
+        Still blocked live by the EXITLOCK flag (it's a buy/sell entry)."""
+        if not self.profile_b:
+            return
+        kill = self.killed()
+        if kill:
+            self.b_blocked += 1
+            self._dlog("blocked", "ares", bar_ts=ts, side=sig.get("side"), reason=kill, profile="B")
+            return
+        if self.entry_gate is not None:
+            ready, why = self.entry_gate()
+            if not ready:
+                self.b_blocked += 1
+                self._dlog("blocked", "data", bar_ts=ts, side=sig.get("side"), reason=why, profile="B")
+                return
+        spec = EVAL_TIERS[self.tier]
+        self._apply_p3()
+        _, b_size = self.p3.size(spec["am"], spec.get("bm", 0))
+        if b_size <= 0:                                  # P3 brake (or tier has no B) -> no B trade
+            self.b_blocked += 1
+            self._dlog("blocked", "ares", bar_ts=ts, side=sig.get("side"),
+                       reason="P3 brake (B=0)" if self.p3.braked else "no B size in tier", profile="B")
+            return
+        payload, err = BP.build_entry(
+            account=self.account, strategy="B", setup=sig.get("liq", "orb"),
+            signal_ts=sig["ts_signal"], side=sig["side"], qty=b_size,
+            entry=float(sig["entry"]) + self.basis_offset,
+            stop=float(sig["stop"]) + self.basis_offset,
+            target=float(sig["target"]) + self.basis_offset,
+            root="MNQ", order_type="limit", mode_meta=dict(mode="ARES", tier=self.tier, profile="B"))
+        if err:
+            print(f"[auto-live] B FAIL CLOSED — payload not built: {err}", flush=True)
+            return
+        res = self.sender.send(payload)
+        ok = res.get("sent")
+        if ok or self.mode != "live":
+            self.b_sent += 1
+        print(f"[auto-live] B {sig['side']} {b_size}MNQ ORB @ {sig['entry']:.2f} "
+              f"stop {sig['stop']:.2f} tgt {sig['target']:.2f} -> {res.get('reason', 'sent')}",
+              flush=True)
+        _reason = res.get("reason", "")
+        if not ok and "exit model" in _reason.lower():
+            self._dlog("blocked", "exitlock", bar_ts=ts, side=sig["side"], reason=_reason, profile="B")
+        else:
+            self._dlog("signal", bar_ts=ts, side=sig["side"], entry=float(sig["entry"]),
+                       stop=float(sig["stop"]), qty_total=b_size, tp2_target=float(sig["target"]),
+                       signal_id_base=sig["ts_signal"], webhook_sent=bool(ok),
+                       traderspost_status=_reason, live=(self.mode == "live"), profile="B")
 
 
 def main(argv=None):
@@ -274,6 +349,8 @@ def main(argv=None):
     runner.bot.on_decision = lambda sig, placed, reason, ts: (
         runner._orig(sig, placed, reason, ts), auto.on_decision(sig, placed, reason, ts))
     runner._orig = runner._on_decision
+    # P3 reads the live cushion from the account state machine (distance to the trailing floor)
+    auto.cushion_fn = lambda: (runner.bot.mffu.distance_to_floor, runner.bot.mffu.cfg.trail_dd)
     runner.bot.trade_from = pd.Timestamp.now("UTC").tz_convert(NY)
 
     if a.feed == "tradovate":
@@ -392,6 +469,14 @@ def main(argv=None):
             runner._cur = (_bar["i"], bo, bh, bl, bc)
             _nsig = len(runner.bot.signals)
             runner.bot.process_bar(bts, bo, bh, bl, bc)            # may open a watch via _on_decision
+            # Profile B (ORB) runs on the same 5m bars, independent of Profile A
+            try:
+                auto.b_engine.add_bar(bts, bo, bh, bl, bc)
+                _bsig = auto.b_engine.latest_signal()
+                if _bsig is not None:
+                    auto.on_b_signal(_bsig, bts)
+            except Exception as _be:                               # noqa: BLE001 — B never breaks A
+                print(f"[auto-live] B engine error (ignored): {_be!r}", flush=True)
             # ARGUS: an in-window decision bar with NO signal must still be logged (zero-trade proof)
             try:
                 _mins = bts.hour * 60 + bts.minute
