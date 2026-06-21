@@ -80,3 +80,18 @@ def test_b_never_touches_d1c(tmp_path):
     a.gate = None
     a.on_b_signal(B_SIG, pd.Timestamp(B_SIG["ts_signal"]))
     assert len(cap) == 1 and a.b_sent == 1
+
+
+# ---- B paper-P&L wiring: signal -> tracker -> calendar ----
+def test_b_signal_records_pnl_via_tracker(tmp_path):
+    import trade_results as TR
+    a, cap = _auto(tmp_path, cushion=1500)
+    a.b_tracker.path = str(tmp_path / "tr.csv")                 # isolate from the real ledger
+    a.on_b_signal(B_SIG, pd.Timestamp(B_SIG["ts_signal"]), bar_i=0)
+    assert len(a.b_tracker.open) == 1                           # registered with the tracker
+    # fill on retest then hit target (B_SIG long 30000/stop 29950/target 30075)
+    a.b_tracker.on_bar(1, "2026-06-22 09:50", 30000, 30005, 29995, 30000)
+    a.b_tracker.on_bar(2, "2026-06-22 09:55", 30005, 30080, 30000, 30075)
+    assert a.b_tracker.closed == 1
+    day = TR.by_day(a.b_tracker.path)["2026-06-22"]
+    assert day["hypothetical_pnl"] > 0 and day["pnl"] == 0.0    # B paper P&L on the calendar (hypothetical)

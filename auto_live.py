@@ -59,6 +59,8 @@ class LiveAuto:
         self.cushion_fn = cushion_fn   # () -> (cushion$, dd_allowance$) or None
         self.profile_b = profile_b
         self.b_engine = ProfileBEngine()
+        from profile_b_tracker import ProfileBPaperTracker
+        self.b_tracker = ProfileBPaperTracker(store, account, mode)   # B paper-P&L -> calendar
         self.b_sent = self.b_blocked = 0
         self.account, self.tier, self.mode = account, tier, mode
         self.store, self.j, self.sender = store, journal, sender
@@ -215,7 +217,7 @@ class LiveAuto:
                        signal_id_base=sig["ts_signal"], webhook_sent=bool(ok),
                        traderspost_status=_reason, live=(self.mode == "live"))
 
-    def on_b_signal(self, sig, ts):
+    def on_b_signal(self, sig, ts, bar_i=None):
         """Profile B (ORB) entry. NEVER consults D1c. Single bracket (its own ATR stop/target,
         NOT Exit #3). Gated by kill-switch / entry-gate / daily-stop / P3 brake (B=0 near floor).
         Still blocked live by the EXITLOCK flag (it's a buy/sell entry)."""
@@ -254,6 +256,8 @@ class LiveAuto:
         ok = res.get("sent")
         if ok or self.mode != "live":
             self.b_sent += 1
+            if bar_i is not None:                        # track B paper-P&L -> dashboard calendar
+                self.b_tracker.on_signal(sig, b_size, bar_i, ts)
         print(f"[auto-live] B {sig['side']} {b_size}MNQ ORB @ {sig['entry']:.2f} "
               f"stop {sig['stop']:.2f} tgt {sig['target']:.2f} -> {res.get('reason', 'sent')}",
               flush=True)
@@ -474,7 +478,8 @@ def main(argv=None):
                 auto.b_engine.add_bar(bts, bo, bh, bl, bc)
                 _bsig = auto.b_engine.latest_signal()
                 if _bsig is not None:
-                    auto.on_b_signal(_bsig, bts)
+                    auto.on_b_signal(_bsig, bts, _bar["i"])
+                auto.b_tracker.on_bar(_bar["i"], bts, bo, bh, bl, bc)   # fills/exits -> calendar
             except Exception as _be:                               # noqa: BLE001 — B never breaks A
                 print(f"[auto-live] B engine error (ignored): {_be!r}", flush=True)
             # ARGUS: an in-window decision bar with NO signal must still be logged (zero-trade proof)
