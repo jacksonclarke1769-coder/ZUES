@@ -28,7 +28,8 @@ auto.gate.on_bar_close(ts, 30654.0)
 sig = dict(side="short", entry=30654.83, stop=30771.50, target=30421.49,
            ts_signal="2026-06-16T14:46:00+00:00", liq="pdh")
 
-print(f"EXIT_MODEL = {config.EXIT_MODEL}   mode = paper(dry-run)   live_url = {sender.live_url}\n")
+from runtime_config import resolve_exit_model
+print(f"EXIT_MODEL = {resolve_exit_model('paper')}   mode = paper(dry-run)   live_url = {sender.live_url}\n")
 auto.on_decision(sig, True, "placed", ts)
 
 print(f"payloads routed to bridge: {len(captured)}")

@@ -52,7 +52,9 @@ def test_record_resolved_incremental(tmp_path):
     n = TR.record_resolved(rows, n, "live", "MFFU-50K-1", 3, path=p)
     assert n == 3
     agg = TR.by_day(path=p)
+    # CONFIGLOCK: record_resolved rows are MODELED (not broker-confirmed) -> hypothetical, NOT realised.
     # 06-16: only the +1.5R win was recorded (1.5*40*2*3 = 360); the late-resolved one was past the watermark
-    assert agg["2026-06-16"]["pnl"] == 360.0
+    assert agg["2026-06-16"]["pnl"] == 0.0                   # realised stays 0 until broker recon
+    assert agg["2026-06-16"]["hypothetical_pnl"] == 360.0
     assert agg["2026-06-16"]["mode"] == "live"
-    assert agg["2026-06-17"]["pnl"] == 240.0        # 1.0*40*2*3
+    assert agg["2026-06-17"]["hypothetical_pnl"] == 240.0    # 1.0*40*2*3, modeled

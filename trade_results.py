@@ -14,6 +14,19 @@ DOLLARS_PER_POINT = 2.0   # MNQ = $2 per point per contract
 
 
 HYPO_TAG = "HYPOTHETICAL"   # note prefix for projected/un-filled P&L (dashboard must not call it realised)
+# CONFIGLOCK: a row counts as REALISED only if its note explicitly proves a fill/resolution.
+# Everything else (modeled, pending, synthetic full-qty +2R, blank) is HYPOTHETICAL — so even a
+# fresh clone (without the locally-corrected CSV) never shows synthetic P&L as realised.
+_REALISED_MARKERS = ("fill-backed", "broker fill", "broker-confirmed", "confirmed fill",
+                     "resolution-backed")
+_HYPO_MARKERS = (HYPO_TAG.lower(), "modeled", "pending", "synthetic", "tp hit (gross)")
+
+
+def is_realised(note):
+    n = (note or "").lower()
+    if any(m in n for m in _HYPO_MARKERS):
+        return False
+    return any(m in n for m in _REALISED_MARKERS)
 
 
 def pnl_from_r(result_r, entry, stop, contracts, dpp=DOLLARS_PER_POINT):
@@ -42,7 +55,9 @@ def record(date, mode, account, strategy, direction, contracts, pnl, note="",
     so the dashboard never reports a projected/un-filled result as realised P&L."""
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     is_new = not os.path.exists(path)
-    if not fill_backed and HYPO_TAG not in note:
+    if fill_backed and not is_realised(note):
+        note = f"fill-backed · {note}".rstrip(" ·")          # mark genuine broker-confirmed P&L
+    elif not fill_backed and HYPO_TAG not in note:
         note = f"{HYPO_TAG} · {note}".rstrip(" ·")
     row = [date, mode, account, strategy, direction, contracts, round(float(pnl), 2), note]
     with open(path, "a", newline="") as fh:
@@ -68,8 +83,9 @@ def record_resolved(rows, start_n, mode, account, contracts, strategy="A", path=
         nz = r.get("notes")
         nz = ",".join(nz) if isinstance(nz, (list, tuple)) else (nz or "")
         tag = "modeled · pending broker recon" if mode == "live" else "paper · modeled fill"
+        # modeled fills are NOT broker-confirmed -> hypothetical until a recon step proves the fill
         record(date=r["date"], mode=mode, account=account, strategy=strategy,
-               direction=r["direction"], contracts=contracts, pnl=pnl,
+               direction=r["direction"], contracts=contracts, pnl=pnl, fill_backed=False,
                note=f"{tag} · {rr:+.2f}R gross" + (f" · {nz}" if nz else ""), path=path)
     return n
 
@@ -89,11 +105,10 @@ def by_day(path=PATH):
                 except ValueError:
                     continue
                 e = days.setdefault(d, {"pnl": 0.0, "hypo": 0.0, "trades": 0, "modes": set()})
-                hypo = HYPO_TAG in (r.get("note") or "")
-                if hypo:
-                    e["hypo"] += pnl                       # NOT counted as realised
+                if is_realised(r.get("note")):
+                    e["pnl"] += pnl                        # fill/resolution-backed only
                 else:
-                    e["pnl"] += pnl
+                    e["hypo"] += pnl                       # modeled/synthetic -> NOT realised
                 e["trades"] += 1
                 e["modes"].add((r.get("mode") or "paper").strip().lower())
     return {d: {"pnl": round(v["pnl"], 2),                  # fill-backed / realised only

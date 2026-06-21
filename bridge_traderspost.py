@@ -113,13 +113,13 @@ def build_entry_exit3(*, account, strategy, setup, signal_ts, side, qty, entry, 
     CORE (TP2 @ +2R) FIRST, then TP1 (@ +1R) — or (None, error). Each leg dict =
     {role, qty, r_target, target, payload}. `target` arg is the strategy's +2R price; the +1R
     price is derived from entry/stop so the two legs share an identical protective stop."""
-    import config
+    from config_defaults import exit3_split        # version-controlled (not gitignored config.py)
     qty = int(qty)
     if qty <= 0:
         return None, "quantity <= 0"
     if side not in ("long", "short"):
         return None, f"unknown side '{side}'"
-    tp1_qty, tp2_qty = config.exit3_split(qty)
+    tp1_qty, tp2_qty = exit3_split(qty)
     d = 1 if side == "long" else -1
     R = abs(float(entry) - float(stop))
     tp1_target = float(entry) + d * R                 # +1R, same stop -> shared protection

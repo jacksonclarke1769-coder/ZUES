@@ -4,13 +4,14 @@ bracket legs for one Profile A signal and prints them. No webhook, no live. Run:
 """
 import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import config, bridge_traderspost as BP
+import bridge_traderspost as BP
+from runtime_config import resolve_exit_model
 
 # one representative A3 Profile A short (the reported trade)
 SIG = dict(side="short", entry=30654.83, stop=30771.50, target=30421.49)
 ACC, QTY = "MFFU-50K-1", 3
 
-print(f"EXIT_MODEL = {config.EXIT_MODEL}   account = {ACC}   qty = {QTY} MNQ   (DRY-RUN — no sends)\n")
+print(f"EXIT_MODEL = {resolve_exit_model('research')}   account = {ACC}   qty = {QTY} MNQ   (DRY-RUN — no sends)\n")
 legs, err = BP.build_entry_exit3(account=ACC, strategy="A", setup="sweep-OTE",
                                  signal_ts="2026-06-16T13:46:00+00:00", side=SIG["side"],
                                  qty=QTY, entry=SIG["entry"], stop=SIG["stop"], target=SIG["target"])

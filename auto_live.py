@@ -134,7 +134,14 @@ class LiveAuto:
                 return
         spec = EVAL_TIERS[self.tier]
         d1c_status = (self.gate.heimdall_status() if self.d1c_mode != "OFF" else "OFF")
-        import config as _cfg
+        # CONFIGLOCK: resolve the official exit model fail-closed (never silently SINGLE_TARGET).
+        from runtime_config import resolve_exit_model, ConfigLockError
+        try:
+            _exit_model = resolve_exit_model(self.mode if self.mode in ("live", "paper") else "live")
+        except ConfigLockError as e:
+            print(f"[auto-live] CONFIGLOCK: unsafe exit model blocked — {e}", flush=True)
+            self._dlog("blocked", "exitlock", bar_ts=ts, side=sig.get("side"), reason=str(e))
+            return
         common = dict(
             account=self.account, strategy="A", setup=sig.get("liq", "sweep-OTE"),
             signal_ts=sig["ts_signal"], side=sig["side"], qty=spec["am"],
@@ -145,7 +152,7 @@ class LiveAuto:
             mode_meta=dict(mode="ARES", tier=self.tier),
             d1c_meta=dict(mode=self.d1c_mode, status=d1c_status))
         # EXITFORGE: official model is EXIT3_FIXED_PARTIAL -> two split bracket legs, fail-closed
-        if getattr(_cfg, "EXIT_MODEL", "SINGLE_TARGET") == "EXIT3_FIXED_PARTIAL":
+        if _exit_model == "EXIT3_FIXED_PARTIAL":
             legs, err = BP.build_entry_exit3(**common)
             if err:
                 print(f"[auto-live] FAIL CLOSED — exit3 legs not built: {err}", flush=True)
@@ -161,7 +168,7 @@ class LiveAuto:
             ok = res.get("sent")
         if ok or self.mode != "live":
             self.sent += 1
-        print(f"[auto-live] {sig['side']} {spec['am']}MNQ {getattr(_cfg,'EXIT_MODEL','?')} @ "
+        print(f"[auto-live] {sig['side']} {spec['am']}MNQ {_exit_model} @ "
               f"{sig['entry']:.2f} stop {sig['stop']:.2f} tgt {sig['target']:.2f} "
               f"-> {res.get('reason', 'sent')}",
               flush=True)
@@ -171,7 +178,7 @@ class LiveAuto:
             self._dlog("blocked", "exitlock", bar_ts=ts, side=sig["side"], reason=_reason)
         else:
             _lf = {}
-            if getattr(_cfg, "EXIT_MODEL", "") == "EXIT3_FIXED_PARTIAL":
+            if _exit_model == "EXIT3_FIXED_PARTIAL":
                 for L in legs:
                     if L["role"] == "entry_tp1":
                         _lf.update(tp1_qty=L["qty"], tp1_target=L["target"])
