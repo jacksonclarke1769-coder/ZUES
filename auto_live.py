@@ -47,7 +47,8 @@ def et_date():
 class LiveAuto:
     def __init__(self, account, tier, mode, store, journal, sender, daily_stop,
                  d1c_mode="ACTIVE_EVAL_FILTER", basis_offset=0.0, d1c_stale_after_s=360,
-                 entry_gate=None):
+                 entry_gate=None, logger=None):
+        self.logger = logger           # ARGUS decision logger (auditability; fail-safe, optional)
         self.entry_gate = entry_gate   # infrastructure readiness gate (data GREEN + dead-man alive)
         self.account, self.tier, self.mode = account, tier, mode
         self.store, self.j, self.sender = store, journal, sender
@@ -71,9 +72,19 @@ class LiveAuto:
             return "emergency lockout active"
         if self.store.get_state("auto_live_kill"):
             return "operator kill switch"
+        if hasattr(self.sender, "incident_blocked") and self.sender.incident_blocked():
+            return "exit3 incident — manual reset required"
         if self.guard.is_stopped(self.account, et_date()):
             return "daily loss stop hit"
         return None
+
+    def _dlog(self, fn, *a, **k):
+        """ARGUS fail-safe: a logging error never raises into the engine, never blocks a send."""
+        try:
+            if self.logger is not None:
+                getattr(self.logger, fn)(*a, **k)
+        except Exception:                                # noqa: BLE001
+            pass
 
     def on_decision(self, sig, placed, reason, ts):
         """SimBot fires this. placed=True means it passed the SimBot risk gate
@@ -81,6 +92,9 @@ class LiveAuto:
         if not placed:
             self.j.append("STATE_ASSERT", self.account, payload=dict(
                 action="auto_live_skip", reason=reason, side=sig.get("side")))
+            self._dlog("candidate_rejected", bar_ts=ts, side=sig.get("side"),
+                       reason=reason or "simbot_risk_gate", entry=sig.get("entry"),
+                       stop=sig.get("stop"), target=sig.get("target"))
             return
         kill = self.killed()
         if kill:
@@ -88,6 +102,7 @@ class LiveAuto:
             self.j.append("STATE_ASSERT", self.account, payload=dict(
                 action="auto_live_blocked", reason=kill, side=sig.get("side")))
             print(f"[auto-live] BLOCKED ({kill}) — no webhook", flush=True)
+            self._dlog("blocked", "ares", bar_ts=ts, side=sig.get("side"), reason=kill)
             return
         # infrastructure readiness gate: block entries on YELLOW/RED data or a dead nervous system
         if self.entry_gate is not None:
@@ -97,6 +112,7 @@ class LiveAuto:
                 self.j.append("STATE_ASSERT", self.account, payload=dict(
                     action="auto_live_blocked", reason="entry gate: " + why, side=sig.get("side")))
                 print(f"[auto-live] BLOCKED (entry gate: {why}) — no webhook", flush=True)
+                self._dlog("blocked", "data", bar_ts=ts, side=sig.get("side"), reason=why)
                 return
         # --- D1c defensive filter (Profile A only) ---
         if self.d1c_mode in ("ACTIVE_EVAL_FILTER", "SHADOW"):
@@ -112,10 +128,14 @@ class LiveAuto:
                 self.d1c_blocked += 1
                 print(f"[auto-live] D1c BLOCK ({sig['side']}, drift={drift}) — no webhook",
                       flush=True)
+                self._dlog("blocked", "d1c", bar_ts=ts, side=sig.get("side"),
+                           reason=f"drift disagrees (drift={drift})", d1c_mode=self.d1c_mode,
+                           d1c_checked=True, d1c_allowed=False)
                 return
         spec = EVAL_TIERS[self.tier]
         d1c_status = (self.gate.heimdall_status() if self.d1c_mode != "OFF" else "OFF")
-        payload, err = BP.build_entry(
+        import config as _cfg
+        common = dict(
             account=self.account, strategy="A", setup=sig.get("liq", "sweep-OTE"),
             signal_ts=sig["ts_signal"], side=sig["side"], qty=spec["am"],
             entry=float(sig["entry"]) + self.basis_offset,
@@ -124,15 +144,45 @@ class LiveAuto:
             root="MNQ", order_type="limit",
             mode_meta=dict(mode="ARES", tier=self.tier),
             d1c_meta=dict(mode=self.d1c_mode, status=d1c_status))
-        if err:
-            print(f"[auto-live] FAIL CLOSED — payload not built: {err}", flush=True)
-            return
-        res = self.sender.send(payload)
-        if res.get("sent") or self.mode != "live":
+        # EXITFORGE: official model is EXIT3_FIXED_PARTIAL -> two split bracket legs, fail-closed
+        if getattr(_cfg, "EXIT_MODEL", "SINGLE_TARGET") == "EXIT3_FIXED_PARTIAL":
+            legs, err = BP.build_entry_exit3(**common)
+            if err:
+                print(f"[auto-live] FAIL CLOSED — exit3 legs not built: {err}", flush=True)
+                return
+            res = self.sender.send_exit3(legs, self.account, root="MNQ")
+            ok = res.get("ok")
+        else:
+            payload, err = BP.build_entry(**common)
+            if err:
+                print(f"[auto-live] FAIL CLOSED — payload not built: {err}", flush=True)
+                return
+            res = self.sender.send(payload)
+            ok = res.get("sent")
+        if ok or self.mode != "live":
             self.sent += 1
-        print(f"[auto-live] {sig['side']} {spec['am']}MNQ @ {sig['entry']:.2f} "
-              f"stop {sig['stop']:.2f} tgt {sig['target']:.2f} -> {res.get('reason', 'sent')}",
+        print(f"[auto-live] {sig['side']} {spec['am']}MNQ {getattr(_cfg,'EXIT_MODEL','?')} @ "
+              f"{sig['entry']:.2f} stop {sig['stop']:.2f} tgt {sig['target']:.2f} "
+              f"-> {res.get('reason', 'sent')}",
               flush=True)
+        # ARGUS: record the resolved decision (exitlock-block vs paper/live signal) with Exit #3 fields
+        _reason = res.get("reason", "")
+        if not ok and "exit model" in _reason.lower():
+            self._dlog("blocked", "exitlock", bar_ts=ts, side=sig["side"], reason=_reason)
+        else:
+            _lf = {}
+            if getattr(_cfg, "EXIT_MODEL", "") == "EXIT3_FIXED_PARTIAL":
+                for L in legs:
+                    if L["role"] == "entry_tp1":
+                        _lf.update(tp1_qty=L["qty"], tp1_target=L["target"])
+                    elif L["role"] == "entry_tp2":
+                        _lf.update(tp2_qty=L["qty"], tp2_target=L["target"])
+            self._dlog("signal", bar_ts=ts, side=sig["side"], entry=common["entry"],
+                       stop=common["stop"], qty_total=spec["am"],
+                       tp1_qty=_lf.get("tp1_qty"), tp1_target=_lf.get("tp1_target"),
+                       tp2_qty=_lf.get("tp2_qty"), tp2_target=_lf.get("tp2_target"),
+                       signal_id_base=sig["ts_signal"], webhook_sent=bool(ok),
+                       traderspost_status=_reason, live=(self.mode == "live"))
 
 
 def main(argv=None):
@@ -199,9 +249,14 @@ def main(argv=None):
 
     sender = BridgeSender(store=Store(), journal=j, mode=("live" if mode == "live" else "dry-run"),
                           live_url=os.environ.get("TRADERSPOST_LIVE_URL"))
+    # ARGUS decision logger — proves the engine ran (no-signal/candidate/block/send rows). Fail-safe.
+    from decision_log import DecisionLogger
+    _session_id = f"{a.account}-{a.tier}-{mode}-{et_date()}"
+    _dlogger = DecisionLogger(a.account, mode, _session_id, profile="A", feed_source=a.feed,
+                              engine_timeframe="5m")
     auto = LiveAuto(a.account, a.tier, mode, Store(), j, sender, spec["daily_stop"],
                     d1c_mode=d1c_mode, basis_offset=a.basis_offset,
-                    d1c_stale_after_s=(120 if dual_1m else 360))
+                    d1c_stale_after_s=(120 if dual_1m else 360), logger=_dlogger)
 
     # build the live loop (Dukascopy credential-free feed + SimBot wired to the bridge)
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -328,7 +383,17 @@ def main(argv=None):
         def _engine_bar(bts, bo, bh, bl, bc):
             runner.tracker.on_bar(_bar["i"], bts, bo, bh, bl, bc)   # advance open watches -> resolve exits
             runner._cur = (_bar["i"], bo, bh, bl, bc)
+            _nsig = len(runner.bot.signals)
             runner.bot.process_bar(bts, bo, bh, bl, bc)            # may open a watch via _on_decision
+            # ARGUS: an in-window decision bar with NO signal must still be logged (zero-trade proof)
+            try:
+                _mins = bts.hour * 60 + bts.minute
+                if len(runner.bot.signals) == _nsig and (9 * 60 + 30) <= _mins <= (13 * 60 + 35):
+                    _ds = feed.data_state()[0] if hasattr(feed, "data_state") else "GREEN"
+                    _dlogger.no_signal(bts, data_state=_ds, data_ready=(_ds == "GREEN"),
+                                       engine_bar=_bar["i"])
+            except Exception:                                      # noqa: BLE001 — never break the loop
+                pass
             runner.bot._persist()
             runner.tracker.persist(store)
             _record_resolved()

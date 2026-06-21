@@ -81,8 +81,11 @@ def _wire(root, action, qty=0, order_type="market", limit_price=None, stop_price
 
 
 def build_entry(*, account, strategy, setup, signal_ts, side, qty, entry, stop, target,
-                root="MNQ", order_type="limit", mode_meta=None, d1c_meta=None):
-    """Profile A or B entry. Returns (payload, None) or (None, error)."""
+                root="MNQ", order_type="limit", mode_meta=None, d1c_meta=None,
+                role="entry", r_target=None):
+    """Profile A or B entry leg. Returns (payload, None) or (None, error).
+    `role` distinguishes Exit #3 legs (entry_tp1 / entry_tp2) so each gets a unique,
+    deterministic signalId. `r_target` (1.0 / 2.0) is recorded in meta for the ledger."""
     try:
         if int(qty) <= 0:
             return None, "quantity <= 0"
@@ -90,15 +93,50 @@ def build_entry(*, account, strategy, setup, signal_ts, side, qty, entry, stop, 
     except Exception as ex:                                  # noqa: BLE001
         return None, f"bracket build failed: {ex}"
     action = "buy" if side == "long" else "sell"
-    sid = signal_id(account, strategy, signal_ts, "entry")
+    sid = signal_id(account, strategy, signal_ts, role)
     risk_pts = abs(e - s)
-    meta = dict(strategy=strategy, setup=setup, side=side,
+    meta = dict(strategy=strategy, setup=setup, side=side, role=role,
                 risk_points=round(risk_pts, 2),
                 risk_usd=round(risk_pts * PT_VALUE[root] * int(qty), 2),
                 account=account, **(mode_meta or {}), d1c=(d1c_meta or {}),
                 source="zeus_bridge")
+    if r_target is not None:
+        meta["r_target"] = r_target
     return _wire(root, action, qty, order_type, limit_price=e, stop_price=s,
                  target_price=tg, sid=sid, meta=meta, price=e), None
+
+
+def build_entry_exit3(*, account, strategy, setup, signal_ts, side, qty, entry, stop, target,
+                      root="MNQ", order_type="limit", mode_meta=None, d1c_meta=None):
+    """EXITFORGE: split ONE approved signal into the two Exit #3 bracket legs, each a complete
+    OSO (entry + shared stop + its own target). Returns ([leg, ...], None) in SEND ORDER —
+    CORE (TP2 @ +2R) FIRST, then TP1 (@ +1R) — or (None, error). Each leg dict =
+    {role, qty, r_target, target, payload}. `target` arg is the strategy's +2R price; the +1R
+    price is derived from entry/stop so the two legs share an identical protective stop."""
+    import config
+    qty = int(qty)
+    if qty <= 0:
+        return None, "quantity <= 0"
+    if side not in ("long", "short"):
+        return None, f"unknown side '{side}'"
+    tp1_qty, tp2_qty = config.exit3_split(qty)
+    d = 1 if side == "long" else -1
+    R = abs(float(entry) - float(stop))
+    tp1_target = float(entry) + d * R                 # +1R, same stop -> shared protection
+    specs = [("entry_tp2", tp2_qty, float(target), 2.0),   # core leg first (fail-closed)
+             ("entry_tp1", tp1_qty, tp1_target, 1.0)]
+    legs = []
+    for role, q, tgt, r_t in specs:
+        if q <= 0:
+            continue                                  # qty=1 -> no TP1 leg; all to core
+        p, err = build_entry(account=account, strategy=strategy, setup=setup,
+                             signal_ts=signal_ts, side=side, qty=q, entry=entry, stop=stop,
+                             target=tgt, root=root, order_type=order_type,
+                             mode_meta=mode_meta, d1c_meta=d1c_meta, role=role, r_target=r_t)
+        if err:
+            return None, f"{role}: {err}"
+        legs.append(dict(role=role, qty=q, r_target=r_t, target=round(tgt, 2), payload=p))
+    return legs, None
 
 
 def build_exit(*, account, strategy, signal_ts, root="MNQ", reason="exit", mode_meta=None):

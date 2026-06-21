@@ -13,6 +13,9 @@ COLS = ["date", "mode", "account", "strategy", "direction", "contracts", "pnl", 
 DOLLARS_PER_POINT = 2.0   # MNQ = $2 per point per contract
 
 
+HYPO_TAG = "HYPOTHETICAL"   # note prefix for projected/un-filled P&L (dashboard must not call it realised)
+
+
 def pnl_from_r(result_r, entry, stop, contracts, dpp=DOLLARS_PER_POINT):
     """Realised $ for a trade from its R-multiple outcome and bracket geometry.
     Returns None for an unfilled/unresolved trade (result_r is None)."""
@@ -21,10 +24,26 @@ def pnl_from_r(result_r, entry, stop, contracts, dpp=DOLLARS_PER_POINT):
     return float(result_r) * abs(float(entry) - float(stop)) * dpp * float(contracts)
 
 
-def record(date, mode, account, strategy, direction, contracts, pnl, note="", path=PATH):
-    """Append one resolved trade to the ledger. Returns the row dict written."""
+def exit3_split(qty):
+    q = int(qty); tp1 = q // 2; return tp1, q - tp1
+
+
+def pnl_exit3(entry, stop, qty, r_tp1=1.0, r_tp2=2.0, dpp=DOLLARS_PER_POINT):
+    """EXITFORGE: Exit #3 integer-split FULL-WIN $ — tp1_qty @ +r_tp1 R, tp2_qty @ +r_tp2 R,
+    shared stop. This is the official live/eval model's full-win value (NOT full-qty @ 2R)."""
+    tp1, tp2 = exit3_split(qty)
+    risk = abs(float(entry) - float(stop))
+    return (r_tp1 * tp1 + r_tp2 * tp2) * risk * dpp
+
+
+def record(date, mode, account, strategy, direction, contracts, pnl, note="",
+           fill_backed=True, path=PATH):
+    """Append one resolved trade to the ledger. `fill_backed=False` tags the row HYPOTHETICAL
+    so the dashboard never reports a projected/un-filled result as realised P&L."""
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     is_new = not os.path.exists(path)
+    if not fill_backed and HYPO_TAG not in note:
+        note = f"{HYPO_TAG} · {note}".rstrip(" ·")
     row = [date, mode, account, strategy, direction, contracts, round(float(pnl), 2), note]
     with open(path, "a", newline="") as fh:
         w = csv.writer(fh)
@@ -69,10 +88,16 @@ def by_day(path=PATH):
                     pnl = float(r.get("pnl") or 0)
                 except ValueError:
                     continue
-                e = days.setdefault(d, {"pnl": 0.0, "trades": 0, "modes": set()})
-                e["pnl"] += pnl
+                e = days.setdefault(d, {"pnl": 0.0, "hypo": 0.0, "trades": 0, "modes": set()})
+                hypo = HYPO_TAG in (r.get("note") or "")
+                if hypo:
+                    e["hypo"] += pnl                       # NOT counted as realised
+                else:
+                    e["pnl"] += pnl
                 e["trades"] += 1
                 e["modes"].add((r.get("mode") or "paper").strip().lower())
-    return {d: {"pnl": round(v["pnl"], 2), "trades": v["trades"],
+    return {d: {"pnl": round(v["pnl"], 2),                  # fill-backed / realised only
+                "hypothetical_pnl": round(v["hypo"], 2),    # projected, labelled separately
+                "trades": v["trades"],
                 "mode": "live" if "live" in v["modes"] else "paper"}
             for d, v in days.items()}

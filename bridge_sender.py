@@ -66,6 +66,14 @@ class BridgeSender:
     def _live_ok(self, payload):
         fails = []
         meta = payload.get("extras", {})
+        action = payload.get("action")
+        # EXITLOCK gate (2026-06-21): the live bridge sends full-qty single-target, which does
+        # NOT match the validated Exit #3 partial backtest. Block every live ENTRY until the exit
+        # model is aligned or explicitly approved via exit-model-approved.flag. Exits and cancels
+        # (incl. emergency flatten) are NEVER blocked — risk must always be reducible.
+        if action in ("buy", "sell", "add"):
+            if not os.path.exists(os.path.join(APPROVAL_DIR, "exit-model-approved.flag")):
+                fails.append("LIVE BLOCKED: exit model not approved/aligned")
         if not meta.get("account"):
             fails.append("no account in payload")
         if not meta.get("strategy"):
@@ -120,6 +128,65 @@ class BridgeSender:
         # SAME signalId cannot create a second order (TradersPost + our dedup both key on it)
         self._log(sid, payload, self.mode, "failed", last or "")
         return dict(sent=False, reason=f"send failed after retries: {last}")
+
+    # ---- EXITFORGE incident block (half-built Exit #3 position -> no new entries) ----
+    INCIDENT_KEY = "exit3_incident"
+
+    def incident_blocked(self):
+        v = self.store.get_state(self.INCIDENT_KEY)
+        return v if v else None
+
+    def _incident(self, account, kind, role, details):
+        self.store.set_state(**{self.INCIDENT_KEY: json.dumps(
+            dict(ts=_now(), kind=kind, role=role, account=account))})
+        self.j.append("STATE_ASSERT", account, payload=dict(
+            action="exit3_incident", kind=kind, role=role, details=str(details)[:300]))
+
+    def clear_incident(self, operator_note):
+        if not operator_note or len(operator_note.strip()) < 10:
+            raise ValueError("operator note required (>=10 chars)")
+        self.store.set_state(**{self.INCIDENT_KEY: ""})
+        self.j.append("STATE_ASSERT", "ALL", payload=dict(
+            action="exit3_incident_cleared", note=operator_note.strip()))
+        return True
+
+    def send_exit3(self, legs, account, root="MNQ"):
+        """EXITFORGE: transmit the two Exit #3 legs in order (CORE/TP2 first, then TP1).
+        FAIL CLOSED — never leave a half-built position:
+          * core leg fails first (nothing sent)  -> ENTRY_ABORTED (no position, no flatten)
+          * a later leg fails after one was sent  -> flatten/cancel + PARTIAL_ENTRY_FAILED + block
+          * any leg missing stop/target          -> abort/flatten + INCIDENT + block
+        Returns dict(ok, reason, legs=[...], flattened?)."""
+        if self.incident_blocked():
+            return dict(ok=False, reason="exit3 incident active — manual reset required", legs=[])
+        if not legs:
+            return dict(ok=False, reason="no legs to send", legs=[])
+        # pre-send integrity: every leg must carry a stop AND a target
+        for leg in legs:
+            p = leg["payload"]
+            if "stopLoss" not in p or "takeProfit" not in p:
+                self._incident(account, "MISSING_BRACKET", leg.get("role"), p)
+                self.flatten(account, root=root, reason=f"exit3_missing_bracket_{_now()}")
+                return dict(ok=False, reason="leg missing stop/target — flattened + blocked",
+                            legs=[], flattened=True)
+        results = []
+        sent_any = False
+        for leg in legs:
+            res = self.send(leg["payload"])
+            results.append(dict(role=leg["role"], qty=leg["qty"], **res))
+            ok = bool(res.get("sent")) or self.mode != "live"   # dry-run/test = built-ok
+            if not ok:
+                if sent_any:
+                    self.flatten(account, root=root, reason=f"exit3_partial_fail_{_now()}")
+                    self._incident(account, "PARTIAL_ENTRY_FAILED", leg["role"], results)
+                    return dict(ok=False, reason="PARTIAL_ENTRY_FAILED", legs=results,
+                                flattened=True)
+                # core leg never sent -> no position exists; abort without blocking (no incident)
+                self.j.append("STATE_ASSERT", account, payload=dict(
+                    action="exit3_entry_aborted", role=leg["role"]))
+                return dict(ok=False, reason="ENTRY_ABORTED", legs=results)
+            sent_any = True
+        return dict(ok=True, reason="exit3 both legs sent", legs=results)
 
     def flatten(self, account, root="MNQ", reason="emergency"):
         """Emergency flatten = CANCEL working orders THEN EXIT the position.
