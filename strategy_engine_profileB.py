@@ -23,6 +23,7 @@ class ProfileBEngine:
         self.cur_day = None
         self.or_high = self.or_low = self.or_end = None
         self.or_set = False
+        self.or_bars = 0                # opening-range bar count (batch requires >= 2)
         self.atr_or = None
         self.broke = False
         self._signal = None
@@ -43,6 +44,7 @@ class ProfileBEngine:
         self.cur_day = day
         self.or_high = self.or_low = self.or_end = None
         self.or_set = False
+        self.or_bars = 0
         self.atr_or = None
         self.broke = False
 
@@ -60,12 +62,14 @@ class ProfileBEngine:
         if ts < self.or_end:                             # inside the opening range
             self.or_high = h if self.or_high is None else max(self.or_high, h)
             self.or_low = l if self.or_low is None else min(self.or_low, l)
+            self.or_bars += 1
+            self.atr_or = self._atr()                    # ATR AT the (last) OR bar — matches batch
             return
         # ---- post opening-range ----
         if not self.or_set:
-            self.or_set = True
-            self.atr_or = self._atr()                    # ATR frozen at OR completion
-        if self.broke or self.atr_or in (None, 0) or self.or_high is None:
+            self.or_set = True                           # atr_or already = ATR at the last OR bar
+        # batch day-quality guards: opening range must have >= 2 bars; ATR must be defined
+        if self.broke or self.or_bars < 2 or self.atr_or in (None, 0) or self.or_high is None:
             return
         for d, lvl in ((1, self.or_high), (-1, self.or_low)):
             if (c > lvl) if d > 0 else (c < lvl):
