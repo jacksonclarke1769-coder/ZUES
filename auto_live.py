@@ -4,7 +4,8 @@ ZEUS decides → BRIDGE transmits → TradersPost executes. The SimBot is the BR
 position model (sim-only, never places orders itself); the bridge is the ARM.
 
 Live data: credential-free Dukascopy NQ feed (CFD proxy, ~1min delayed; SMALL BASIS vs
-Tradovate — calibrate in Stage 2). Profile A only today (B not in the live engine yet).
+Tradovate — calibrate in Stage 2). Profile A (D1c-filtered) + Profile B (ORB) both run in the
+live loop; B is gated by --no-profile-b and the P3 brake (zeros B near the floor).
 
 SAFETY (fail closed):
   * PAPER by default — live data, real signals, dry-run webhooks LOGGED, no orders.
@@ -91,12 +92,14 @@ class LiveAuto:
         return None
 
     def _dlog(self, fn, *a, **k):
-        """ARGUS fail-safe: a logging error never raises into the engine, never blocks a send."""
+        """ARGUS fail-safe: a logging error never raises into the engine, never blocks a send.
+        But it must be LOUD — a silently-swallowed log error is exactly how a real B trade
+        (2026-06-22 ORB, -$230) went unrecorded and the session auditor reported it CLEAN."""
         try:
             if self.logger is not None:
                 getattr(self.logger, fn)(*a, **k)
-        except Exception:                                # noqa: BLE001
-            pass
+        except Exception as e:                           # noqa: BLE001
+            print(f"[auto-live] ⚠ ARGUS LOG FAILED ({fn}): {e!r} — DECISION NOT RECORDED", flush=True)
 
     def _apply_p3(self):
         """Update the P3 brake from the live cushion. Returns braked (bool). Inert (no brake)
@@ -265,8 +268,13 @@ class LiveAuto:
         if not ok and "exit model" in _reason.lower():
             self._dlog("blocked", "exitlock", bar_ts=ts, side=sig["side"], reason=_reason, profile="B")
         else:
+            # B is a SINGLE bracket: all qty exits at one target -> map to tp2 slot, tp1 empty.
+            # (the prior call omitted the 3 REQUIRED signal() kwargs -> TypeError -> _dlog ate it
+            #  -> every B live send went unrecorded; the 2026-06-22 ORB loss was invisible to ARGUS.)
             self._dlog("signal", bar_ts=ts, side=sig["side"], entry=float(sig["entry"]),
-                       stop=float(sig["stop"]), qty_total=b_size, tp2_target=float(sig["target"]),
+                       stop=float(sig["stop"]), qty_total=b_size,
+                       tp1_qty=None, tp1_target=None,
+                       tp2_qty=b_size, tp2_target=float(sig["target"]),
                        signal_id_base=sig["ts_signal"], webhook_sent=bool(ok),
                        traderspost_status=_reason, live=(self.mode == "live"), profile="B")
 
@@ -387,7 +395,8 @@ def main(argv=None):
     posture = "SUPERVISED LIVE AUTO" if mode == "live" else "PAPER (dry-run)"
     print(f"=== ARES {posture} · {mode.upper()} · {a.account} · tier {a.tier} "
           f"(A={spec['am']} MNQ) ===")
-    print(f"  data: {data_line} · Profile A only · "
+    _prof_label = "Profile A only" if getattr(a, "no_profile_b", False) else "Profile A + B (ORB)"
+    print(f"  data: {data_line} · {_prof_label} · "
           f"D1c {d1c_mode} (real DriftGate, validated 1m — running on 5m feed)")
     print("  SAFETY: paper unless --live + both flags · SUPERVISE (MFFU semi-auto) · "
           "Ctrl+C to stop")
