@@ -14,6 +14,11 @@ from store import Store
 EVAL_TIERS = {
     "50K-conservative":  dict(account="50K",  am=3, bm=2, daily_stop=700,  worst_day=1486),
     "50K-balanced":      dict(account="50K",  am=4, bm=2, daily_stop=700,  worst_day=1921),
+    # SPRAY: 5 MNQ eval (A5/B2). worst_day $2,601 EXCEEDS the $2,000 buffer -> one bad day can bust.
+    # That is INTENTIONAL (disposable eval, ~79% pass / ~13d, retry ~$165). Bypasses the worst_day
+    # block ONLY via spray_accept_bust + the approve-50K-spray.flag (conscious bust-acceptance).
+    "50K-spray":         dict(account="50K",  am=5, bm=2, daily_stop=1900, worst_day=2325,
+                              spray_accept_bust=True, requires_approval=True),
     "150K-balanced":     dict(account="150K", am=8, bm=4, daily_stop=1600, worst_day=3841),
     "150K-aggressive":   dict(account="150K", am=10, bm=6, daily_stop=1600, worst_day=4892,
                               requires_approval=True),
@@ -38,12 +43,18 @@ def validate_size(spec, available_buffer):
     drawdown buffer. Fails closed (blocks) on any doubt."""
     if available_buffer is None or available_buffer <= 0:
         return False, "available drawdown buffer unknown/zero — BLOCK"
-    if spec["worst_day"] >= available_buffer:
+    spray = bool(spec.get("spray_accept_bust"))
+    # HARD RULE for normal tiers; SPRAY tiers may exceed it ONLY with explicit flag (below).
+    if spec["worst_day"] >= available_buffer and not spray:
         return False, (f"worst day ${spec['worst_day']:,} >= buffer "
                        f"${available_buffer:,.0f} — one bad day could breach. BLOCK")
-    if spec.get("requires_approval") and not os.path.exists(
+    # requires_approval (incl. every spray tier) demands a conscious approval flag.
+    if (spec.get("requires_approval") or spray) and not os.path.exists(
             os.path.join(APPROVAL_DIR, f"approve-{spec['tier']}.flag")):
         return False, f"tier {spec['tier']} requires approval flag — BLOCK"
+    if spray:
+        return True, (f"ok — ⚠ SPRAY: worst day ${spec['worst_day']:,} >= buffer ${available_buffer:,.0f}; "
+                      f"ONE BAD DAY CAN BUST (flag-approved, disposable eval)")
     return True, "ok"
 
 

@@ -47,13 +47,44 @@ def et_date():
     return datetime.now(timezone.utc).astimezone(ZoneInfo("America/New_York")).date().isoformat()
 
 
+def build_readback(a, mode, journal):
+    """Build the Stage B read-back sentinel + a READ-ONLY Tradovate broker view.
+
+    floor = MFFU trailing line (start - trail_dd) from config.EVAL. Returns (sentinel, broker);
+    broker is None if no read-only Tradovate connection can be made (caller refuses live if so).
+    Fail-closed: a sentinel that cannot read the broker halts entries via BROKER_READ_FAIL.
+    """
+    from live_readback import ReadbackSentinel, TradovateBrokerView
+    ev = getattr(config, "EVAL", {})
+    floor = float(ev.get("start_balance", 50_000.0)) - float(ev.get("trail_dd", 2_000.0))
+    broker = None
+    acct_id = a.account
+    try:
+        from tradovate_client import TradovateClient
+        # READ-ONLY: pass NO safety -> live_orders_ok=False -> this client can NEVER place an order
+        # (every real-order method calls _guard_live() which raises). Same config.TRADOVATE/config.HOSTS
+        # the bot's data path uses (the env + explicit account_spec live INSIDE config.TRADOVATE).
+        client = TradovateClient(config.TRADOVATE, config.HOSTS)
+        client.authenticate()                       # auth + resolve the EXPLICIT account (account_spec)
+        if getattr(client, "account_id", None):
+            acct_id = str(client.account_id)         # numeric Tradovate id == positions()[].accountId
+        broker = TradovateBrokerView(client)
+        broker.net_by_account()                     # probe the connection (raises if unauthenticated)
+    except Exception as e:                          # noqa: BLE001 — degrade, never crash the launcher
+        print(f"  read-back: no Tradovate read connection ({type(e).__name__}: {e})", flush=True)
+        broker = None
+    sentinel = ReadbackSentinel(acct_id, floor=floor, journal=journal)
+    return sentinel, broker
+
+
 class LiveAuto:
     def __init__(self, account, tier, mode, store, journal, sender, daily_stop,
                  d1c_mode="ACTIVE_EVAL_FILTER", basis_offset=0.0, d1c_stale_after_s=360,
                  entry_gate=None, logger=None, cushion_fn=None, p3_enabled=True,
-                 profile_b=True):
+                 profile_b=True, readback=None):
         self.logger = logger           # ARGUS decision logger (auditability; fail-safe, optional)
         self.entry_gate = entry_gate   # infrastructure readiness gate (data GREEN + dead-man alive)
+        self.readback = readback       # Stage B: live broker read-back sentinel (closes-the-loop). Optional.
         # P3 cushion brake + Profile B (research-validated; gated like everything else, paper-first)
         self.p3 = P3Brake()
         self.p3_enabled = p3_enabled
@@ -197,6 +228,8 @@ class LiveAuto:
             ok = res.get("sent")
         if ok or self.mode != "live":
             self.sent += 1
+            if self.readback is not None:                  # Stage B: tell the sentinel what we now expect to hold
+                self.readback.on_entry(sig["side"], a_size)
         print(f"[auto-live] A {sig['side']} {a_size}MNQ{' (P3-braked)' if braked else ''} "
               f"{_exit_model} @ {sig['entry']:.2f} stop {sig['stop']:.2f} tgt {sig['target']:.2f} "
               f"-> {res.get('reason', 'sent')}",
@@ -259,6 +292,8 @@ class LiveAuto:
         ok = res.get("sent")
         if ok or self.mode != "live":
             self.b_sent += 1
+            if self.readback is not None:                # Stage B: B adds to expected broker position too
+                self.readback.on_entry(sig["side"], b_size)
             if bar_i is not None:                        # track B paper-P&L -> dashboard calendar
                 self.b_tracker.on_signal(sig, b_size, bar_i, ts)
         print(f"[auto-live] B {sig['side']} {b_size}MNQ ORB @ {sig['entry']:.2f} "
@@ -287,6 +322,9 @@ def main(argv=None):
     p.add_argument("--poll", type=int, default=60)
     p.add_argument("--d1c-mode", default="active-eval-filter",
                    choices=["off", "shadow", "active-eval-filter"])
+    p.add_argument("--require-d1c-active", action="store_true",
+                   help="ABORT the live launch unless D1c resolves to ACTIVE_EVAL_FILTER (real-time 1m feed "
+                        "confirmed). Guards against silently trading the UN-filtered model on a stale feed.")
     p.add_argument("--basis-offset", type=float, default=0.0,
                    help="points added to feed prices to match Tradovate (measure via Stage 2)")
     p.add_argument("--feed", default="dukascopy",
@@ -301,6 +339,12 @@ def main(argv=None):
     p.add_argument("--no-p3", action="store_true", help="disable the P3 cushion brake")
     p.add_argument("--confirm", action="store_true",
                    help="required (with --live) to arm SUPERVISED LIVE AUTO; extra human gate")
+    p.add_argument("--readback", action="store_true",
+                   help="Stage B: enable the Tradovate read-back sentinel (closes the fills-by-eye loop). "
+                        "Reconciles broker position/balance vs the bot's belief every poll; HALTS entries + "
+                        "flattens fail-closed on a confirmed mismatch. Needs read-only Tradovate API creds.")
+    p.add_argument("--readback-poll", type=int, default=20,
+                   help="seconds between read-back polls (default 20)")
     p.add_argument("--controlled-tv-full-live-test", "--controlled-tv-live-test",
                    dest="controlled_tv_live_test", action="store_true",
                    help="SUPERVISED single-session live test on the TradingView browser feed "
@@ -350,17 +394,37 @@ def main(argv=None):
     _session_id = f"{a.account}-{a.tier}-{mode}-{et_date()}"
     _dlogger = DecisionLogger(a.account, mode, _session_id, profile="A", feed_source=a.feed,
                               engine_timeframe="5m")
+    # --- Stage B: live read-back sentinel (closes the fills-by-eye loop) ---
+    readback, _rb_broker = build_readback(a, mode, j) if getattr(a, "readback", False) else (None, None)
+    if getattr(a, "readback", False) and mode == "live" and _rb_broker is None:
+        print("REFUSED LIVE: --readback requested but no Tradovate read-back connection could be built "
+              "(missing/invalid API creds). Read-back is fail-closed — refusing to run live blind.", flush=True)
+        return 2
+
     auto = LiveAuto(a.account, a.tier, mode, Store(), j, sender, spec["daily_stop"],
                     d1c_mode=d1c_mode, basis_offset=a.basis_offset,
                     d1c_stale_after_s=(120 if dual_1m else 360), logger=_dlogger,
                     profile_b=not getattr(a, "no_profile_b", False),
-                    p3_enabled=not getattr(a, "no_p3", False))
+                    p3_enabled=not getattr(a, "no_p3", False), readback=readback)
+    if readback is not None:
+        # critical mismatch -> flatten via the SAME bridge route as the guardian, then stay halted.
+        def _rb_flatten(reason):
+            print(f"[auto-live] ☠ READ-BACK CRITICAL: {reason} — FLATTEN + HALT", flush=True)
+            try:
+                sender.flatten(a.account) if hasattr(sender, "flatten") else None
+            except Exception as e:                                # noqa: BLE001 — halt stands regardless
+                print(f"[auto-live] read-back flatten error: {e!r} (entries already halted)", flush=True)
+        readback.on_critical = _rb_flatten
+        print(f"  read-back sentinel armed (Tradovate position+balance every {a.readback_poll}s, "
+              f"floor=${readback.floor:,.0f}) — fail-closed", flush=True)
 
     # build the live loop (Dukascopy credential-free feed + SimBot wired to the bridge)
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from paper_live import DukascopyLiveFeed, PaperLiveRunner
     import pandas as pd
+    import time as _t_mod
     NY = "America/New_York"
+    _rb = {"day": None, "t": 0.0}          # Stage B read-back poll tracker (last reset-day, last poll ts)
     runner = PaperLiveRunner(store, "live", "live")
     runner.bot.on_decision = lambda sig, placed, reason, ts: (
         runner._orig(sig, placed, reason, ts), auto.on_decision(sig, placed, reason, ts))
@@ -455,6 +519,8 @@ def main(argv=None):
         from zoneinfo import ZoneInfo as _ZI
 
         def _entry_ready():
+            if auto.readback is not None and auto.readback.halted:    # Stage B: broker read-back disagreement -> fail closed
+                return False, "readback HALT: " + (auto.readback.reason or "broker mismatch")
             if not armed["v"]:
                 return False, "arming — preflight not passed"
             # holiday gate (defense in depth): never trade a weekend / US market holiday
@@ -521,6 +587,17 @@ def main(argv=None):
             else:
                 _engine_bar(ts, o, h, l, c)
             _persist_data_status(store)
+            # --- Stage B: read-back reconcile (rate-limited; bot starts each ET day flat) ---
+            if readback is not None and _rb_broker is not None:
+                _d = pd.Timestamp(ts).tz_convert(NY).date() if pd.Timestamp(ts).tzinfo else pd.Timestamp(ts).date()
+                if _rb["day"] != _d:                          # new trading day -> bot is flat at the open
+                    _rb["day"] = _d; readback.on_flat()
+                _now = _t_mod.time()
+                if _now - _rb["t"] >= a.readback_poll:
+                    _rb["t"] = _now
+                    conf = readback.poll(_rb_broker)
+                    if conf:
+                        print(f"[auto-live] read-back: {[(c,d) for c,_,d in conf]}", flush=True)
 
         # --- LIVE: warm the live feed to GREEN, THEN run the preflight (the Dukascopy warmup tail is
         #     stale by design; the live TV feed is current, so wait for it to catch up before arming) ---
@@ -548,6 +625,12 @@ def main(argv=None):
                 print(f"REFUSED {modlabel} — fail closed:")
                 for f in fails:
                     print(f"  ✗ {f}")
+                return 2
+            if getattr(a, "require_d1c_active", False) and eff_d1c != "ACTIVE_EVAL_FILTER":
+                print(f"REFUSED {modlabel}: --require-d1c-active set but D1c resolved to {eff_d1c} "
+                      f"(feed not confirmed real-time 1m). D1c is part of the validated model — refusing to "
+                      f"trade the UN-filtered version. Fix the feed (logged-in Chrome :9222, NQ 1m, real-time) "
+                      f"and relaunch.", flush=True)
                 return 2
             armed["v"] = True
             print(f"  {modlabel} preflight PASSED (D1c={eff_d1c}) — ARMED, live webhooks active.", flush=True)
