@@ -81,11 +81,12 @@ class LiveAuto:
     def __init__(self, account, tier, mode, store, journal, sender, daily_stop,
                  d1c_mode="ACTIVE_EVAL_FILTER", basis_offset=0.0, d1c_stale_after_s=360,
                  entry_gate=None, logger=None, cushion_fn=None, p3_enabled=True,
-                 profile_b=True, readback=None, notify=None):
+                 profile_b=True, readback=None, notify=None, tjournal=None):
         self.logger = logger           # ARGUS decision logger (auditability; fail-safe, optional)
         self.entry_gate = entry_gate   # infrastructure readiness gate (data GREEN + dead-man alive)
         self.readback = readback       # Stage B: live broker read-back sentinel (closes-the-loop). Optional.
         self.notify = notify           # Telegram notifier (signals + modeled outcomes). Optional, fail-safe.
+        self.tjournal = tjournal       # learning journal (why won/lost). Optional, fail-safe.
         # P3 cushion brake + Profile B (research-validated; gated like everything else, paper-first)
         self.p3 = P3Brake()
         self.p3_enabled = p3_enabled
@@ -93,7 +94,7 @@ class LiveAuto:
         self.profile_b = profile_b
         self.b_engine = ProfileBEngine()
         from profile_b_tracker import ProfileBPaperTracker
-        self.b_tracker = ProfileBPaperTracker(store, account, mode, notify=notify)   # B paper-P&L -> calendar (+ TG outcome)
+        self.b_tracker = ProfileBPaperTracker(store, account, mode, notify=notify, journal=tjournal)   # B P&L + TG + journal
         self.b_sent = self.b_blocked = 0
         self.account, self.tier, self.mode = account, tier, mode
         self.store, self.j, self.sender = store, journal, sender
@@ -415,11 +416,16 @@ def main(argv=None):
         print(f"  telegram notifications ON ({a.account})", flush=True)
         tg.info(f"🚀 <b>ARES armed</b> · {a.account} · tier {a.tier} · {('LIVE' if mode=='live' else 'PAPER')} · watching NY-AM")
 
+    # --- learning journal: records every resolved trade + WHY it won/lost (+ post-exit 'stopped early') ---
+    from trade_journal import TradeJournal
+    journal = TradeJournal(a.account, mode, notify=tg)
+    print("  trade journal ON -> logs/journal/<date>.jsonl (why won/lost + post-exit review)", flush=True)
+
     auto = LiveAuto(a.account, a.tier, mode, Store(), j, sender, spec["daily_stop"],
                     d1c_mode=d1c_mode, basis_offset=a.basis_offset,
                     d1c_stale_after_s=(120 if dual_1m else 360), logger=_dlogger,
                     profile_b=not getattr(a, "no_profile_b", False),
-                    p3_enabled=not getattr(a, "no_p3", False), readback=readback, notify=tg)
+                    p3_enabled=not getattr(a, "no_p3", False), readback=readback, notify=tg, tjournal=journal)
     if readback is not None:
         # critical mismatch -> flatten via the SAME bridge route as the guardian, then stay halted.
         def _rb_flatten(reason):
@@ -561,18 +567,25 @@ def main(argv=None):
             old = _rec["n"]
             _rec["n"] = trade_results.record_resolved(
                 runner.tracker.rows, old, mode, a.account, _qty)
-            if tg.enabled:                               # Telegram: modeled Profile A outcome(s)
-                for r in runner.tracker.rows[old:_rec["n"]]:
-                    rr = r.get("result_R")
-                    if rr is None:
-                        continue
-                    pnl = trade_results.pnl_from_r(rr, r["entry"], r["stop"], _qty)
-                    tg.outcome("A", r.get("direction", "?"), rr, pnl,
-                               (r.get("notes") or ["exit"])[0] if isinstance(r.get("notes"), (list, tuple)) else "exit",
-                               mode)
+            for r in runner.tracker.rows[old:_rec["n"]]:   # Telegram outcome + learning journal (modeled)
+                rr = r.get("result_R")
+                if rr is None:
+                    continue
+                pnl = trade_results.pnl_from_r(rr, r["entry"], r["stop"], _qty)
+                r1, r2 = bool(r.get("tp1_time")), bool(r.get("tp2_time"))
+                reason = "target" if r2 else ("stop" if r.get("stop_time") else "eod")
+                direc = r.get("direction", "?")
+                if tg.enabled:
+                    tg.outcome("A", direc, rr, pnl, reason, mode)
+                if journal is not None:
+                    journal.on_resolved("A", direc, _qty, r["entry"], r["stop"], r.get("tp2"),
+                                        None, reason, rr, pnl, r.get("fill_time") or r.get("date"),
+                                        reached_1r=r1, reached_2r=r2, hold_bars=None)
 
         def _engine_bar(bts, bo, bh, bl, bc):
             runner.tracker.on_bar(_bar["i"], bts, bo, bh, bl, bc)   # advance open watches -> resolve exits
+            if journal is not None:                                # journal post-exit watch (stopped-early detection)
+                journal.on_bar(bh, bl)
             runner._cur = (_bar["i"], bo, bh, bl, bc)
             _nsig = len(runner.bot.signals)
             runner.bot.process_bar(bts, bo, bh, bl, bc)            # may open a watch via _on_decision

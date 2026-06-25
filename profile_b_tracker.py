@@ -19,11 +19,12 @@ SNAP_KEY = "b_tracker_snapshot"
 
 class ProfileBPaperTracker:
     def __init__(self, store, account, mode, dpp=2.0, fill_window=6, max_hold=24,
-                 path=trade_results.PATH, notify=None):
+                 path=trade_results.PATH, notify=None, journal=None):
         self.store = store
         self.account = account
         self.mode = mode
         self.notify = notify        # Telegram notifier (modeled B outcome). Optional, fail-safe.
+        self.journal = journal      # learning journal (why won/lost). Optional, fail-safe.
         self.dpp = dpp
         self.fw = fill_window
         self.mh = max_hold
@@ -94,12 +95,12 @@ class ProfileBPaperTracker:
                 ex, reason = c, ("eod" if not rth else "timeout")
             if ex is None:
                 keep.append(w); continue
-            self._record(w, ex, reason)
+            self._record(w, ex, reason, hold_bars=int(bar_i - w["filled"]))
             self.closed += 1
         self.open = keep
         self.persist()
 
-    def _record(self, w, ex, reason):
+    def _record(self, w, ex, reason, hold_bars=None):
         key = self._key(w)
         if key in self.recorded_keys:                    # already booked (restart) -> never double-record
             return None
@@ -117,4 +118,7 @@ class ProfileBPaperTracker:
         self.recorded.append(row)
         if self.notify is not None:                          # Telegram: modeled B outcome
             self.notify.outcome("B", w["side"], rr, pnl, reason, self.mode)
+        if self.journal is not None:                         # learning journal: why won/lost
+            self.journal.on_resolved("B", w["side"], w["qty"], w["entry"], w["stop"], w.get("target"),
+                                     ex, reason, rr, pnl, w["ts"], hold_bars=hold_bars)
         return row
