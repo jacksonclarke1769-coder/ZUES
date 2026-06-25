@@ -10,35 +10,38 @@ message is tagged "(modeled — confirm in Tradovate)" so it is never mistaken f
 """
 from __future__ import annotations
 
-import json
 import os
-import urllib.request
+
+try:
+    import requests          # already a bot dependency (bridge_sender/tradovate_client); handles TLS via certifi
+except ImportError:          # pragma: no cover
+    requests = None
 
 API = "https://api.telegram.org/bot{token}/sendMessage"
 
 
 class Telegram:
-    def __init__(self, token=None, chat_id=None, label="", opener=None):
+    def __init__(self, token=None, chat_id=None, label="", poster=None):
         self.token = token if token is not None else os.environ.get("TELEGRAM_BOT_TOKEN")
         self.chat_id = chat_id if chat_id is not None else os.environ.get("TELEGRAM_CHAT_ID")
         self.label = (label + "\n") if label else ""
         self.enabled = bool(self.token and self.chat_id)
         self.sent = self.failed = 0
-        self._opener = opener or urllib.request.urlopen   # injectable for tests
+        self._post = poster or (requests.post if requests else None)   # injectable for tests
 
     # ---- core sender (never raises into the engine) ----
     def send(self, text):
-        if not self.enabled:
+        if not self.enabled or self._post is None:
             return False
         try:
-            payload = json.dumps({"chat_id": self.chat_id, "text": text, "parse_mode": "HTML",
-                                  "disable_web_page_preview": True}).encode()
-            req = urllib.request.Request(API.format(token=self.token), data=payload,
-                                         headers={"Content-Type": "application/json"})
-            with self._opener(req, timeout=10) as r:
-                ok = getattr(r, "status", 200) == 200
-                self.sent += int(ok); self.failed += int(not ok)
-                return ok
+            r = self._post(API.format(token=self.token),
+                           json={"chat_id": self.chat_id, "text": text, "parse_mode": "HTML",
+                                 "disable_web_page_preview": True}, timeout=10)
+            ok = getattr(r, "status_code", 200) == 200
+            self.sent += int(ok); self.failed += int(not ok)
+            if not ok:
+                print(f"[telegram] HTTP {getattr(r, 'status_code', '?')}: {getattr(r, 'text', '')[:200]}", flush=True)
+            return ok
         except Exception as e:                                # noqa: BLE001 — notifications must never break trading
             self.failed += 1
             print(f"[telegram] send failed: {type(e).__name__}: {e}", flush=True)
