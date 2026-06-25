@@ -40,11 +40,13 @@ def classify(reason, r, reached_1r, reached_2r, hold_bars):
 
 
 class TradeJournal:
-    def __init__(self, account, mode, path_dir=JOURNAL_DIR, post_exit_bars=78, notify=None, today=None):
+    def __init__(self, account, mode, path_dir=JOURNAL_DIR, post_exit_bars=78, notify=None, today=None,
+                 shadow=None):
         self.account = account
         self.mode = mode
         self.peb = post_exit_bars          # ~90 min on 5m bars
         self.notify = notify
+        self.shadow = shadow               # observe-only stop-cap forward test (never touches execution)
         self._dir = path_dir
         self._today = today                # injectable date string for the filename (tests)
         self.entries = []
@@ -74,6 +76,8 @@ class TradeJournal:
                    hold_bars=hold_bars, tag=tag, why=why, post_exit=None)
         self.entries.append(rec)
         self._write(rec)
+        if self.shadow is not None:                         # observe-only stop-cap forward test
+            self.shadow.record(profile, side, entry, stop, r, pnl, reason, ts)
         print(f"[journal] {profile} {side} {reason} {r:+.2f}R — {why}", flush=True)
         if self.notify is not None:
             self.notify.send(f"📓 <b>Journal — Profile {profile} {str(side).upper()}</b>\n{why}")

@@ -422,7 +422,10 @@ def main(argv=None):
 
     # --- learning journal: records every resolved trade + WHY it won/lost (+ post-exit 'stopped early') ---
     from trade_journal import TradeJournal
-    journal = TradeJournal(a.account, mode, notify=tg)
+    from shadow_overlay import ShadowOverlay
+    # observe-only forward test of the research's Profile A <=80pt stop-cap (never touches execution)
+    shadow = ShadowOverlay(cap_pts=80.0, path=f"logs/shadow/{a.account}_stop_cap.jsonl")
+    journal = TradeJournal(a.account, mode, notify=tg, shadow=shadow)
     print("  trade journal ON -> logs/journal/<date>.jsonl (why won/lost + post-exit review)", flush=True)
 
     auto = LiveAuto(a.account, a.tier, mode, Store(), j, sender, spec["daily_stop"],
@@ -749,9 +752,23 @@ def main(argv=None):
                 store.set_state(auto_live_halt="", auto_live_kill="")
                 return "🟢 RESUMED — halt cleared, watching for entries again."
 
+            def _h_shadow(_a):
+                try:
+                    from shadow_overlay import ShadowOverlay, load
+                    rows = load(shadow.path)                  # full cross-session tally from disk
+                    s = ShadowOverlay.summarize(rows, shadow.cap); b, c = s["baseline"], s["capped"]
+                    if b["n"] == 0:
+                        return f"🧪 Shadow stop-cap ≤{int(shadow.cap)}pt — no Profile A trades observed yet"
+                    return (f"🧪 <b>Shadow stop-cap ≤{int(shadow.cap)}pt</b> (observe-only, A)\n"
+                            f"• Baseline (all A): {b['n']} tr · {b['totR']:+.1f}R · ${b['totUSD']:+,.0f} · worst-day ${s['worst_day_baseline']:,.0f}\n"
+                            f"• Capped book: {c['n']} tr · {c['totR']:+.1f}R · ${c['totUSD']:+,.0f} · worst-day ${s['worst_day_capped']:,.0f}\n"
+                            f"• Would-SKIP {s['skipped_n']} (={s['skipped_R']:+.1f}R / ${s['skipped_USD']:+,.0f})")
+                except Exception as e:                       # noqa: BLE001
+                    return f"⚠ /shadow failed: {e}"
+
             store.set_state(auto_live_halt="")            # fresh session starts un-halted (kill stays sticky)
             (ctl.on("health", _h_health).on("status", _h_status).on("ping", lambda _a: "🟢 pong — ARES alive")
-                .on("journal", _h_journal).on("stop", _h_stop).on("flatten", _h_flatten)
+                .on("journal", _h_journal).on("stop", _h_stop).on("flatten", _h_flatten).on("shadow", _h_shadow)
                 .on("resume", _h_resume).on("help", lambda _a: HELP).on("start", lambda _a: HELP))
             _ctl["c"] = ctl if ctl.enabled else None
             if ctl.enabled:
