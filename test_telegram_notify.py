@@ -67,6 +67,39 @@ def test_non_200_counts_as_failure():
     assert t.send("x") is False and t.failed == 1
 
 
+def test_health_card_live():
+    sent, poster = _capture()
+    t = Telegram(token="TOK", chat_id="123", poster=poster)
+    t.health("live", "MFFU-50K-1", "50K-balanced",
+             {"Sizing": "A 4 MNQ + B 2 MNQ", "D1c": "ACTIVE_EVAL_FILTER ✅", "Data": "✅ GREEN"})
+    txt = sent["body"]["text"]
+    assert "LIVE" in txt and "MFFU-50K-1" in txt and "A 4 MNQ" in txt
+    assert "ACTIVE_EVAL_FILTER" in txt and "NY-AM" in txt
+
+
+def test_health_card_paper():
+    sent, poster = _capture()
+    t = Telegram(token="TOK", chat_id="123", poster=poster)
+    t.health("paper", "MFFU-50K-1", "50K-balanced", {"Data": "GREEN"})
+    assert "PAPER" in sent["body"]["text"]
+
+
+def test_heartbeat():
+    sent, poster = _capture()
+    t = Telegram(token="TOK", chat_id="123", poster=poster)
+    t.heartbeat("11:42 ET", "GREEN", 0, 1, 2, "OK")
+    txt = sent["body"]["text"]
+    assert "ARES alive" in txt and "11:42 ET" in txt and "✅ GREEN" in txt
+    assert "Trades today: 1 (A:0 B:1)" in txt and "blocked: 2" in txt
+
+
+def test_heartbeat_red_data():
+    sent, poster = _capture()
+    t = Telegram(token="TOK", chat_id="123", poster=poster)
+    t.heartbeat("12:00 ET", "RED", 0, 0, 0, "WARMUP")
+    assert "🔴 RED" in sent["body"]["text"]
+
+
 def test_label_prefix():
     sent, poster = _capture()
     t = Telegram(token="TOK", chat_id="123", label="MFFU-50K-1", poster=poster)

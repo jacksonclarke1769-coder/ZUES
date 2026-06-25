@@ -61,6 +61,18 @@ class Telegram:
         return self.send(f"<b>📨 Profile {profile} — {self._dir(side)} {qty} MNQ</b>  [{live}]\n"
                          f"{self.label}entry {entry:.2f} · stop {stop:.2f}{tgt}")
 
+    def health(self, mode, account, tier, fields, window="NY-AM 09:30–11:30 ET"):
+        head = "✅ <b>ARES LIVE &amp; HEALTHY</b>" if mode == "live" else "🟡 <b>ARES PAPER (dry-run)</b>"
+        body = "\n".join(f"• {k}: {v}" for k, v in fields.items())
+        return self.send(f"{head}\n<b>{account}</b> · {tier}\n{body}\nWatching {window} — 📨 on every signal.")
+
+    def heartbeat(self, when_et, data_state, sent_a, sent_b, blocked, d1c_status, extra=""):
+        dg = "✅" if data_state == "GREEN" else "🔴"
+        tail = f" · {extra}" if extra else ""
+        return self.send(f"💓 <b>ARES alive</b> · {when_et}\n"
+                         f"• Data: {dg} {data_state} · D1c: {d1c_status}\n"
+                         f"• Trades today: {sent_a + sent_b} (A:{sent_a} B:{sent_b}) · blocked: {blocked}{tail}")
+
     def outcome(self, profile, side, rr, pnl, reason, mode):
         em = "✅" if (pnl or 0) > 1e-6 else ("❌" if (pnl or 0) < -1e-6 else "➖")
         live = "LIVE" if mode == "live" else "PAPER"

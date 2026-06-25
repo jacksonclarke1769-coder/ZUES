@@ -353,6 +353,8 @@ def main(argv=None):
                         "flattens fail-closed on a confirmed mismatch. Needs read-only Tradovate API creds.")
     p.add_argument("--readback-poll", type=int, default=20,
                    help="seconds between read-back polls (default 20)")
+    p.add_argument("--heartbeat-min", type=int, default=60,
+                   help="minutes between Telegram heartbeat health pings while live (0 = off, default 60)")
     p.add_argument("--controlled-tv-full-live-test", "--controlled-tv-live-test",
                    dest="controlled_tv_live_test", action="store_true",
                    help="SUPERVISED single-session live test on the TradingView browser feed "
@@ -414,7 +416,7 @@ def main(argv=None):
     tg = Telegram(label=f"{a.account} · {a.tier}")
     if tg.enabled:
         print(f"  telegram notifications ON ({a.account})", flush=True)
-        tg.info(f"🚀 <b>ARES armed</b> · {a.account} · tier {a.tier} · {('LIVE' if mode=='live' else 'PAPER')} · watching NY-AM")
+        tg.info(f"🚀 <b>ARES starting up</b> · {a.account} · {a.tier} · {('LIVE' if mode=='live' else 'PAPER')} · warming feed…")
 
     # --- learning journal: records every resolved trade + WHY it won/lost (+ post-exit 'stopped early') ---
     from trade_journal import TradeJournal
@@ -445,6 +447,7 @@ def main(argv=None):
     import time as _t_mod
     NY = "America/New_York"
     _rb = {"day": None, "t": 0.0}          # Stage B read-back poll tracker (last reset-day, last poll ts)
+    _hb = {"t": _t_mod.time()}             # Telegram heartbeat tracker (last ping ts)
     runner = PaperLiveRunner(store, "live", "live")
     runner.bot.on_decision = lambda sig, placed, reason, ts: (
         runner._orig(sig, placed, reason, ts), auto.on_decision(sig, placed, reason, ts))
@@ -635,6 +638,14 @@ def main(argv=None):
                     conf = readback.poll(_rb_broker)
                     if conf:
                         print(f"[auto-live] read-back: {[(c,d) for c,_,d in conf]}", flush=True)
+            # --- Telegram heartbeat: periodic 'still alive + healthy' ping while live ---
+            if tg.enabled and a.heartbeat_min > 0 and armed["v"]:
+                _now = _t_mod.time()
+                if _now - _hb["t"] >= a.heartbeat_min * 60:
+                    _hb["t"] = _now
+                    _ds = feed.data_state()[0] if hasattr(feed, "data_state") else "GREEN"
+                    _pt = pd.Timestamp(ts); _et = (_pt.tz_convert(NY) if _pt.tzinfo else _pt).strftime("%H:%M ET")
+                    tg.heartbeat(_et, _ds, auto.sent, auto.b_sent, auto.blocked, auto.gate.heimdall_status())
 
         # --- LIVE: warm the live feed to GREEN, THEN run the preflight (the Dukascopy warmup tail is
         #     stale by design; the live TV feed is current, so wait for it to catch up before arming) ---
@@ -675,6 +686,16 @@ def main(argv=None):
                 print("  ⚠ SUPERVISED TEST on browser feed — operator MUST watch.", flush=True)
 
         print("  going live · watching the NY-AM window…", flush=True)
+        if tg.enabled:                                   # Telegram: LIVE + health confirmation
+            _ds = (feed.data_state()[0] if hasattr(feed, "data_state") else "GREEN")
+            tg.health(mode, a.account, a.tier, {
+                "Sizing": f"A {spec['am']} MNQ + B {spec['bm']} MNQ",
+                "D1c": d1c_mode + (" ✅" if d1c_mode == "ACTIVE_EVAL_FILTER" else " ⚠️ SHADOW"),
+                "Data": f"{'✅' if _ds == 'GREEN' else '🔴'} {_ds} · {a.feed}",
+                "Daily stop": f"-${spec['daily_stop']:,}",
+                "Profiles": "A + B (ORB)" if not getattr(a, "no_profile_b", False) else "A only",
+                "Read-back": ("on" if readback is not None else "off") + " · Journal: on · Guardian+gate: armed",
+            })
         for ts, o, h, l, c in live_gen:
             _process(ts, o, h, l, c)
     except KeyboardInterrupt:
