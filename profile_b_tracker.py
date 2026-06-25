@@ -19,10 +19,11 @@ SNAP_KEY = "b_tracker_snapshot"
 
 class ProfileBPaperTracker:
     def __init__(self, store, account, mode, dpp=2.0, fill_window=6, max_hold=24,
-                 path=trade_results.PATH):
+                 path=trade_results.PATH, notify=None):
         self.store = store
         self.account = account
         self.mode = mode
+        self.notify = notify        # Telegram notifier (modeled B outcome). Optional, fail-safe.
         self.dpp = dpp
         self.fw = fill_window
         self.mh = max_hold
@@ -114,4 +115,6 @@ class ProfileBPaperTracker:
             note=f"paper · Profile B ORB · {reason} · {rr:+.2f}R modeled",
             fill_backed=False, path=self.path)
         self.recorded.append(row)
+        if self.notify is not None:                          # Telegram: modeled B outcome
+            self.notify.outcome("B", w["side"], rr, pnl, reason, self.mode)
         return row

@@ -81,10 +81,11 @@ class LiveAuto:
     def __init__(self, account, tier, mode, store, journal, sender, daily_stop,
                  d1c_mode="ACTIVE_EVAL_FILTER", basis_offset=0.0, d1c_stale_after_s=360,
                  entry_gate=None, logger=None, cushion_fn=None, p3_enabled=True,
-                 profile_b=True, readback=None):
+                 profile_b=True, readback=None, notify=None):
         self.logger = logger           # ARGUS decision logger (auditability; fail-safe, optional)
         self.entry_gate = entry_gate   # infrastructure readiness gate (data GREEN + dead-man alive)
         self.readback = readback       # Stage B: live broker read-back sentinel (closes-the-loop). Optional.
+        self.notify = notify           # Telegram notifier (signals + modeled outcomes). Optional, fail-safe.
         # P3 cushion brake + Profile B (research-validated; gated like everything else, paper-first)
         self.p3 = P3Brake()
         self.p3_enabled = p3_enabled
@@ -92,7 +93,7 @@ class LiveAuto:
         self.profile_b = profile_b
         self.b_engine = ProfileBEngine()
         from profile_b_tracker import ProfileBPaperTracker
-        self.b_tracker = ProfileBPaperTracker(store, account, mode)   # B paper-P&L -> calendar
+        self.b_tracker = ProfileBPaperTracker(store, account, mode, notify=notify)   # B paper-P&L -> calendar (+ TG outcome)
         self.b_sent = self.b_blocked = 0
         self.account, self.tier, self.mode = account, tier, mode
         self.store, self.j, self.sender = store, journal, sender
@@ -230,6 +231,9 @@ class LiveAuto:
             self.sent += 1
             if self.readback is not None:                  # Stage B: tell the sentinel what we now expect to hold
                 self.readback.on_entry(sig["side"], a_size)
+            if self.notify is not None:                    # Telegram: signal alert on send
+                self.notify.signal("A", sig["side"], a_size, float(sig["entry"]),
+                                   float(sig["stop"]), float(sig.get("target") or 0), self.mode)
         print(f"[auto-live] A {sig['side']} {a_size}MNQ{' (P3-braked)' if braked else ''} "
               f"{_exit_model} @ {sig['entry']:.2f} stop {sig['stop']:.2f} tgt {sig['target']:.2f} "
               f"-> {res.get('reason', 'sent')}",
@@ -294,6 +298,9 @@ class LiveAuto:
             self.b_sent += 1
             if self.readback is not None:                # Stage B: B adds to expected broker position too
                 self.readback.on_entry(sig["side"], b_size)
+            if self.notify is not None:                  # Telegram: signal alert on send
+                self.notify.signal("B", sig["side"], b_size, float(sig["entry"]),
+                                   float(sig["stop"]), float(sig.get("target") or 0), self.mode)
             if bar_i is not None:                        # track B paper-P&L -> dashboard calendar
                 self.b_tracker.on_signal(sig, b_size, bar_i, ts)
         print(f"[auto-live] B {sig['side']} {b_size}MNQ ORB @ {sig['entry']:.2f} "
@@ -401,11 +408,18 @@ def main(argv=None):
               "(missing/invalid API creds). Read-back is fail-closed — refusing to run live blind.", flush=True)
         return 2
 
+    # --- Telegram notifier (signals + modeled outcomes) — no-op unless TELEGRAM_BOT_TOKEN/CHAT_ID set ---
+    from telegram_notify import Telegram
+    tg = Telegram(label=f"{a.account} · {a.tier}")
+    if tg.enabled:
+        print(f"  telegram notifications ON ({a.account})", flush=True)
+        tg.info(f"🚀 <b>ARES armed</b> · {a.account} · tier {a.tier} · {('LIVE' if mode=='live' else 'PAPER')} · watching NY-AM")
+
     auto = LiveAuto(a.account, a.tier, mode, Store(), j, sender, spec["daily_stop"],
                     d1c_mode=d1c_mode, basis_offset=a.basis_offset,
                     d1c_stale_after_s=(120 if dual_1m else 360), logger=_dlogger,
                     profile_b=not getattr(a, "no_profile_b", False),
-                    p3_enabled=not getattr(a, "no_p3", False), readback=readback)
+                    p3_enabled=not getattr(a, "no_p3", False), readback=readback, notify=tg)
     if readback is not None:
         # critical mismatch -> flatten via the SAME bridge route as the guardian, then stay halted.
         def _rb_flatten(reason):
@@ -544,8 +558,18 @@ def main(argv=None):
             """Append any newly-RESOLVED trades to the dashboard P&L calendar ledger.
             Uses the proven PaperTracker outcome (stop/TP1/TP2/EOD -> result_R); display-only."""
             import trade_results
+            old = _rec["n"]
             _rec["n"] = trade_results.record_resolved(
-                runner.tracker.rows, _rec["n"], mode, a.account, _qty)
+                runner.tracker.rows, old, mode, a.account, _qty)
+            if tg.enabled:                               # Telegram: modeled Profile A outcome(s)
+                for r in runner.tracker.rows[old:_rec["n"]]:
+                    rr = r.get("result_R")
+                    if rr is None:
+                        continue
+                    pnl = trade_results.pnl_from_r(rr, r["entry"], r["stop"], _qty)
+                    tg.outcome("A", r.get("direction", "?"), rr, pnl,
+                               (r.get("notes") or ["exit"])[0] if isinstance(r.get("notes"), (list, tuple)) else "exit",
+                               mode)
 
         def _engine_bar(bts, bo, bh, bl, bc):
             runner.tracker.on_bar(_bar["i"], bts, bo, bh, bl, bc)   # advance open watches -> resolve exits
