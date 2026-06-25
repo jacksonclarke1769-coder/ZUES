@@ -118,6 +118,8 @@ class LiveAuto:
             return "emergency lockout active"
         if self.store.get_state("auto_live_kill"):
             return "operator kill switch"
+        if self.store.get_state("auto_live_halt"):       # soft halt (Telegram /stop): no new entries,
+            return "halted (no new entries)"             # but guardian ignores it so the open trade runs
         if hasattr(self.sender, "incident_blocked") and self.sender.incident_blocked():
             return "exit3 incident — manual reset required"
         if self.guard.is_stopped(self.account, et_date()):
@@ -448,6 +450,7 @@ def main(argv=None):
     NY = "America/New_York"
     _rb = {"day": None, "t": 0.0}          # Stage B read-back poll tracker (last reset-day, last poll ts)
     _hb = {"t": _t_mod.time()}             # Telegram heartbeat tracker (last ping ts)
+    _ctl = {"c": None, "t": 0.0}           # Telegram remote-control poller (set once live) + last-poll ts
     runner = PaperLiveRunner(store, "live", "live")
     runner.bot.on_decision = lambda sig, placed, reason, ts: (
         runner._orig(sig, placed, reason, ts), auto.on_decision(sig, placed, reason, ts))
@@ -646,6 +649,14 @@ def main(argv=None):
                     _ds = feed.data_state()[0] if hasattr(feed, "data_state") else "GREEN"
                     _pt = pd.Timestamp(ts); _et = (_pt.tz_convert(NY) if _pt.tzinfo else _pt).strftime("%H:%M ET")
                     tg.heartbeat(_et, _ds, auto.sent, auto.b_sent, auto.blocked, auto.gate.heimdall_status())
+            # --- Telegram remote control: poll owner commands, dispatch, reply (rate-limited) ---
+            if _ctl["c"] is not None:
+                _now = _t_mod.time()
+                if _now - _ctl["t"] >= 8:                  # poll getUpdates at most every ~8s
+                    _ctl["t"] = _now
+                    for _cmd, _reply in _ctl["c"].poll():
+                        print(f"[tg-control] /{_cmd} -> {_reply[:80]}", flush=True)
+                        tg.send(_reply)
 
         # --- LIVE: warm the live feed to GREEN, THEN run the preflight (the Dukascopy warmup tail is
         #     stale by design; the live TV feed is current, so wait for it to catch up before arming) ---
@@ -686,16 +697,66 @@ def main(argv=None):
                 print("  ⚠ SUPERVISED TEST on browser feed — operator MUST watch.", flush=True)
 
         print("  going live · watching the NY-AM window…", flush=True)
-        if tg.enabled:                                   # Telegram: LIVE + health confirmation
+
+        def _health_fields():                            # shared by the go-live card AND /health command
             _ds = (feed.data_state()[0] if hasattr(feed, "data_state") else "GREEN")
-            tg.health(mode, a.account, a.tier, {
+            return {
                 "Sizing": f"A {spec['am']} MNQ + B {spec['bm']} MNQ",
                 "D1c": d1c_mode + (" ✅" if d1c_mode == "ACTIVE_EVAL_FILTER" else " ⚠️ SHADOW"),
                 "Data": f"{'✅' if _ds == 'GREEN' else '🔴'} {_ds} · {a.feed}",
                 "Daily stop": f"-${spec['daily_stop']:,}",
                 "Profiles": "A + B (ORB)" if not getattr(a, "no_profile_b", False) else "A only",
                 "Read-back": ("on" if readback is not None else "off") + " · Journal: on · Guardian+gate: armed",
-            })
+            }
+
+        if tg.enabled:                                   # Telegram: LIVE + health confirmation
+            tg.health(mode, a.account, a.tier, _health_fields())
+            # --- inbound remote control: owner can text /health /status /stop /flatten /resume ---
+            from telegram_control import TelegramControl, HELP
+            ctl = TelegramControl()                      # same token/chat_id from env as the notifier
+
+            def _h_health(_a):
+                tg.health(mode, a.account, a.tier, _health_fields()); return "✅ sent health card"
+
+            def _h_status(_a):
+                _ds = (feed.data_state()[0] if hasattr(feed, "data_state") else "GREEN")
+                halt = "🛑 HALTED" if auto.killed() else "🟢 active"
+                return (f"{halt} · {a.account}\n"
+                        f"• Data: {'✅' if _ds == 'GREEN' else '🔴'} {_ds} · D1c {auto.gate.heimdall_status()}\n"
+                        f"• Trades: {auto.sent + auto.b_sent} (A:{auto.sent} B:{auto.b_sent}) · blocked {auto.blocked}")
+
+            def _h_journal(_a):
+                es = getattr(journal, "entries", []) if journal is not None else []
+                if not es:
+                    return "no trades journaled yet today"
+                e = es[-1]
+                return f"📓 last: P{e['profile']} {e['side']} {e['R']:+.2f}R\n{e['why']}"
+
+            def _h_stop(_a):
+                store.set_state(auto_live_halt="telegram /stop")
+                return "🛑 HALTED — no new entries. Any open trade runs to its bracket. /resume to re-arm."
+
+            def _h_flatten(_a):
+                store.set_state(auto_live_kill="telegram /flatten")   # guardian flattens on next tick + halts
+                if guardian is not None:
+                    try:
+                        guardian._flatten("TELEGRAM")                # immediate, same bridge route as EOD/kill
+                    except Exception as e:                           # noqa: BLE001
+                        return f"⚠ flatten signal sent (kill flag set); immediate call failed: {e}"
+                return "🚨 FLATTEN sent + HALTED. Confirm flat in Tradovate. /resume to re-arm."
+
+            def _h_resume(_a):
+                store.set_state(auto_live_halt="", auto_live_kill="")
+                return "🟢 RESUMED — halt cleared, watching for entries again."
+
+            store.set_state(auto_live_halt="")            # fresh session starts un-halted (kill stays sticky)
+            (ctl.on("health", _h_health).on("status", _h_status).on("ping", lambda _a: "🟢 pong — ARES alive")
+                .on("journal", _h_journal).on("stop", _h_stop).on("flatten", _h_flatten)
+                .on("resume", _h_resume).on("help", lambda _a: HELP).on("start", lambda _a: HELP))
+            _ctl["c"] = ctl if ctl.enabled else None
+            if ctl.enabled:
+                print("  telegram remote control armed (/help for commands)", flush=True)
+
         for ts, o, h, l, c in live_gen:
             _process(ts, o, h, l, c)
     except KeyboardInterrupt:

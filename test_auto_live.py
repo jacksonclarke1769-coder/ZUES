@@ -83,6 +83,18 @@ def test_kill_switch_blocks(env):
     assert a.sent == 0 and a.blocked == 1
 
 
+def test_soft_halt_blocks_entries(env):
+    """Telegram /stop sets auto_live_halt -> killed() halts new entries (guardian ignores it)."""
+    s, j = env
+    a = _auto(env, "OFF"); _feed_up(a)
+    s.set_state(auto_live_halt="telegram /stop")
+    assert a.killed() == "halted (no new entries)"
+    a.on_decision(_sig("long"), True, "ok", _bar("09:45:30"))
+    assert a.sent == 0 and a.blocked == 1
+    s.set_state(auto_live_halt="")                     # /resume clears it
+    assert a.killed() is None
+
+
 def test_daily_stop_blocks(env):
     s, j = env
     a = _auto(env, "OFF"); _feed_up(a)
