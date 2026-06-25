@@ -1,5 +1,5 @@
 """P3 + Profile B LIVE integration in auto_live.LiveAuto — P3 sizing on A, B routing
-(single bracket, no D1c), P3 brake zeros B. Dry-run sender (no live, no flag)."""
+(PARTIAL_1R split bracket, no D1c), P3 brake zeros B. Dry-run sender (no live, no flag)."""
 import pandas as pd
 import pytest
 
@@ -44,14 +44,15 @@ def test_a_halved_when_p3_braked(tmp_path):
 
 
 # ---- Profile B routing ----
-def test_b_routes_single_bracket_strategy_b(tmp_path):
+def test_b_routes_partial_bracket_strategy_b(tmp_path):
+    # PROMOTED 2026-06-26: B exit = PARTIAL_1R (50% @ +1R, 50% @ frozen 1.5R target, shared stop).
     a, cap = _auto(tmp_path, cushion=1500)
     a.on_b_signal(B_SIG, pd.Timestamp(B_SIG["ts_signal"]))
-    assert len(cap) == 1                                    # single bracket (not Exit #3 split)
-    p = cap[0]
-    assert p["quantity"] == 2                               # bm for 50K-conservative
-    assert p["extras"]["strategy"] == "B"
-    assert "takeProfit" in p and "stopLoss" in p
+    assert len(cap) == 2                                    # TP1 + TP2 split (not a single bracket)
+    assert sum(p["quantity"] for p in cap) == 2            # bm=2 -> 1 MNQ @ +1R, 1 MNQ @ +1.5R
+    for p in cap:
+        assert p["extras"]["strategy"] == "B"
+        assert "takeProfit" in p and "stopLoss" in p        # each leg complete; shared protective stop
     assert a.b_sent == 1
 
 def test_b_blocked_when_p3_braked(tmp_path):
@@ -73,13 +74,24 @@ def test_b_disabled_flag(tmp_path):
     assert cap == []
 
 
+# ---- B exit resolution: PARTIAL_1R default, fail-safe to SINGLE in live without the flag ----
+def test_resolve_b_exit_flag_gating(tmp_path):
+    from config_defaults import resolve_b_exit
+    d = str(tmp_path)
+    assert resolve_b_exit("paper", approval_dir=d) == "PARTIAL_1R"        # paper -> partial (no flag needed)
+    assert resolve_b_exit("controlled", approval_dir=d) == "PARTIAL_1R"
+    assert resolve_b_exit("live", approval_dir=d) == "SINGLE"             # live + NO flag -> safe fallback
+    open(str(tmp_path / "b-exit-partial-approved.flag"), "w").write("ok")
+    assert resolve_b_exit("live", approval_dir=d) == "PARTIAL_1R"         # live + flag -> partial
+
+
 # ---- B does not consult D1c (no DriftGate call) ----
 def test_b_never_touches_d1c(tmp_path):
     a, cap = _auto(tmp_path, cushion=1500)
     # break the drift gate; B must still route (proves it never calls D1c)
     a.gate = None
     a.on_b_signal(B_SIG, pd.Timestamp(B_SIG["ts_signal"]))
-    assert len(cap) == 1 and a.b_sent == 1
+    assert len(cap) == 2 and a.b_sent == 1                  # partial routes (2 legs); never calls D1c
 
 
 # ---- B paper-P&L wiring: signal -> tracker -> calendar ----

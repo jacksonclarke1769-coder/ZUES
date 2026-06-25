@@ -65,6 +65,47 @@ def test_eod_close_resolves(tmp_path):
     assert t.closed == 1 and t.recorded[0]["pnl"] != 0
 
 
+# ---- PARTIAL_1R (50% @ +1R, 50% @ 1.5R target, shared stop) ----
+# SIG: entry 100, stop 98 (risk 2 = -1R), tp1 102 (+1R), target 103 (+1.5R).
+
+def test_partial_win_banks_1R_then_target(tmp_path):
+    t, p = _trk(tmp_path)
+    t.on_signal(SIG, qty=2, bar_i=0, ts="2026-06-22 09:45", partial=True)
+    t.on_bar(1, "2026-06-22 09:50", 100, 101, 99, 100)          # filled at 100
+    t.on_bar(2, "2026-06-22 09:55", 101, 104, 100, 103)         # hits tp1 102 AND target 103
+    assert t.closed == 1
+    # blended gross = 0.5*(102-100) + 0.5*(103-100) = 2.5pt; net 2.5-0.75=1.75; $ = 1.75*2*2
+    assert round(t.recorded[0]["pnl"], 2) == 7.0
+    assert "PARTIAL 1R+target" in t.recorded[0]["note"]
+
+def test_partial_giveback_banks_1R_then_stop(tmp_path):
+    t, p = _trk(tmp_path)
+    t.on_signal(SIG, qty=2, bar_i=0, ts="2026-06-22 09:45", partial=True)
+    t.on_bar(1, "2026-06-22 09:50", 100, 101, 99, 100)          # filled
+    t.on_bar(2, "2026-06-22 09:55", 100, 102.5, 100, 102)       # banks 50% @ tp1 102 (no stop/target)
+    assert t.open[0]["remaining"] == 0.5 and t.open[0]["realized_pts"] == 1.0
+    t.on_bar(3, "2026-06-22 10:00", 101, 101, 97, 98)           # remaining 50% stops at 98
+    # blended gross = 0.5*(+2) + 0.5*(-2) = 0pt; net -0.75; $ = -0.75*2*2 = -3.0  (vs single -1R = -11.0)
+    assert t.closed == 1 and round(t.recorded[0]["pnl"], 2) == -3.0
+    assert "PARTIAL 1R+stop" in t.recorded[0]["note"]
+
+def test_partial_full_loss_when_never_reaches_1R(tmp_path):
+    t, p = _trk(tmp_path)
+    t.on_signal(SIG, qty=2, bar_i=0, ts="2026-06-22 09:45", partial=True)
+    t.on_bar(1, "2026-06-22 09:50", 100, 101, 99, 100)          # filled
+    t.on_bar(2, "2026-06-22 09:55", 100, 100, 97, 98)           # stops before reaching +1R
+    # no partial banked -> full -1R, identical to single bracket: (-2-0.75)*2*2 = -11.0
+    assert round(t.recorded[0]["pnl"], 2) == -11.0
+
+def test_partial_requires_qty_2(tmp_path):
+    t, p = _trk(tmp_path)
+    t.on_signal(SIG, qty=1, bar_i=0, ts="2026-06-22 09:45", partial=True)   # qty=1 -> no partial
+    assert t.open[0]["partial"] is False
+    t.on_bar(1, "2026-06-22 09:50", 100, 101, 99, 100)
+    t.on_bar(2, "2026-06-22 09:55", 101, 104, 100, 103)         # single win +1.5R
+    assert round(t.recorded[0]["pnl"], 2) == 4.5                # full 1.5R, no partial
+
+
 # ---- persistence (restart-safe) ----
 def test_open_watch_survives_restart(tmp_path):
     from store import Store

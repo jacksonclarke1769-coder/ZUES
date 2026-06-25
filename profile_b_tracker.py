@@ -62,13 +62,16 @@ class ProfileBPaperTracker:
         except Exception:                                # noqa: BLE001
             pass
 
-    def on_signal(self, sig, qty, bar_i, ts):
+    def on_signal(self, sig, qty, bar_i, ts, partial=False):
         if int(qty) <= 0:
             return
         d = 1 if sig["side"] == "long" else -1
-        self.open.append(dict(side=sig["side"], d=d, entry=float(sig["entry"]),
-                              stop=float(sig["stop"]), target=float(sig["target"]),
-                              qty=int(qty), sbar=int(bar_i), ts=str(ts), filled=None))
+        entry = float(sig["entry"]); stop = float(sig["stop"]); risk = abs(entry - stop) or 1e-9
+        # PARTIAL_1R models the live split (50% @ +1R, 50% @ frozen 1.5R target, shared stop). Needs qty>=2.
+        use_partial = bool(partial) and int(qty) >= 2
+        self.open.append(dict(side=sig["side"], d=d, entry=entry, stop=stop, target=float(sig["target"]),
+                              qty=int(qty), sbar=int(bar_i), ts=str(ts), filled=None,
+                              partial=use_partial, tp1=entry + d * risk, realized_pts=0.0, remaining=1.0))
         self.persist()
 
     def on_bar(self, bar_i, ts, o, h, l, c):
@@ -80,13 +83,28 @@ class ProfileBPaperTracker:
             if w["filled"] is None:
                 if bar_i <= w["sbar"]:               # signal bar / earlier — wait for next
                     keep.append(w); continue
-                if l <= w["entry"] <= h:             # limit retest -> filled
-                    w["filled"] = bar_i; keep.append(w); continue
-                if bar_i > w["sbar"] + self.fw:      # window expired -> cancel (no trade)
+                if l <= w["entry"] <= h:             # limit retest -> filled; FALL THROUGH to resolve the
+                    w["filled"] = bar_i              # exit on THIS same bar (frozen exits from fill inclusive)
+                elif bar_i > w["sbar"] + self.fw:    # window expired -> cancel (no trade)
                     continue
-                keep.append(w); continue
+                else:
+                    keep.append(w); continue
             # ---- filled: resolve the exit (stop-first, conservative) ----
-            d = w["d"]; ex = reason = None
+            d = w["d"]
+            if w.get("partial"):
+                # PARTIAL_1R: order mirrors the validated b_resim -> stop, then bank 50% @ +1R, then
+                # remaining 50% to the 1.5R target / EOD. One blended row is recorded when fully closed.
+                if (l <= w["stop"]) if d > 0 else (h >= w["stop"]):           # remaining exits at stop
+                    self._record_partial(w, w["stop"], "stop", int(bar_i - w["filled"])); self.closed += 1; continue
+                if w["remaining"] >= 1.0 and ((h >= w["tp1"]) if d > 0 else (l <= w["tp1"])):
+                    w["realized_pts"] += 0.5 * (w["tp1"] - w["entry"]) * d     # bank 50% at +1R (limit fill)
+                    w["remaining"] = 0.5
+                if (h >= w["target"]) if d > 0 else (l <= w["target"]):       # remaining exits at target
+                    self._record_partial(w, w["target"], "target", int(bar_i - w["filled"])); self.closed += 1; continue
+                if (not rth and bar_i > w["filled"]) or bar_i >= w["filled"] + self.mh:
+                    self._record_partial(w, c, ("eod" if not rth else "timeout"), int(bar_i - w["filled"])); self.closed += 1; continue
+                keep.append(w); continue
+            ex = reason = None
             if (l <= w["stop"]) if d > 0 else (h >= w["stop"]):
                 ex, reason = w["stop"], "stop"
             elif (h >= w["target"]) if d > 0 else (l <= w["target"]):
@@ -121,4 +139,32 @@ class ProfileBPaperTracker:
         if self.journal is not None:                         # learning journal: why won/lost
             self.journal.on_resolved("B", w["side"], w["qty"], w["entry"], w["stop"], w.get("target"),
                                      ex, reason, rr, pnl, w["ts"], hold_bars=hold_bars)
+        return row
+
+    def _record_partial(self, w, final_px, reason, hold_bars=None):
+        """PARTIAL_1R blended outcome: 50% banked @ +1R (w['realized_pts']) + remaining @ final_px.
+        ONE row per trade with the blended R/$ — matches the validated b_resim partial."""
+        key = self._key(w)
+        if key in self.recorded_keys:
+            return None
+        self.recorded_keys.add(key)
+        risk = abs(w["entry"] - w["stop"]) or 1e-9
+        gross_pts = w["realized_pts"] + w["remaining"] * (final_px - w["entry"]) * w["d"]
+        net_pts = gross_pts - B_COST_PTS
+        pnl = net_pts * self.dpp * w["qty"]
+        rr = gross_pts / risk
+        banked = w["realized_pts"] > 0
+        lbl = f"1R+{reason}" if banked else reason          # e.g. "1R+stop" = banked partial then stopped
+        row = trade_results.record(
+            date=str(pd.Timestamp(w["ts"]).date()), mode=self.mode, account=self.account,
+            strategy="B", direction=w["side"], contracts=w["qty"], pnl=pnl,
+            note=f"paper · Profile B ORB · PARTIAL {lbl} · {rr:+.2f}R modeled",
+            fill_backed=False, path=self.path)
+        self.recorded.append(row)
+        if self.notify is not None:
+            self.notify.outcome("B", w["side"], rr, pnl, lbl, self.mode)
+        if self.journal is not None:
+            self.journal.on_resolved("B", w["side"], w["qty"], w["entry"], w["stop"], w.get("target"),
+                                     final_px, reason, rr, pnl, w["ts"],
+                                     reached_1r=banked, hold_bars=hold_bars)
         return row

@@ -33,3 +33,27 @@ def exit3_split(qty):
     q = int(qty)
     tp1 = q // 2
     return tp1, q - tp1
+
+
+# --- Profile B exit (PROMOTED 2026-06-26) -----------------------------------------------------------
+# PARTIAL_1R = 50% @ +1R, 50% @ the FROZEN 1.5R ATR target, shared stop. Validated on real Databento
+# (13/13 adversarial battery, validate_b_partial.py): PF 1.20->1.40, maxDD -36->-9R, +59% net / -64% DD
+# at 2 MNQ, robust to harsh + partial-fill costs, all 6 yrs improve. The B SIGNAL/stop/1.5R target are
+# UNCHANGED — this only splits the exit (adds a +1R partial). Split = exit3_split (50/50; qty=1 -> all-core).
+# SINGLE = the prior single-OCO-bracket B exit; kept as the qty=1 fallback + the un-approved-live fallback.
+B_EXIT_MODEL = "PARTIAL_1R"
+B_EXIT_MODEL_ALLOWED = {"PARTIAL_1R", "SINGLE"}
+B_PARTIAL_APPROVAL_FLAG = "b-exit-partial-approved.flag"   # required to route the partial in LIVE mode
+
+
+def resolve_b_exit(mode="paper", approval_dir=None):
+    """Resolve the Profile B exit model. PARTIAL_1R by default; in LIVE mode it requires the approval
+    flag (else fail-safe to the prior SINGLE bracket — never silently change live exec). Never raises."""
+    import os
+    if B_EXIT_MODEL not in B_EXIT_MODEL_ALLOWED or B_EXIT_MODEL == "SINGLE":
+        return "SINGLE"
+    if mode == "live":
+        d = approval_dir or os.path.join(os.path.dirname(os.path.abspath(__file__)), "evidence", "approvals")
+        if not os.path.exists(os.path.join(d, B_PARTIAL_APPROVAL_FLAG)):
+            return "SINGLE"                                # not approved for live -> safe prior bracket
+    return "PARTIAL_1R"

@@ -285,18 +285,32 @@ class LiveAuto:
             self._dlog("blocked", "ares", bar_ts=ts, side=sig.get("side"),
                        reason="P3 brake (B=0)" if self.p3.braked else "no B size in tier", profile="B")
             return
-        payload, err = BP.build_entry(
+        # B exit: PARTIAL_1R (50% @ +1R, 50% @ frozen 1.5R target, shared stop) when approved & qty>=2;
+        # else the prior SINGLE bracket. Frozen B signal/stop/1.5R-target are UNCHANGED — exit split only.
+        from config_defaults import resolve_b_exit
+        b_exit = resolve_b_exit(self.mode)
+        b_common = dict(
             account=self.account, strategy="B", setup=sig.get("liq", "orb"),
             signal_ts=sig["ts_signal"], side=sig["side"], qty=b_size,
             entry=float(sig["entry"]) + self.basis_offset,
             stop=float(sig["stop"]) + self.basis_offset,
             target=float(sig["target"]) + self.basis_offset,
             root="MNQ", order_type="limit", mode_meta=dict(mode="ARES", tier=self.tier, profile="B"))
-        if err:
-            print(f"[auto-live] B FAIL CLOSED — payload not built: {err}", flush=True)
-            return
-        res = self.sender.send(payload)
-        ok = res.get("sent")
+        b_legs = None
+        if b_exit == "PARTIAL_1R" and b_size >= 2:
+            b_legs, err = BP.build_entry_exit3(**b_common)   # TP1 @ +1R, TP2 @ B's 1.5R target, shared stop
+            if err:
+                print(f"[auto-live] B FAIL CLOSED — partial legs not built: {err}", flush=True)
+                return
+            res = self.sender.send_exit3(b_legs, self.account, root="MNQ")
+            ok = res.get("ok")
+        else:                                                # qty=1 or SINGLE -> prior single OCO bracket
+            payload, err = BP.build_entry(**b_common)
+            if err:
+                print(f"[auto-live] B FAIL CLOSED — payload not built: {err}", flush=True)
+                return
+            res = self.sender.send(payload)
+            ok = res.get("sent")
         if ok or self.mode != "live":
             self.b_sent += 1
             if self.readback is not None:                # Stage B: B adds to expected broker position too
@@ -305,21 +319,27 @@ class LiveAuto:
                 self.notify.signal("B", sig["side"], b_size, float(sig["entry"]),
                                    float(sig["stop"]), float(sig.get("target") or 0), self.mode)
             if bar_i is not None:                        # track B paper-P&L -> dashboard calendar
-                self.b_tracker.on_signal(sig, b_size, bar_i, ts)
-        print(f"[auto-live] B {sig['side']} {b_size}MNQ ORB @ {sig['entry']:.2f} "
+                self.b_tracker.on_signal(sig, b_size, bar_i, ts, partial=(b_legs is not None))
+        _xlabel = "PARTIAL(50%@1R/50%@1.5R)" if b_legs is not None else "single"
+        print(f"[auto-live] B {sig['side']} {b_size}MNQ ORB {_xlabel} @ {sig['entry']:.2f} "
               f"stop {sig['stop']:.2f} tgt {sig['target']:.2f} -> {res.get('reason', 'sent')}",
               flush=True)
         _reason = res.get("reason", "")
         if not ok and "exit model" in _reason.lower():
             self._dlog("blocked", "exitlock", bar_ts=ts, side=sig["side"], reason=_reason, profile="B")
         else:
-            # B is a SINGLE bracket: all qty exits at one target -> map to tp2 slot, tp1 empty.
-            # (the prior call omitted the 3 REQUIRED signal() kwargs -> TypeError -> _dlog ate it
-            #  -> every B live send went unrecorded; the 2026-06-22 ORB loss was invisible to ARGUS.)
+            # PARTIAL_1R -> two legs (TP1 @ +1R, TP2 @ 1.5R); single -> all to tp2 slot, tp1 empty.
+            _bl = {}
+            if b_legs is not None:
+                for Lg in b_legs:
+                    if Lg["role"] == "entry_tp1":
+                        _bl.update(tp1_qty=Lg["qty"], tp1_target=Lg["target"])
+                    elif Lg["role"] == "entry_tp2":
+                        _bl.update(tp2_qty=Lg["qty"], tp2_target=Lg["target"])
             self._dlog("signal", bar_ts=ts, side=sig["side"], entry=float(sig["entry"]),
                        stop=float(sig["stop"]), qty_total=b_size,
-                       tp1_qty=None, tp1_target=None,
-                       tp2_qty=b_size, tp2_target=float(sig["target"]),
+                       tp1_qty=_bl.get("tp1_qty"), tp1_target=_bl.get("tp1_target"),
+                       tp2_qty=_bl.get("tp2_qty", b_size), tp2_target=_bl.get("tp2_target", float(sig["target"])),
                        signal_id_base=sig["ts_signal"], webhook_sent=bool(ok),
                        traderspost_status=_reason, live=(self.mode == "live"), profile="B")
 
