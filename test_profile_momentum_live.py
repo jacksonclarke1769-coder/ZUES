@@ -101,6 +101,29 @@ def test_tracker_short_loss(tmp_path):
     assert round(t.recorded[0]["pnl"], 2) == -123.0          # (-30-0.75)*2*2
 
 
+def test_resolve_momentum_live_flag_gating(tmp_path):
+    from config_defaults import resolve_momentum_live
+    d = str(tmp_path)
+    assert resolve_momentum_live("paper", approval_dir=d) is True       # paper -> routes (paper sender)
+    assert resolve_momentum_live("dry-run", approval_dir=d) is True
+    assert resolve_momentum_live("live", approval_dir=d) is False        # live + NO flag -> shadow
+    open(str(tmp_path / "momentum-approved.flag"), "w").write("ok")
+    assert resolve_momentum_live("live", approval_dir=d) is True         # live + flag -> route
+
+
+def test_shadow_models_but_does_not_route(tmp_path):
+    # simulate LIVE-without-approval: shadow=True -> models P&L but sends NO broker order
+    t = MomentumPaperTracker("M-acct", "live", path=str(tmp_path / "tr.csv"))
+    e, s = _exec(tracker=t); e.mode = "live"; e.shadow = True
+    e.on_signal(_sig("enter", 1, 20000), "2026-06-26 10:00")
+    assert s.cap == [] and e.position == 1 and t.open is not None        # NO order, but modeled
+    e.on_signal(_sig("flatten", 0, 20020), "2026-06-26 11:00")
+    assert s.cap == [] and t.closed == 1                                 # exit modeled, no order
+    e.shadow = False                                                     # approved -> now routes
+    e.on_signal(_sig("enter", -1, 20000), "2026-06-26 12:00")
+    assert len(s.cap) == 1 and s.cap[0]["action"] == "sell"
+
+
 def test_executor_tracker_wired(tmp_path):
     t = MomentumPaperTracker("M-acct", "paper", path=str(tmp_path / "tr.csv"))
     e, s = _exec(tracker=t)

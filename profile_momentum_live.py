@@ -68,13 +68,28 @@ class MomentumExecutor:
         self.position = 0          # current live momentum direction (+1/0/-1)
         self.qty = 0
         self.sent = self.blocked = 0
+        # SAFETY: in LIVE mode, route to the broker ONLY if momentum is explicitly approved; else SHADOW
+        # (model the P&L for the dashboard/journal/Telegram, place NO live orders). paper/dry-run always routes
+        # to its (non-broker) sender. So `--profile-momentum --live` is observe-only until the flag is created.
+        try:
+            from config_defaults import resolve_momentum_live
+            self.shadow = not resolve_momentum_live(mode)
+        except Exception:                                   # noqa: BLE001 — fail-safe to SHADOW
+            self.shadow = (mode == "live")
+        if self.shadow:
+            print("  [momentum] LIVE but NOT approved -> SHADOW (models P&L, no live orders). "
+                  "Create evidence/approvals/momentum-approved.flag to route live.", flush=True)
+
+    def _route(self, payload):
+        if not self.shadow:
+            self.sender.send(payload)
 
     def _send_exit(self, ts, reason, exit_ref):
         payload, err = BP.build_exit(account=self.account, strategy="M", signal_ts=str(ts), root=self.root,
                                      reason=reason, mode_meta=dict(mode="ARES", profile="M"))
         if err:
             print(f"[momentum] exit build failed: {err}", flush=True); return
-        self.sender.send(payload)
+        self._route(payload)
         if self.gate is not None:
             self.gate.on_close("M")
         if self.tracker is not None and exit_ref is not None:
@@ -99,7 +114,7 @@ class MomentumExecutor:
                                                mode_meta=dict(mode="ARES", profile="M"))
         if err:
             print(f"[momentum] entry build failed: {err}", flush=True); return False
-        self.sender.send(payload)
+        self._route(payload)
         if self.gate is not None:
             self.gate.on_open("M", d)
         self.position = d; self.qty = qty; self.sent += 1

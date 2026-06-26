@@ -46,6 +46,19 @@ B_EXIT_MODEL_ALLOWED = {"PARTIAL_1R", "SINGLE"}
 B_PARTIAL_APPROVAL_FLAG = "b-exit-partial-approved.flag"   # required to route the partial in LIVE mode
 
 
+MOMENTUM_APPROVAL_FLAG = "momentum-approved.flag"        # required to ROUTE momentum live
+
+
+def resolve_momentum_live(mode="paper", approval_dir=None):
+    """Should the Momentum lane route to the BROKER? paper/dry-run -> yes (to the paper sender, no broker);
+    LIVE -> only if the approval flag exists, else SHADOW (model P&L only, no live orders). Never raises."""
+    import os
+    if mode != "live":
+        return True
+    d = approval_dir or os.path.join(os.path.dirname(os.path.abspath(__file__)), "evidence", "approvals")
+    return os.path.exists(os.path.join(d, MOMENTUM_APPROVAL_FLAG))
+
+
 def resolve_b_exit(mode="paper", approval_dir=None):
     """Resolve the Profile B exit model. PARTIAL_1R by default; in LIVE mode it requires the approval
     flag (else fail-safe to the prior SINGLE bracket — never silently change live exec). Never raises."""
