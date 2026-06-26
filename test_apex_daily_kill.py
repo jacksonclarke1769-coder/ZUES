@@ -36,6 +36,16 @@ def test_update_never_raises_on_bad_input():
     assert g.update("2026-06-29", "bad") is False    # swallowed
 
 
+def test_built_from_apex_tier_configs():
+    # the eval tier flattens TIGHT (~-$700) for max pass-rate; funded looser (~-$850)
+    from auto_safety import EVAL_TIERS, FUNDED_TIERS
+    ev = EVAL_TIERS["Apex-50K-eval"]; fd = FUNDED_TIERS["Apex-50K"]
+    ge = ApexDailyKill(dll=ev["dll"], margin=ev["kill_margin"])
+    gf = ApexDailyKill(dll=fd["dll"], margin=fd["kill_margin"])
+    assert ge.kill_at == -700.0 and gf.kill_at == -850.0
+    assert ge.update("2026-06-29", -699) is False and ge.update("2026-06-29", -701) is True
+
+
 def test_snapshot_restore():
     g = ApexDailyKill(dll=1000)
     g.update("2026-06-29", -900)
