@@ -29,4 +29,8 @@ echo "launching CONTROLLED LIVE TEST — watch the output + dashboard. Ctrl-C to
 # silently trade the UN-filtered model. The D1c filter is part of the validated model.
 python3 auto_live.py --account MFFU-50K-1 --tier 50K-balanced \
   --feed tradingview-1m --d1c-mode active-eval-filter --execution traderspost \
-  --controlled-tv-full-live-test --live --confirm --require-d1c-active
+  --controlled-tv-full-live-test --live --confirm --require-d1c-active \
+  --profile-momentum
+# --profile-momentum: Momentum runs in SHADOW during this live session (models P&L + Telegram, NO live
+# orders) until evidence/approvals/momentum-approved.flag is created. Observe it live this week; one flag
+# flips it live next week. A+B trade live, completely unchanged.
