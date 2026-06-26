@@ -22,10 +22,17 @@ EVAL_TIERS = {
     "150K-balanced":     dict(account="150K", am=8, bm=4, daily_stop=1600, worst_day=3841),
     "150K-aggressive":   dict(account="150K", am=10, bm=6, daily_stop=1600, worst_day=4892,
                               requires_approval=True),
+    # --- APEX EVAL (PROMOTED sizing 2026-06-26): A8/B4 SPRAY to beat the 30-day clock (~56% pass/~8d).
+    # firm="apex" -> the $1k daily-KILL guard + 30-day expiry apply. worst_day far over the $1k kill is
+    # INTENTIONAL (disposable eval, cheap retry); the daily-kill guard salvages the day before -$1k.
+    "Apex-50K-eval":     dict(account="50K",  firm="apex", am=8, bm=4, daily_stop=350, worst_day=3793,
+                              dll=1000, eval_days=30, spray_accept_bust=True, requires_approval=True),
 }
 FUNDED_TIERS = {
     "50K":  dict(account="50K",  am=2, bm=1, daily_stop=400, worst_day=960),
     "150K": dict(account="150K", am=4, bm=2, daily_stop=800, worst_day=1921),
+    # APEX FUNDED — A2/B1 survival size: worst_day $948 stays UNDER the $1k daily-kill (0 DLL busts).
+    "Apex-50K":          dict(account="50K",  firm="apex", am=2, bm=1, daily_stop=300, worst_day=948, dll=1000),
 }
 DD_ALLOWANCE = {"50K": 2000, "150K": 4500}
 APPROVAL_DIR = "evidence/approvals"
