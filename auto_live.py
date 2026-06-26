@@ -96,6 +96,8 @@ class LiveAuto:
         from profile_b_tracker import ProfileBPaperTracker
         self.b_tracker = ProfileBPaperTracker(store, account, mode, notify=notify, journal=tjournal)   # B P&L + TG + journal
         self.b_sent = self.b_blocked = 0
+        # Profile MOMENTUM lane (OFF unless main() wires it behind --profile-momentum) + shared overlap gate
+        self.m_engine = None; self.m_executor = None; self.overlap = None
         self.account, self.tier, self.mode = account, tier, mode
         self.store, self.j, self.sender = store, journal, sender
         self.daily_stop = daily_stop
@@ -232,6 +234,8 @@ class LiveAuto:
             ok = res.get("sent")
         if ok or self.mode != "live":
             self.sent += 1
+            if self.overlap is not None:                   # feed the cross-strategy overlap gate (A open)
+                self.overlap.on_open("A", sig["side"])
             if self.readback is not None:                  # Stage B: tell the sentinel what we now expect to hold
                 self.readback.on_entry(sig["side"], a_size)
             if self.notify is not None:                    # Telegram: signal alert on send
@@ -313,6 +317,8 @@ class LiveAuto:
             ok = res.get("sent")
         if ok or self.mode != "live":
             self.b_sent += 1
+            if self.overlap is not None:                 # feed the cross-strategy overlap gate (B open)
+                self.overlap.on_open("B", sig["side"])
             if self.readback is not None:                # Stage B: B adds to expected broker position too
                 self.readback.on_entry(sig["side"], b_size)
             if self.notify is not None:                  # Telegram: signal alert on send
@@ -343,6 +349,23 @@ class LiveAuto:
                        signal_id_base=sig["ts_signal"], webhook_sent=bool(ok),
                        traderspost_status=_reason, live=(self.mode == "live"), profile="B")
 
+    def on_m_bar(self, ts, o, h, l, c):
+        """Profile MOMENTUM: feed the engine a completed 5m bar, route any position change. OFF unless wired."""
+        if self.m_engine is None or self.m_executor is None:
+            return
+        try:
+            self.m_engine.add_bar(ts, o, h, l, c)
+            sig = self.m_engine.latest_signal()
+            if sig is not None:
+                self.m_executor.on_signal(sig, ts)
+        except Exception as e:                               # noqa: BLE001 — momentum must never break the loop
+            print(f"[momentum] on_m_bar error (skipped): {type(e).__name__}: {e}", flush=True)
+
+    def overlap_new_day(self):
+        """Clear A/B from the overlap gate at a new ET day (intraday positions; conservative)."""
+        if self.overlap is not None:
+            self.overlap.on_close("A"); self.overlap.on_close("B")
+
 
 def main(argv=None):
     p = argparse.ArgumentParser(description="ARES AUTO LIVE (Profile A, fail-closed)")
@@ -366,6 +389,10 @@ def main(argv=None):
     p.add_argument("--execution", default="traderspost", choices=["traderspost"],
                    help="execution route (TradersPost bridge only today)")
     p.add_argument("--no-profile-b", action="store_true", help="disable Profile B (A-only fallback)")
+    p.add_argument("--profile-momentum", action="store_true",
+                   help="enable the Profile MOMENTUM lane (Zarattini; default OFF) — routes via the same bridge")
+    p.add_argument("--momentum-qty", type=int, default=2, help="Momentum base size in MNQ (default 2)")
+    p.add_argument("--momentum-stop", type=float, default=120.0, help="Momentum catastrophic stop (pts, default 120)")
     p.add_argument("--no-p3", action="store_true", help="disable the P3 cushion brake")
     p.add_argument("--confirm", action="store_true",
                    help="required (with --live) to arm SUPERVISED LIVE AUTO; extra human gate")
@@ -453,6 +480,23 @@ def main(argv=None):
                     d1c_stale_after_s=(120 if dual_1m else 360), logger=_dlogger,
                     profile_b=not getattr(a, "no_profile_b", False),
                     p3_enabled=not getattr(a, "no_p3", False), readback=readback, notify=tg, tjournal=journal)
+
+    # --- Profile MOMENTUM lane (default OFF; --profile-momentum routes it via the same bridge) ---
+    if getattr(a, "profile_momentum", False):
+        from profile_momentum_engine import ProfileMomentumEngine
+        from profile_momentum_live import MomentumExecutor, MomentumPaperTracker
+        from overlap_gate import OverlapGate
+        auto.overlap = OverlapGate(factor=0.5, participants={"A", "B", "M"})   # half-size 2nd same-dir concurrent
+        auto.m_engine = ProfileMomentumEngine()
+        m_tracker = MomentumPaperTracker(a.account, mode, dpp=2.0, stop_pts=a.momentum_stop,
+                                         notify=tg, journal=journal)
+        auto.m_executor = MomentumExecutor(a.account, sender, root="MNQ", base_qty=a.momentum_qty,
+                                           stop_pts=a.momentum_stop, mode=mode, overlap_gate=auto.overlap,
+                                           notify=tg, tracker=m_tracker, basis_offset=a.basis_offset,
+                                           entry_gate=auto.entry_gate, killed=auto.killed)
+        print(f"  Profile MOMENTUM lane ON — {a.momentum_qty} MNQ, {a.momentum_stop:.0f}pt cat-stop, "
+              "half-overlap gate (A/B/M). NOTE: own EOD ~15:00; recommend its OWN account vs the 14:30 A-guardian.",
+              flush=True)
     if readback is not None:
         # critical mismatch -> flatten via the SAME bridge route as the guardian, then stay halted.
         def _rb_flatten(reason):
@@ -474,6 +518,7 @@ def main(argv=None):
     _rb = {"day": None, "t": 0.0}          # Stage B read-back poll tracker (last reset-day, last poll ts)
     _hb = {"t": _t_mod.time()}             # Telegram heartbeat tracker (last ping ts)
     _ctl = {"c": None, "t": 0.0}           # Telegram remote-control poller (set once live) + last-poll ts
+    _md = {"d": None}                      # overlap-gate day tracker (clear A/B each new ET day)
     runner = PaperLiveRunner(store, "live", "live")
     runner.bot.on_decision = lambda sig, placed, reason, ts: (
         runner._orig(sig, placed, reason, ts), auto.on_decision(sig, placed, reason, ts))
@@ -627,6 +672,7 @@ def main(argv=None):
                 auto.b_tracker.on_bar(_bar["i"], bts, bo, bh, bl, bc)   # fills/exits -> calendar
             except Exception as _be:                               # noqa: BLE001 — B never breaks A
                 print(f"[auto-live] B engine error (ignored): {_be!r}", flush=True)
+            auto.on_m_bar(bts, bo, bh, bl, bc)                     # Profile MOMENTUM lane (no-op unless wired)
             # ARGUS: an in-window decision bar with NO signal must still be logged (zero-trade proof)
             try:
                 _mins = bts.hour * 60 + bts.minute
@@ -653,6 +699,10 @@ def main(argv=None):
             else:
                 _engine_bar(ts, o, h, l, c)
             _persist_data_status(store)
+            if auto.overlap is not None:                  # overlap gate: clear A/B at each new ET day
+                _d2 = pd.Timestamp(ts).tz_convert(NY).date() if pd.Timestamp(ts).tzinfo else pd.Timestamp(ts).date()
+                if _md["d"] != _d2:
+                    _md["d"] = _d2; auto.overlap_new_day()
             # --- Stage B: read-back reconcile (rate-limited; bot starts each ET day flat) ---
             if readback is not None and _rb_broker is not None:
                 _d = pd.Timestamp(ts).tz_convert(NY).date() if pd.Timestamp(ts).tzinfo else pd.Timestamp(ts).date()
@@ -800,6 +850,11 @@ def main(argv=None):
         print(f"\n[auto-live] stopped · {auto.sent} routed · {auto.blocked} gate-blocked · "
               f"{auto.d1c_blocked} D1c-blocked · D1c {auto.gate.heimdall_status()}")
     finally:
+        if getattr(auto, "m_executor", None) is not None and auto.m_executor.position != 0:
+            try:
+                auto.m_executor.eod_flat(pd.Timestamp.utcnow(), ref=None)   # safety: close momentum on shutdown
+            except Exception as _me:                          # noqa: BLE001
+                print(f"[momentum] shutdown flat skipped: {_me!r}", flush=True)
         if guardian is not None:
             guardian.stop()
         lock.release()

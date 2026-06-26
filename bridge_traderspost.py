@@ -106,6 +106,32 @@ def build_entry(*, account, strategy, setup, signal_ts, side, qty, entry, stop, 
                  target_price=tg, sid=sid, meta=meta, price=e), None
 
 
+def build_momentum_entry(*, account, signal_ts, side, qty, ref_price, stop_pts,
+                         root="MNQ", mode_meta=None):
+    """Profile MOMENTUM market entry — a POSITION strategy with NO fixed target. Market order at the
+    current price carrying ONLY a WIDE catastrophic protective stop (feed-death / runaway safety, far
+    enough out not to alter the flip/EOD-managed behaviour). Exits happen on signal flip/flatten via
+    build_exit. Returns (payload, None) or (None, error)."""
+    try:
+        if int(qty) <= 0:
+            return None, "quantity <= 0"
+        d = 1 if side == "long" else -1 if side == "short" else 0
+        if d == 0:
+            return None, f"unknown side '{side}'"
+        ref = round_tick(ref_price, root)
+        stop = round_tick(ref - d * abs(float(stop_pts)), root)
+        if stop == ref:
+            return None, "stop equals ref after rounding"
+    except Exception as ex:                                   # noqa: BLE001
+        return None, f"momentum build failed: {ex}"
+    action = "buy" if side == "long" else "sell"
+    sid = signal_id(account, "M", signal_ts, "entry")
+    meta = dict(strategy="M", setup="momentum", side=side, role="entry",
+                risk_points=round(abs(ref - stop), 2), risk_usd=round(abs(ref - stop) * PT_VALUE[root] * int(qty), 2),
+                account=account, **(mode_meta or {}), source="zeus_bridge")
+    return _wire(root, action, int(qty), "market", stop_price=stop, sid=sid, meta=meta, price=ref), None
+
+
 def build_entry_exit3(*, account, strategy, setup, signal_ts, side, qty, entry, stop, target,
                       root="MNQ", order_type="limit", mode_meta=None, d1c_meta=None):
     """EXITFORGE: split ONE approved signal into the two Exit #3 bracket legs, each a complete
