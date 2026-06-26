@@ -98,6 +98,7 @@ class LiveAuto:
         self.b_sent = self.b_blocked = 0
         # Profile MOMENTUM lane (OFF unless main() wires it behind --profile-momentum) + shared overlap gate
         self.m_engine = None; self.m_executor = None; self.overlap = None
+        self.books = []                # fan-out: secondary account books (e.g. Apex) fed the SAME signals
         self.account, self.tier, self.mode = account, tier, mode
         self.store, self.j, self.sender = store, journal, sender
         self.daily_stop = daily_stop
@@ -241,6 +242,8 @@ class LiveAuto:
             if self.notify is not None:                    # Telegram: signal alert on send
                 self.notify.signal("A", sig["side"], a_size, float(sig["entry"]),
                                    float(sig["stop"]), float(sig.get("target") or 0), self.mode)
+            for bk in self.books:                          # FAN-OUT: same A signal -> each secondary book
+                bk.route_a(sig, ts)
         print(f"[auto-live] A {sig['side']} {a_size}MNQ{' (P3-braked)' if braked else ''} "
               f"{_exit_model} @ {sig['entry']:.2f} stop {sig['stop']:.2f} tgt {sig['target']:.2f} "
               f"-> {res.get('reason', 'sent')}",
@@ -326,6 +329,8 @@ class LiveAuto:
                                    float(sig["stop"]), float(sig.get("target") or 0), self.mode)
             if bar_i is not None:                        # track B paper-P&L -> dashboard calendar
                 self.b_tracker.on_signal(sig, b_size, bar_i, ts, partial=(b_legs is not None))
+            for bk in self.books:                        # FAN-OUT: same B signal -> each secondary book
+                bk.route_b(sig, ts)
         _xlabel = "PARTIAL(50%@1R/50%@1.5R)" if b_legs is not None else "single"
         print(f"[auto-live] B {sig['side']} {b_size}MNQ ORB {_xlabel} @ {sig['entry']:.2f} "
               f"stop {sig['stop']:.2f} tgt {sig['target']:.2f} -> {res.get('reason', 'sent')}",
@@ -358,6 +363,8 @@ class LiveAuto:
             sig = self.m_engine.latest_signal()
             if sig is not None:
                 self.m_executor.on_signal(sig, ts)
+                for bk in self.books:                        # FAN-OUT: same Momentum signal -> each book (its mm)
+                    bk.route_m(sig, ts)
         except Exception as e:                               # noqa: BLE001 — momentum must never break the loop
             print(f"[momentum] on_m_bar error (skipped): {type(e).__name__}: {e}", flush=True)
 
@@ -393,6 +400,9 @@ def main(argv=None):
                    help="enable the Profile MOMENTUM lane (Zarattini; default OFF) — routes via the same bridge")
     p.add_argument("--momentum-qty", type=int, default=2, help="Momentum base size in MNQ (default 2)")
     p.add_argument("--momentum-stop", type=float, default=120.0, help="Momentum catastrophic stop (pts, default 120)")
+    p.add_argument("--apex-book", action="append", default=[], metavar="ACCOUNT:TIER",
+                   help="fan-out a secondary book (e.g. APEX-50K-1:Apex-50K-eval); webhook from "
+                        "TRADERSPOST_<ACCOUNT>_URL or TRADERSPOST_APEX_URL. Repeatable. MFFU/primary unaffected.")
     p.add_argument("--no-p3", action="store_true", help="disable the P3 cushion brake")
     p.add_argument("--confirm", action="store_true",
                    help="required (with --live) to arm SUPERVISED LIVE AUTO; extra human gate")
@@ -497,6 +507,29 @@ def main(argv=None):
         print(f"  Profile MOMENTUM lane ON — {a.momentum_qty} MNQ, {a.momentum_stop:.0f}pt cat-stop, "
               "half-overlap gate (A/B/M). NOTE: own EOD ~15:00; recommend its OWN account vs the 14:30 A-guardian.",
               flush=True)
+
+    # --- FAN-OUT secondary books (e.g. Apex): same engine signals -> another account/size/rules/webhook ---
+    for _spec in getattr(a, "apex_book", []):
+        try:
+            from fanout_book import SecondaryBook
+            from auto_safety import FUNDED_TIERS
+            _acct, _tname = _spec.split(":", 1)
+            _tspec = EVAL_TIERS.get(_tname) or FUNDED_TIERS.get(_tname)
+            if not _tspec:
+                print(f"  [fan-out] unknown tier '{_tname}' — book {_acct} SKIPPED", flush=True); continue
+            _bk_url = os.environ.get(f"TRADERSPOST_{_acct.replace('-', '_').upper()}_URL") or os.environ.get("TRADERSPOST_APEX_URL")
+            _bk_sender = BridgeSender(store=Store(), journal=j, mode=("live" if mode == "live" else "dry-run"),
+                                      live_url=_bk_url)
+            _book = SecondaryBook(_acct, _tspec, _bk_sender, mode, notify=tg, basis_offset=a.basis_offset, label=_acct)
+            auto.books.append(_book)
+            print(f"  FAN-OUT book: {_acct} @ {_tname}  A{_tspec.get('am',0)}/B{_tspec.get('bm',0)}/M{_tspec.get('mm',0)} "
+                  f"· {'kill-guard ON' if _book.kill else 'no kill-guard'} · "
+                  f"{'webhook set' if _bk_url else '⚠ NO webhook (inert — set TRADERSPOST_'+_acct.replace('-','_').upper()+'_URL)'}",
+                  flush=True)
+        except Exception as _fe:                              # noqa: BLE001 — a book never breaks the primary
+            print(f"  [fan-out] book '{_spec}' FAILED to build (skipped): {_fe!r}", flush=True)
+    journal.books = auto.books                                # feed each book the primary's scaled resolved P&L
+
     if readback is not None:
         # critical mismatch -> flatten via the SAME bridge route as the guardian, then stay halted.
         def _rb_flatten(reason):

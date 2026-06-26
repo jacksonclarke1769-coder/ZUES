@@ -47,6 +47,7 @@ class TradeJournal:
         self.peb = post_exit_bars          # ~90 min on 5m bars
         self.notify = notify
         self.shadow = shadow               # observe-only stop-cap forward test (never touches execution)
+        self.books = []                    # fan-out: secondary books fed the primary's scaled P&L (kill-guard)
         self._dir = path_dir
         self._today = today                # injectable date string for the filename (tests)
         self.entries = []
@@ -78,6 +79,11 @@ class TradeJournal:
         self._write(rec)
         if self.shadow is not None:                         # observe-only stop-cap forward test
             self.shadow.record(profile, side, entry, stop, r, pnl, reason, ts)
+        for bk in (self.books or []):                       # fan-out: feed each book the scaled P&L
+            try:
+                bk.on_resolved(profile, r, abs(float(entry) - float(stop)), ts)
+            except Exception:                               # noqa: BLE001 — a book never breaks journaling
+                pass
         print(f"[journal] {profile} {side} {reason} {r:+.2f}R — {why}", flush=True)
         if self.notify is not None:
             self.notify.send(f"📓 <b>Journal — Profile {profile} {str(side).upper()}</b>\n{why}")
