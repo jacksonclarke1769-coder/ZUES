@@ -517,14 +517,17 @@ def main(argv=None):
             _tspec = EVAL_TIERS.get(_tname) or FUNDED_TIERS.get(_tname)
             if not _tspec:
                 print(f"  [fan-out] unknown tier '{_tname}' — book {_acct} SKIPPED", flush=True); continue
+            from config_defaults import resolve_apex_live
             _bk_url = os.environ.get(f"TRADERSPOST_{_acct.replace('-', '_').upper()}_URL") or os.environ.get("TRADERSPOST_APEX_URL")
-            _bk_sender = BridgeSender(store=Store(), journal=j, mode=("live" if mode == "live" else "dry-run"),
-                                      live_url=_bk_url)
-            _book = SecondaryBook(_acct, _tspec, _bk_sender, mode, notify=tg, basis_offset=a.basis_offset, label=_acct)
+            _bk_live = (mode == "live") and resolve_apex_live("live")    # live routing only if apex-approved.flag
+            _bk_sender = BridgeSender(store=Store(), journal=j, mode=("live" if _bk_live else "dry-run"), live_url=_bk_url)
+            _book = SecondaryBook(_acct, _tspec, _bk_sender, ("live" if _bk_live else "paper"),
+                                  notify=tg, basis_offset=a.basis_offset, label=_acct)
             auto.books.append(_book)
+            _gate = "LIVE-ROUTING" if _bk_live else ("SHADOW (no apex-approved.flag)" if mode == "live" else "paper")
             print(f"  FAN-OUT book: {_acct} @ {_tname}  A{_tspec.get('am',0)}/B{_tspec.get('bm',0)}/M{_tspec.get('mm',0)} "
-                  f"· {'kill-guard ON' if _book.kill else 'no kill-guard'} · "
-                  f"{'webhook set' if _bk_url else '⚠ NO webhook (inert — set TRADERSPOST_'+_acct.replace('-','_').upper()+'_URL)'}",
+                  f"· {'kill-guard ON' if _book.kill else 'no kill-guard'} · {_gate} · "
+                  f"{'webhook set' if _bk_url else '⚠ NO webhook (set TRADERSPOST_'+_acct.replace('-','_').upper()+'_URL)'}",
                   flush=True)
         except Exception as _fe:                              # noqa: BLE001 — a book never breaks the primary
             print(f"  [fan-out] book '{_spec}' FAILED to build (skipped): {_fe!r}", flush=True)

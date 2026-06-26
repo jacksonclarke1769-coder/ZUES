@@ -47,6 +47,17 @@ B_PARTIAL_APPROVAL_FLAG = "b-exit-partial-approved.flag"   # required to route t
 
 
 MOMENTUM_APPROVAL_FLAG = "momentum-approved.flag"        # required to ROUTE momentum live
+APEX_APPROVAL_FLAG = "apex-approved.flag"                # required to ROUTE a fan-out Apex book live
+
+
+def resolve_apex_live(mode="paper", approval_dir=None):
+    """Should a fan-out Apex book route to the BROKER? paper/dry-run -> yes (dry sender, no broker);
+    LIVE -> only if apex-approved.flag exists, else the book runs DRY (logs, no live orders). Never raises."""
+    import os
+    if mode != "live":
+        return True
+    d = approval_dir or os.path.join(os.path.dirname(os.path.abspath(__file__)), "evidence", "approvals")
+    return os.path.exists(os.path.join(d, APEX_APPROVAL_FLAG))
 
 
 def resolve_momentum_live(mode="paper", approval_dir=None):
