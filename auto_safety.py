@@ -25,9 +25,12 @@ EVAL_TIERS = {
     # --- APEX EVAL (PROMOTED sizing 2026-06-26): A8/B4 SPRAY to beat the 30-day clock (~56% pass/~8d).
     # firm="apex" -> the $1k daily-KILL guard + 30-day expiry apply. worst_day far over the $1k kill is
     # INTENTIONAL (disposable eval, cheap retry); the daily-kill guard salvages the day before -$1k.
-    # kill_margin 0.70 -> the daily-kill guard flattens at ~-$700 (tight): validated to lift the eval pass
-    # rate 56% -> ~70-71% by turning DLL fails into survivable days AND capping trailing-DD giveback.
-    "Apex-50K-eval":     dict(account="50K",  firm="apex", am=8, bm=4, daily_stop=350, worst_day=3793,
+    # APEX EVAL STACK (locked 2026-06-26): A8 / B4 / MOMENTUM-4, under the tight -$700 daily-kill guard.
+    # Validated pass-rate path: raw A8/B4 56% -> +(-$700 guard) ~70% -> +Momentum-4 81% in the 30-day
+    # window (median ~8d). The guard (kill_margin 0.70 -> flatten ~-$700) eliminates DLL fails + caps the
+    # trailing giveback; Momentum-4 (low-corr 3rd edge) collapses EXPIRE 14%->5%. (run_apex_eval_momentum.py)
+    # NOTE: Momentum must be LIVE on the Apex book for mm to fire; until then the book runs A8/B4 (~70%).
+    "Apex-50K-eval":     dict(account="50K",  firm="apex", am=8, bm=4, mm=4, daily_stop=350, worst_day=3793,
                               dll=1000, kill_margin=0.70, eval_days=30, spray_accept_bust=True,
                               requires_approval=True),
 }
@@ -36,7 +39,9 @@ FUNDED_TIERS = {
     "150K": dict(account="150K", am=4, bm=2, daily_stop=800, worst_day=1921),
     # APEX FUNDED — A2/B1 survival size: worst_day $948 stays UNDER the $1k daily-kill (0 DLL busts).
     # kill_margin 0.85 (~-$850 salvage) — looser than the eval; survival size rarely reaches it anyway.
-    "Apex-50K":          dict(account="50K",  firm="apex", am=2, bm=1, daily_stop=300, worst_day=948,
+    # mm=0: Momentum OFF on funded — the survival sizing is built to stay under the $1k kill; adding
+    # Momentum would widen the down day past it and needs its own survival validation first.
+    "Apex-50K":          dict(account="50K",  firm="apex", am=2, bm=1, mm=0, daily_stop=300, worst_day=948,
                               dll=1000, kill_margin=0.85),
 }
 DD_ALLOWANCE = {"50K": 2000, "150K": 4500}
