@@ -130,7 +130,7 @@ function vOverview(){
       ${stg("Stage 2 · Ascent", pf.funded||0, "Funded · grinding to +$2k lock", false, (pf.funded||0)>0, ar)}
       ${stg("Stage 3 · Legion", 0, "Scaled A6/B3 · near-unbustable", false, false, "")}
     </div>
-    ${open===0?`<div class="note">Pre-deployment · no accounts live yet. <b>Next move:</b> buy a 50K EOD eval and spray Stage 1 (~86% pass, ~8 days).</div>`:''}</div>`;
+    ${open===0?`<div class="note">Pre-deployment · no accounts live yet. <b>Next move:</b> buy a 50K EOD eval and spray Stage 1 (~${p.eval?.pass_pct||57}% pass, median ${p.eval?.median_days||7}d).</div>`:''}</div>`;
   // home calendar (current month, no nav)
   const cal = `<div class="panel rise" style="margin-top:18px">${topstep(false)}<div class="note">Daily P&L &amp; trade count, Topstep-style. <b>PPR</b> = paper/modeled test trades; <b>LIVE</b> = broker-proven fills. NET is the month; the right column totals each week.</div></div>`;
   return head("01","Home", `${new Date().toDateString()}<br>APEX 50K · EOD trail · strategy frozen`)
@@ -144,22 +144,22 @@ function vOverview(){
 /* ---------- PLAYBOOK ---------- */
 function vPlaybook(){
   const p=S.playbook||{}, ev=p.eval||{}, f=p.funded||{}, ec=p.economics||{};
-  const tl=[["Weeks 0–2","~8 days","pass the eval (~86%)","act"],["Weeks 2–7","~5 weeks","grind A4/B2 → +$2k lock (87%)","act"],["Week 7+","mature","A6/B3 · near-unbustable",""]];
+  const tl=[["Days 0–7",`median ${ev.median_days||7}d`,`pass the eval (~${ev.pass_pct||57}%)`,"act"],["Weeks 1–7","~7 weeks",`grind ${ev.size?f.phase1:'A4/B2'} → lock (~${f.lock_pct||68}%)`,"act"],["Post-lock","mature",`${f.phase2||'A6/B3'} · floor locked`,""]];
   return head("02","Playbook", "the Apex campaign · frozen &amp; validated<br>real Databento · spray eval / scale funded")
     + campaign(false)
     + `<div class="grid g3" style="margin-top:18px">
         <div class="panel rise"><div class="l">Eval · spray</div><div style="font:700 34px var(--mono);color:var(--gold)">${ev.pass_pct}%</div><div class="note" style="margin-top:6px">pass · ${ev.bust_pct}% bust · ${ev.expire_pct}% expire<br>${ev.size} @ $${ev.stop} stop · median ${ev.median_days}d<br>${ev.note}</div></div>
         <div class="panel rise" style="animation-delay:.06s"><div class="l">Funded · scale</div><div style="font:700 34px var(--mono);color:var(--gold)">${money(f.income_mo)}</div><div class="note" style="margin-top:6px">/mo blended · ${f.busts}<br>${f.phase1} → +$2k lock → ${f.phase2}<br>~${f.lock_days}d to lock · ${f.lock_pct}% reach it</div></div>
-        <div class="panel rise" style="animation-delay:.12s"><div class="l">Momentum</div><div style="font:700 34px var(--mono)">PF 1.83</div><div class="note" style="margin-top:6px">${ec.momentum}</div></div>
+        <div class="panel rise" style="animation-delay:.12s"><div class="l">Momentum</div><div style="font:700 34px var(--mono)">PF 1.67</div><div class="note" style="margin-top:6px">${ec.momentum}</div></div>
       </div>
       <div class="panel rise" style="margin-top:16px"><div class="l">Account lifecycle · eval → lock → mature</div>
         <div style="display:flex;gap:0;margin-top:4px">${tl.map(s=>`<div style="flex:1;padding:16px 16px 0;border-top:2px solid ${s[3]?'var(--gold)':'var(--line2)'}"><div style="font:600 9px var(--mono);letter-spacing:.14em;color:var(--gold-d);text-transform:uppercase">${s[0]}</div><div style="font:600 18px var(--mono);margin-top:6px">${s[1]}</div><div style="font:500 10px var(--mono);color:var(--dim);margin-top:3px">${s[2]}</div></div>`).join("")}</div>
-        <div class="note">~<b>7 weeks</b> from buying an eval to a mature, near-unbustable A6/B3 account (for the ~87% that clear both stages).</div></div>`;
+        <div class="note">~<b>7-8 weeks</b> from buying an eval to a floor-locked A6/B3 account (for the ~${Math.round((ev.pass_pct||57)*(f.lock_pct||68)/100)}% that clear eval + lock).</div></div>`;
 }
 
 /* ---------- FLEET ---------- */
 function vFleet(){
-  const pf=S.portfolio||{}, perMo=(S.playbook?.economics?.per_acct_mo)||1585;
+  const pf=S.portfolio||{}, perMo=(S.playbook?.economics?.per_acct_mo)||1924;
   let rows="";
   for(let w=3;w<=26;w+=(w<22?1:4)){ const funded=Math.min(20,w-2);
     rows+=`<tr><td>wk ${w}</td><td>${funded}</td><td style="color:var(--faint)">${funded<20?Math.min(2,20-funded):0}</td><td class="pos">${money(funded*perMo)}</td><td>${funded>=20?'<span class="tag p">FULL</span>':'<span class="tag g">RAMPING</span>'}</td></tr>`; }
