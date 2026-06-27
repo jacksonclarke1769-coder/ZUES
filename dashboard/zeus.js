@@ -212,19 +212,35 @@ function renderStrategies(){
 function apexPlaybook(){
   const p=S.playbook; if(!p||p.error) return "";
   const ev=p.eval, f=p.funded, ec=p.economics;
-  const body = kv([
-    [`EVAL · ${ev.tier}`, `<b>${ev.size}</b> @ $${ev.stop} daily stop`],
-    ["Eval result", `~${ev.pass_pct}% pass · ${ev.bust_pct}% bust · ${ev.expire_pct}% expire · median <b>${ev.median_days} days</b>`],
-    ["", `<span class="dim">${ev.note}</span>`],
-    ["FUNDED phase 1", `<b>${f.phase1}</b> @ $${f.stop} — grind to ${f.lock} (~${f.lock_days}d / ~5wk, ${f.lock_pct}% reach it)`],
-    ["FUNDED phase 2", `<b>${f.phase2}</b> — locked → near-unbustable · ~$${f.income_mo.toLocaleString()}/mo · busts ${f.busts}`],
-    ["Fleet (20 × 50K)", `~$${ec.fleet20_mo.toLocaleString()}/mo · ~${ec.eval_to_mature_wk}wk eval→mature`],
-    ["Momentum", ec.momentum]
-  ]);
-  return `<div style="margin-bottom:14px">`
-    + panel(`APEX PLAYBOOK · ${p.status}`, body
-        + `<div class="note"><b>Apex rules:</b> ${p.rules.map(r=>"· "+r).join(" ")}</div>`)
-    + `</div>`;
+  const phase=(d,kick,title,conf,big,unit,sub)=>
+    `<div class="pb-phase" style="animation-delay:${d}s">
+       <div class="pb-kick">${kick}</div>
+       <div class="pb-title">${title}</div>
+       <div class="pb-conf">${conf}</div>
+       <div class="pb-stat"><span class="pb-big">${big}</span><span class="pb-unit">${unit}</span></div>
+       <div class="pb-sub">${sub}</div>
+     </div>`;
+  const arrow=(d)=>`<div class="pb-arrow" style="animation-delay:${d}s">`
+    +`<svg viewBox="0 0 24 24" width="24" height="24"><path d="M3 12h15M13 5.5 19.5 12 13 18.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+  const journey =
+    phase(0,   "Phase I · The Trial", ev.tier, `${ev.size} · $${ev.stop} stop`,
+          ev.pass_pct+"%", "pass", `median ${ev.median_days}d · spray ~$19, rebuy on bust`)
+    + arrow(.13)
+    + phase(.26,"Phase II · The Ascent", "Funded — scale at the lock", `${f.phase1} → +$2k lock → ${f.phase2}`,
+          "$"+f.income_mo.toLocaleString(), "/mo", `~5wk to lock · ${f.lock_pct}% reach it · ${f.busts} busts`)
+    + arrow(.39)
+    + phase(.52,"The Legion", "20 × 50K fleet", "scaled · near-unbustable",
+          "$"+(ec.fleet20_mo/1000).toFixed(1)+"k", "/mo", `~${ec.eval_to_mature_wk}wk eval→mature · 5-yr avg`);
+  return `<div class="pb" style="margin-bottom:18px"><div class="pb-frame">
+    <div class="pb-head">
+      <svg class="pb-bolt" viewBox="0 0 24 24" width="24" height="24"><path d="M13 1 4 14h6l-2 9 9-13h-6l2-9z"/></svg>
+      <div class="pb-mast">APEX CAMPAIGN<span>PATH&nbsp;TO&nbsp;THE&nbsp;THRONE</span></div>
+      <div class="pb-seal">${p.status}</div>
+    </div>
+    <div class="pb-journey">${journey}</div>
+    <div class="pb-mom">⚡ MOMENTUM — ${ec.momentum}</div>
+    <div class="pb-decree"><span class="pb-decree-h">The Laws of Apex</span>${p.rules.map(r=>`<span class="pb-law">${r}</span>`).join("")}</div>
+  </div></div>`;
 }
 function weeklyTable(){
   const w=S.weekly;
