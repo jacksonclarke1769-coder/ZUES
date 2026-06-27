@@ -176,7 +176,7 @@ function vTrades(){
 }
 
 /* ---------- CALENDAR (full, Topstep + nav) ---------- */
-function vCalendar(){ return head("05","Calendar","daily P&L · trade count · weekly totals")+`<div class="panel rise">${topstep(true)}<div class="note"><b>PPR</b> = paper/modeled test trades; <b>LIVE</b> = broker-proven fills. Last 2 weeks: Jun 16 A +$1,400 (paper), Jun 22 B −$229, Jun 24 B −$249, Jun 25 B +$369 (operator-confirmed live win). Jun 26 ran flat (no qualifying setup; ORB missed on a late feed).</div></div>`; }
+function vCalendar(){ return head("05","Calendar","daily P&L · trade count · weekly totals")+`<div class="panel rise">${topstep(true)}<div class="note"><b>PPR</b> = paper/modeled test trades; <b>LIVE</b> = broker-proven fills. Last 2 weeks: Jun 16 A +$1,400 (paper), Jun 22 B −$229, Jun 24 B −$249, Jun 25 B +$369 (operator-confirmed live win). Jun 26 (Fri) flat: both profiles live, no qualifying setup (A: 50 evals, 0 candidates; B/ORB: no breakout trigger); feed GREEN through the close.</div></div>`; }
 
 /* ---------- HEALTH ---------- */
 function statusRows(){
