@@ -42,8 +42,12 @@ FUNDED_TIERS = {
     # the ONLY fail is the $2k EOD trailing drawdown). An account is bust-vulnerable ONLY while the floor
     # still TRAILS (banked profit < +$2k); once you bank +$2k the floor LOCKS at $50k and a $1k-capped day
     # can no longer bust it. So the "once funded" plan SCALES: start SMALL (A4/B2) through the trailing
-    # window, then bump to A6/B3 once locked. Validated SCALE path @ $550 stop: ~$1,639/mo, 2 busts/5yr
+    # window, then bump to A6/B3 once locked. Validated SCALE path @ $550 stop: ~$1,585/mo, 2 busts/5yr
     # (both 2022), 0 infant deaths; lock takes ~24 trading days (~5wk), 87% reach it. (vs old A2/B1 ~$631.)
+    # Income modelled with the CONFIRMED Apex payout rules (run_apex_funded_payout.py): $52,100 safety net
+    # (withdraw DOWN to it, partial — never reset to $50k), $500 min, first-5 payouts capped $2k then
+    # uncapped, 100% of first $25k cumulative then 90/10, monthly cadence (dilutes 50% consistency),
+    # first payout needs 8 trading days + 5 profitable days.
     # mm=0 — Momentum OFF on funded (its variance stresses the $2k trail; off until separately validated).
     # Switch tiers MANUALLY at lock (no broker read-back to auto-scale on). (/tmp/funded_lock.py)
     "Apex-50K":          dict(account="50K",  firm="apex", am=4, bm=2, mm=0, daily_stop=550, worst_day=550,
