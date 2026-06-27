@@ -55,6 +55,32 @@ def tier_spec(mode, tier):
     return dict(table[tier], tier=tier, mode=mode)
 
 
+def momentum_active_for_tier(tier):
+    """PHASE/FIRM gate for the continuation (Momentum) lane. Momentum trades VARIANCE for income, so it is
+    enabled ONLY where the ruleset rewards that and disabled where variance is punished (validated on real
+    Databento — see reports/momentum_edge_upgrade.md):
+        Apex   EVAL   -> ON  : extra shots beat the 30-day clock; the -$700 guard caps the down day.
+        Apex   FUNDED -> OFF : the $1k daily-kill makes one bad momentum day fatal on a shared account.
+        MFFU   EVAL   -> OFF : momentum's wider swings trip the trailing drawdown -> lower pass rate.
+        MFFU   FUNDED -> ON  : no daily limit; momentum adds ~+35% income (+$500-620/mo).
+    Returns (active: bool, reason: str). Firm is read from the tier spec ('apex' vs MFFU/static default)."""
+    spec = EVAL_TIERS.get(tier); phase = "eval"
+    if spec is None:
+        spec = FUNDED_TIERS.get(tier); phase = "funded"
+    if spec is None:
+        return False, f"unknown tier {tier!r}"
+    apex = spec.get("firm") == "apex"
+    if apex:
+        active = (phase == "eval")
+        why = ("Apex eval — extra shots beat the 30-day clock (-$700 guard caps the day)" if active
+               else "Apex funded — the $1k daily-kill makes momentum fatal on a shared account")
+    else:
+        active = (phase == "funded")
+        why = ("funded — no daily limit, momentum adds ~+35% income" if active
+               else "eval — momentum's variance trips the trailing drawdown (lower pass rate)")
+    return active, why
+
+
 def validate_size(spec, available_buffer):
     """HARD RULE: worst historical day at this size must not exceed the available
     drawdown buffer. Fails closed (blocks) on any doubt."""

@@ -51,6 +51,25 @@ flattens (daily-stop / operator / lockout) still fire instantly.
 - Research harnesses: `backtests/nq_momentum_improve.py` (single-lever sweep), `nq_momentum_improve2.py`
   (plateau + combos + EOD-timing). RESEARCH ONLY — engine is the shipped artifact.
 
+## Where it pays — phase/firm gate (momentum trades VARIANCE for income)
+Validated on the real combined stacks. Momentum auto-enables ONLY where the ruleset rewards variance:
+
+| Firm · phase | Momentum | Evidence |
+|---|---|---|
+| **MFFU funded** | ✅ ON | A+B $1,502/mo → **A+B+M $2,001–2,125/mo** (+33–41%), Sharpe 3.11→3.29 |
+| MFFU eval | ❌ OFF | pass 83% → 78–82% (wider DD trips the trailing drawdown) |
+| **Apex eval** | ✅ ON | pass 69% → **81%** (extra shots beat the 30-day clock; −$700 guard caps the day) |
+| Apex funded | ❌ OFF | A2/B1 worst −$948 (0 kill-days) → +1 MNQ → −$1,225 (**1 kill-day = bust**). Needs its own account. |
+
+Implemented as `auto_safety.momentum_active_for_tier(tier)`: the `--profile-momentum` flag *requests* the
+lane; the tier (firm + eval/funded) decides if it **arms**. The 15:30 guardian defers only when momentum
+actually arms. Tests: `test_momentum_phase_gate.py` (5). MFFU rule = funded-only; Apex eval is the exception.
+
+> Harness note: the first MFFU pass showed momentum adding only ~$154 — a column-mismatch bug
+> (`entry_min`/`exit_min`) silently dropped every momentum trade in the concat. Fixed in
+> `backtests/nq_momentum_mffu_apex.py`; corrected contribution is +$36k/5yr at 2 MNQ.
+
 ## Still in shadow
 Momentum remains shadow-by-default in live (no `momentum-approved.flag`). Next: observe the upgraded model
 in shadow (now auditable via the ARGUS-M decision log), confirm shadow-vs-backtest behavior, then flag live.
+Because MFFU is currently in its EVAL config (50K-balanced), the gate keeps momentum OFF until it's funded.

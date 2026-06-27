@@ -525,7 +525,16 @@ def main(argv=None):
                     p3_enabled=not getattr(a, "no_p3", False), readback=readback, notify=tg, tjournal=journal)
 
     # --- Profile MOMENTUM lane (default OFF; --profile-momentum routes it via the same bridge) ---
-    if getattr(a, "profile_momentum", False):
+    # PHASE/FIRM gate: momentum trades variance for income, so it auto-enables ONLY where the ruleset rewards
+    # that (Apex eval / MFFU funded) and stays off where variance is punished (MFFU eval trailing-DD, Apex
+    # funded $1k daily-kill). The --profile-momentum flag REQUESTS the lane; the tier decides if it arms.
+    from auto_safety import momentum_active_for_tier
+    _m_phase_ok, _m_phase_why = momentum_active_for_tier(a.tier)
+    _momentum_armed = getattr(a, "profile_momentum", False) and _m_phase_ok
+    if getattr(a, "profile_momentum", False) and not _m_phase_ok:
+        print(f"  Profile MOMENTUM requested but GATED OFF for tier '{a.tier}': {_m_phase_why}. "
+              "Lane not armed (funded-only / phase rule).", flush=True)
+    if _momentum_armed:
         from profile_momentum_engine import ProfileMomentumEngine
         from profile_momentum_live import MomentumExecutor, MomentumPaperTracker
         from overlap_gate import OverlapGate
@@ -539,9 +548,8 @@ def main(argv=None):
                                            stop_pts=a.momentum_stop, mode=mode, overlap_gate=auto.overlap,
                                            notify=tg, tracker=m_tracker, basis_offset=a.basis_offset,
                                            entry_gate=auto.entry_gate, killed=auto.killed)
-        print(f"  Profile MOMENTUM lane ON — {a.momentum_qty} MNQ, {a.momentum_stop:.0f}pt cat-stop, "
-              "half-overlap gate (A/B/M). NOTE: own EOD ~15:00; recommend its OWN account vs the 14:30 A-guardian.",
-              flush=True)
+        print(f"  Profile MOMENTUM lane ON ({_m_phase_why}) — {a.momentum_qty} MNQ, {a.momentum_stop:.0f}pt "
+              "cat-stop, half-overlap gate (A/B/M), EOD ~15:30 (deferred guardian).", flush=True)
 
     # --- FAN-OUT secondary books (e.g. Apex): same engine signals -> another account/size/rules/webhook ---
     for _spec in getattr(a, "apex_book", []):
@@ -676,7 +684,7 @@ def main(argv=None):
         # is actually MORE faithful to B's backtest, not less. KILL flattens still fire instantly (unaffected).
         from scheduler import Scheduler as _Sched
         from datetime import time as _dtime
-        _mom_on = getattr(a, "profile_momentum", False)
+        _mom_on = _momentum_armed                                          # only defer if momentum actually armed
         _g_sched = _Sched(flatten_at=_dtime(15, 30)) if _mom_on else None   # half-day flat (12:45) unchanged
         guardian = FlattenGuardian(
             a.account, root="MNQ", scheduler=_g_sched,
