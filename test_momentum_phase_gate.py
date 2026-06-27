@@ -22,8 +22,9 @@ def test_apex_eval_on():
 
 
 def test_apex_funded_off():
-    ok, why = momentum_active_for_tier("Apex-50K")
-    assert ok is False and "daily-kill" in why
+    for t in ("Apex-50K", "Apex-50K-scaled"):                # both phases: momentum off on Apex funded
+        ok, why = momentum_active_for_tier(t)
+        assert ok is False and "trailing" in why
 
 
 def test_unknown_tier_off():

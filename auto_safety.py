@@ -38,12 +38,18 @@ EVAL_TIERS = {
 FUNDED_TIERS = {
     "50K":  dict(account="50K",  am=2, bm=1, daily_stop=400, worst_day=960),
     "150K": dict(account="150K", am=4, bm=2, daily_stop=800, worst_day=1921),
-    # APEX FUNDED — A2/B1 survival size: worst_day $948 stays UNDER the $1k daily-kill (0 DLL busts).
-    # kill_margin 0.85 (~-$850 salvage) — looser than the eval; survival size rarely reaches it anyway.
-    # mm=0: Momentum OFF on funded — the survival sizing is built to stay under the $1k kill; adding
-    # Momentum would widen the down day past it and needs its own survival validation first.
-    "Apex-50K":          dict(account="50K",  firm="apex", am=2, bm=1, mm=0, daily_stop=300, worst_day=948,
-                              dll=1000, kill_margin=0.85),
+    # APEX FUNDED — RE-VALIDATED 2026-06-27 vs the REAL rules (the $1k DLL is a SOFT daily stop, NOT a fail;
+    # the ONLY fail is the $2k EOD trailing drawdown). An account is bust-vulnerable ONLY while the floor
+    # still TRAILS (banked profit < +$2k); once you bank +$2k the floor LOCKS at $50k and a $1k-capped day
+    # can no longer bust it. So the "once funded" plan SCALES: start SMALL (A4/B2) through the trailing
+    # window, then bump to A6/B3 once locked. Validated SCALE path @ $550 stop: ~$1,639/mo, 2 busts/5yr
+    # (both 2022), 0 infant deaths; lock takes ~24 trading days (~5wk), 87% reach it. (vs old A2/B1 ~$631.)
+    # mm=0 — Momentum OFF on funded (its variance stresses the $2k trail; off until separately validated).
+    # Switch tiers MANUALLY at lock (no broker read-back to auto-scale on). (/tmp/funded_lock.py)
+    "Apex-50K":          dict(account="50K",  firm="apex", am=4, bm=2, mm=0, daily_stop=550, worst_day=550,
+                              dll=1000, kill_margin=0.85),    # PHASE 1: profit < +$2k, floor still trailing
+    "Apex-50K-scaled":   dict(account="50K",  firm="apex", am=6, bm=3, mm=0, daily_stop=550, worst_day=550,
+                              dll=1000, kill_margin=0.85),    # PHASE 2: profit >= +$2k, floor LOCKED at $50k
 }
 DD_ALLOWANCE = {"50K": 2000, "150K": 4500}
 APPROVAL_DIR = "evidence/approvals"
@@ -73,8 +79,8 @@ def momentum_active_for_tier(tier):
     apex = spec.get("firm") == "apex"
     if apex:
         active = (phase == "eval")
-        why = ("Apex eval — extra shots beat the 30-day clock (-$700 guard caps the day)" if active
-               else "Apex funded — the $1k daily-kill makes momentum fatal on a shared account")
+        why = ("Apex eval — extra shots beat the 30-day clock ($550 daily stop caps the day)" if active
+               else "Apex funded — momentum's variance stresses the $2k trailing drawdown; off until validated")
     else:
         active = (phase == "funded")
         why = ("funded — no daily limit, momentum adds ~+35% income" if active
