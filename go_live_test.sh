@@ -31,6 +31,7 @@ python3 auto_live.py --account MFFU-50K-1 --tier 50K-balanced \
   --feed tradingview-1m --d1c-mode active-eval-filter --execution traderspost \
   --controlled-tv-full-live-test --live --confirm --require-d1c-active \
   --profile-momentum
-# --profile-momentum: Momentum runs in SHADOW during this live session (models P&L + Telegram, NO live
-# orders) until evidence/approvals/momentum-approved.flag is created. Observe it live this week; one flag
-# flips it live next week. A+B trade live, completely unchanged.
+# --profile-momentum: requests the Momentum lane, but the PHASE GATE keeps it OFF on this MFFU EVAL tier
+# (50K-balanced) — momentum's variance would lower the eval pass rate (validated). The flag is forward-
+# compatible: once this account is FUNDED, switch --tier to 50K and the same launcher auto-arms momentum
+# (+~35% income; no daily limit). A+B trade live here, completely unchanged. The bot logs the gate decision.
