@@ -424,4 +424,6 @@ document.querySelectorAll("#rail button").forEach(b=>b.onclick=()=>{
 let TIMER=null;
 function startTimer(){ clearInterval(TIMER);
   TIMER=setInterval(refresh, 1000*(parseInt(localStorage.getItem("zeus_iv")||"30"))); }
-refresh(); startTimer();
+refresh().then(()=>{                                   // deep-link: #strategies etc. opens that tab on load
+  if(location.hash){ const t=document.querySelector(`#rail button[data-page="${location.hash.slice(1)}"]`); if(t) t.click(); }
+}); startTimer();
