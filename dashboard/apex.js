@@ -6,9 +6,26 @@ const cls = n => (+n>0?"pos":+n<0?"neg":"");
 const k = n => "$"+(Math.round(n/100)/10)+"k";
 const M = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-/* splash + clock */
-setTimeout(()=>document.body.classList.add("ready"), 5700);
-function clock(){ $("clock").textContent = new Date().toLocaleTimeString("en-GB",{hour12:false}); }
+/* splash: once per session, skippable (click / any key) */
+(function(){
+  const sp=$("splash"); if(!sp) return;
+  const reveal=()=>{ sp.style.animation="none"; sp.style.opacity="0"; sp.style.visibility="hidden"; document.body.classList.add("ready"); };
+  if(sessionStorage.getItem("zeus_seen")){ sp.style.display="none"; document.body.classList.add("ready"); return; }
+  sessionStorage.setItem("zeus_seen","1");
+  setTimeout(()=>document.body.classList.add("ready"), 5700);
+  const skip=()=>{ reveal(); sp.removeEventListener("click",skip); removeEventListener("keydown",skip); };
+  sp.addEventListener("click",skip); addEventListener("keydown",skip);
+})();
+
+/* clock + data-freshness ('fail loud': stale data must look stale) */
+let lastOk=0;
+function syncStatus(){
+  const el=$("sync"); if(!el) return;
+  const age=lastOk?(Date.now()-lastOk)/1000:1e9, stale=age>60;
+  el.className="pill"+(stale?" stale":"");
+  el.innerHTML=`<span class="dot ${stale?'r':'p'}"></span>${stale?'STALE':'SYNCED'} <b>${lastOk?new Date(lastOk).toLocaleTimeString('en-GB',{hour12:false}):'—'}</b>`;
+}
+function clock(){ $("clock").textContent=new Date().toLocaleTimeString("en-GB",{hour12:false}); syncStatus(); }
 setInterval(clock,1000); clock();
 
 function barStat(){
@@ -17,7 +34,8 @@ function barStat(){
   const feed = d.data_state==="GREEN"?["p","GREEN"]:d.data_state==="YELLOW"?["a","YELLOW"]:["r","RED"];
   const exec = d.webhook_mode==="LIVE"?["p","LIVE"]:["a", d.webhook_mode||"DRY-RUN"];
   const pill=(l,[c,v])=>`<span class="pill"><span class="dot ${c}"></span>${l} <b>${v}</b></span>`;
-  $("barstat").innerHTML = pill("BOT",bot)+pill("FEED",feed)+pill("EXEC",exec)+`<span class="pill">TIER <b class="gold">${h.tier||"—"}</b></span>`;
+  $("barstat").innerHTML = `<span class="pill" id="sync"></span>`+pill("BOT",bot)+pill("FEED",feed)+pill("EXEC",exec)+`<span class="pill">TIER <b class="gold">${h.tier||"—"}</b></span>`;
+  syncStatus();
 }
 
 /* a day's total trade P&L = realised (fill-backed) + modeled/paper */
@@ -76,7 +94,8 @@ function campaign(compact){
   const flow = step(0,"Phase I · The Trial",ev.tier,`${ev.size} · $${ev.stop} stop`,ev.pass_pct+"%","pass",`median ${ev.median_days}d · spray ~$19/try`)+arr
     + step(.22,"Phase II · The Ascent","Funded · scale at the lock",`${f.phase1} → +$2k lock → ${f.phase2}`,money(f.income_mo),"/mo",`~5wk to lock · ${f.lock_pct}% reach it · ${f.busts}`)+arr
     + step(.44,"The Legion","20 × 50K fleet","scaled · near-unbustable",k(ec.fleet20_mo),"/mo",`~${ec.eval_to_mature_wk}wk eval→mature`);
-  return `<div class="camp rise"><div class="camp-h"><div class="ttl">APEX CAMPAIGN<small>PATH&nbsp;TO&nbsp;THE&nbsp;THRONE</small></div><div class="seal">${p.status}</div></div>
+  const live=((S.portfolio||{}).funded||0)+((S.portfolio||{}).evals||0)>0;
+  return `<div class="camp rise"><div class="camp-h"><div class="ttl">APEX CAMPAIGN<small>PATH&nbsp;TO&nbsp;THE&nbsp;THRONE</small></div><div class="seal${live?'':' proj'}">${live?p.status:'PROJECTED'}</div></div>
     <div class="flow">${flow}</div>${compact?"":`<div class="camp-rules"><span class="rh">The Laws of Apex</span>${p.rules.map(r=>`<span class="law">${r}</span>`).join("")}</div>`}</div>`;
 }
 
@@ -84,12 +103,14 @@ const head=(ix,t,sub)=>`<div class="head"><h2><span class="ix">${ix}</span>${t}<
 
 /* ---------- HOME ---------- */
 function vOverview(){
-  const pf=S.portfolio||{}, p=S.playbook||{}, ec=p.economics||{};
+  const pf=S.portfolio||{}, p=S.playbook||{}, ec=p.economics||{}, d=S.deployment||{};
   const T=totals();
   const open=(pf.evals||0)+(pf.funded||0);
+  const offline = d.status==="RED" || !d.green || open===0;
+  const banner = offline ? `<div class="banner rise">SYSTEM NOT LIVE${d.status==="RED"?" · bot halted":""}${d.data_state==="RED"?" · feed red":""} : the P&L below is paper/test and the campaign figures are projections, not realised money</div>` : "";
   // ledger
   const ledger = `<div class="ledger rise">
-    <div class="total"><div class="l">Total P&L</div><div class="v mono ${cls(T.all)}">${money(T.all)}<small>net · ${T.tdays} days</small></div></div>
+    <div class="total"><div class="l">Total P&L</div><div class="v mono ${cls(T.all)}">${money(T.all)}<small>net · ${T.tdays}d · incl. paper</small></div></div>
     <div class="periods">
       <div class="per"><div class="l">Today</div><div class="v mono ${cls(T.today)}">${money(T.today)}</div></div>
       <div class="per"><div class="l">This week</div><div class="v mono ${cls(T.week)}">${money(T.week)}</div></div>
@@ -112,6 +133,7 @@ function vOverview(){
   // home calendar (current month, no nav)
   const cal = `<div class="panel rise" style="margin-top:18px">${topstep(false)}<div class="note">Daily P&L &amp; trade count, Topstep-style. <b>PPR</b> = paper/modeled test trades; <b>LIVE</b> = broker-proven fills. NET is the month; the right column totals each week.</div></div>`;
   return head("01","Home", `${new Date().toDateString()}<br>APEX 50K · EOD trail · strategy frozen`)
+    + banner
     + ledger
     + `<div style="margin:18px 0">${pipe}</div>`
     + campaign(true)
@@ -174,8 +196,11 @@ function vHealth(){ return head("06","Health","integrity &amp; ops · broker is 
 const VIEWS={overview:vOverview,playbook:vPlaybook,fleet:vFleet,trades:vTrades,calendar:vCalendar,health:vHealth};
 function renderView(){ $("v-"+VIEW).innerHTML = VIEWS[VIEW](); }
 async function refresh(){
-  try{ S=await (await fetch("/api/state",{cache:"no-store"})).json(); }catch(e){ return; }
-  try{ CAL=await (await fetch("/api/calendar",{cache:"no-store"})).json(); }catch(e){ CAL=CAL||{}; }
+  let ok=true;
+  try{ S=await (await fetch("/api/state",{cache:"no-store"})).json(); lastOk=Date.now(); }catch(e){ ok=false; }
+  if(ok){ try{ CAL=await (await fetch("/api/calendar",{cache:"no-store"})).json(); }catch(e){ CAL=CAL||{}; } }
+  const d=S.deployment||{}, pf=S.portfolio||{};
+  document.body.classList.toggle("offline", d.status==="RED" || !d.green || ((pf.funded||0)+(pf.evals||0))===0);
   barStat(); renderView();
 }
 /* re-pull fresh when the dashboard is re-opened / re-focused */
@@ -185,6 +210,14 @@ document.querySelectorAll(".nv").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".nv").forEach(x=>x.classList.remove("on"));
   document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
   b.classList.add("on"); VIEW=b.dataset.view; $("v-"+VIEW).classList.add("on"); renderView(); location.hash=VIEW;
+});
+/* keyboard: 1-6 jump views · ←/→ step calendar months · T = latest month */
+const NAV=["overview","playbook","fleet","trades","calendar","health"];
+addEventListener("keydown", e=>{
+  if(!document.body.classList.contains("ready")) return;
+  if(e.key>="1"&&e.key<="6"){ const t=document.querySelector(`.nv[data-view="${NAV[+e.key-1]}"]`); if(t)t.click(); }
+  else if(VIEW==="calendar"&&CALV&&(e.key==="ArrowLeft"||e.key==="ArrowRight")){ CALV.m+=e.key==="ArrowRight"?1:-1; if(CALV.m<0){CALV.m=11;CALV.y--} if(CALV.m>11){CALV.m=0;CALV.y++} renderView(); }
+  else if((e.key==="t"||e.key==="T")&&VIEW==="calendar"){ CALV=null; renderView(); }
 });
 refresh().then(()=>{ if(location.hash){ const t=document.querySelector(`.nv[data-view="${location.hash.slice(1)}"]`); if(t) t.click(); } });
 setInterval(refresh, 30000);
