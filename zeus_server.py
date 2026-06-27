@@ -222,17 +222,20 @@ def apex_playbook():
             # (The old 86%/87% came from deleted /tmp scripts that modeled the wrong drawdown rule.)
             eval=dict(tier="Apex-50K-eval", size=f"A{ev['am']}/B{ev['bm']}/Mom-{ev['mm']}",
                       stop=ev["daily_stop"], pass_pct=57, bust_pct=40, expire_pct=3, median_days=7,
-                      note="EOD rule + real Databento (apex_eval_eod_databento.py); A8/B6/mm6 tilt → ~60% peak"),
+                      note="EOD rule + real Databento · median 7d / mean 9d · per-year 48-68% (worst 2022) · "
+                           "A8/B6/mm6 tilt → ~60% peak. (old 86% was fabricated)"),
             funded=dict(phase1=f"A{f1['am']}/B{f1['bm']}", phase2=f"A{f2['am']}/B{f2['bm']}",
                         stop=f1["daily_stop"], lock="+$2.6k floor-lock at $50.1k", lock_days=51, lock_pct=68,
-                        income_mo=1924, busts="grind-to-lock A2/B1 → 88% (vs A4/B2 68%)"),
+                        income_mo=1924,
+                        busts="RESEARCH (pending live): grind A4/B2+mm2 → 79.8% · +cushion-brake → ~98% lock"),
             rules=["$1k DLL = SOFT daily stop (pause-the-day, NOT a fail)",
-                   "ONLY account-fail = $2k EOD trailing drawdown",
-                   "floor LOCKS at $50k once +$2k banked → then near-unbustable",
+                   "ONLY account-fail = $2k EOD trailing drawdown (set at the CLOSE, intraday liquidates)",
+                   "floor LOCKS at $50.1k once +$2.6k banked → then near-unbustable",
                    "payouts: PARTIAL, down to the $52,100 safety net (never reset to $50k)",
                    "first 5 payouts capped $2k then uncapped · 100% of first $25k then 90/10"],
-            economics=dict(per_acct_mo=1585, fleet20_mo=31700, eval_to_mature_wk=7,
-                           momentum="upgraded PF 1.83 (confirm=4, 15:30) · ON eval / OFF funded"))
+            economics=dict(per_acct_mo=1924, fleet20_mo=18000, eval_to_mature_wk=7,
+                           momentum="PF 1.67 (Databento) · ON eval (+10pts pass) · RESEARCH: HELPFUL on funded "
+                                    "too (+54% value, pending live). Fleet ~$15-20k/mo realistic (5yr MC gross ~$33k)"))
     except Exception as e:                                  # never break the dashboard
         return dict(error=str(e))
 
