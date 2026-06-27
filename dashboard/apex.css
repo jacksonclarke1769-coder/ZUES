@@ -1,4 +1,4 @@
-/* ============ ZEUS — obsidian prop-desk terminal ============ */
+/* ============ ZEUS : obsidian prop-desk terminal ============ */
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Cinzel:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root{
@@ -21,6 +21,8 @@ body{background:var(--bg);color:var(--tx);font-family:var(--ui);font-size:13px;-
   background-image:radial-gradient(940px 460px at 86% -10%, oklch(0.755 0.118 90 / .055), transparent 60%);
   background-attachment:fixed;min-height:100vh}
 a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.nv:focus-visible{outline-offset:-2px}
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .pos{color:var(--pos)} .neg{color:var(--neg)} .gold{color:var(--gold)}
 
@@ -83,7 +85,7 @@ body.offline .step .n{opacity:.8}   /* future projections rendered at lower conf
 .head h2 .ix{color:var(--gold);font:600 12px var(--mono);margin-right:13px;vertical-align:middle;letter-spacing:.1em}
 .head .sub{font:500 11px var(--mono);color:var(--dim);text-align:right;line-height:1.7}
 
-/* ---------- LEDGER BAR (the focal P&L) — not a card grid ---------- */
+/* ---------- LEDGER BAR (the focal P&L): not a card grid ---------- */
 .ledger{display:flex;align-items:stretch;border:1px solid var(--line);background:linear-gradient(180deg,var(--s2),var(--s1));margin-bottom:18px}
 .ledger .total{padding:22px 30px;border-right:1px solid var(--line);min-width:320px;display:flex;flex-direction:column;justify-content:center}
 .ledger .total .l{font:600 10px var(--mono);letter-spacing:.22em;color:var(--dim);text-transform:uppercase}
@@ -175,3 +177,11 @@ tr:hover td{background:var(--glass)}
 
 @media(max-width:1080px){.g2,.g3{grid-template-columns:1fr}.arr{transform:rotate(90deg);margin:6px auto}.step+.step{border-left:0}.ledger,.pipe{flex-wrap:wrap}.ledger .total{border-right:0;border-bottom:1px solid var(--line);width:100%}}
 @media(max-width:760px){:root{--rail:0px}#rail{display:none}#main{padding:18px 14px}.cal{grid-template-columns:repeat(7,1fr)}.cal .wkcell,.dow.wk{display:none}}
+
+/* respect reduced-motion: no splash hold, no entrance reveals, no pulsing */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important}
+  #splash{animation:none;opacity:0;visibility:hidden}
+  .rise,.step,.arr,.view.on,.camp{opacity:1!important;transform:none!important}
+}

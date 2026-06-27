@@ -1,7 +1,7 @@
 /* ===== ZEUS · terminal logic ===== */
 const $ = id => document.getElementById(id);
 let S = {}, CAL = null, VIEW = "overview", CALV = null;
-const money = (n,dp=0) => { n=+n||0; const s=n<0?"-":n>0?"+":""; return s+"$"+Math.abs(n).toLocaleString(undefined,{maximumFractionDigits:dp}); };
+const money = (n,dp=0) => { n=+n||0; const s=n<0?"−":n>0?"+":""; return s+"$"+Math.abs(n).toLocaleString(undefined,{maximumFractionDigits:dp}); };
 const cls = n => (+n>0?"pos":+n<0?"neg":"");
 const k = n => "$"+(Math.round(n/100)/10)+"k";
 const M = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -10,7 +10,8 @@ const M = ["January","February","March","April","May","June","July","August","Se
 (function(){
   const sp=$("splash"); if(!sp) return;
   const reveal=()=>{ sp.style.animation="none"; sp.style.opacity="0"; sp.style.visibility="hidden"; document.body.classList.add("ready"); };
-  if(sessionStorage.getItem("zeus_seen")){ sp.style.display="none"; document.body.classList.add("ready"); return; }
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(reduce || sessionStorage.getItem("zeus_seen")){ sessionStorage.setItem("zeus_seen","1"); reveal(); return; }
   sessionStorage.setItem("zeus_seen","1");
   setTimeout(()=>document.body.classList.add("ready"), 5700);
   const skip=()=>{ reveal(); sp.removeEventListener("click",skip); removeEventListener("keydown",skip); };
@@ -206,10 +207,15 @@ async function refresh(){
 /* re-pull fresh when the dashboard is re-opened / re-focused */
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) refresh(); });
 window.addEventListener("focus", refresh);
-document.querySelectorAll(".nv").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll(".nv").forEach(x=>x.classList.remove("on"));
-  document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
-  b.classList.add("on"); VIEW=b.dataset.view; $("v-"+VIEW).classList.add("on"); renderView(); location.hash=VIEW;
+document.querySelectorAll(".nv").forEach(b=>{
+  b.tabIndex=0; b.setAttribute("role","button"); b.setAttribute("aria-label",b.dataset.view);
+  const go=()=>{
+    document.querySelectorAll(".nv").forEach(x=>{x.classList.remove("on");x.removeAttribute("aria-current");});
+    document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on"); b.setAttribute("aria-current","page"); VIEW=b.dataset.view; $("v-"+VIEW).classList.add("on"); renderView(); location.hash=VIEW;
+  };
+  b.onclick=go;
+  b.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(); } });
 });
 /* keyboard: 1-6 jump views · ←/→ step calendar months · T = latest month */
 const NAV=["overview","playbook","fleet","trades","calendar","health"];
