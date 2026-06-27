@@ -7,7 +7,7 @@ const k = n => "$"+(Math.round(n/100)/10)+"k";
 const M = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 /* splash + clock */
-setTimeout(()=>document.body.classList.add("ready"), 2400);
+setTimeout(()=>document.body.classList.add("ready"), 5700);
 function clock(){ $("clock").textContent = new Date().toLocaleTimeString("en-GB",{hour12:false}); }
 setInterval(clock,1000); clock();
 
