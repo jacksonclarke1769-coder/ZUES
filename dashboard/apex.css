@@ -150,6 +150,9 @@ body.ready #splash{pointer-events:none}
 .cell.up{background:var(--pos-bg);border-color:oklch(0.76 0.135 152 / .35)}.cell.up .pl{color:var(--pos)}
 .cell.dn{background:var(--neg-bg);border-color:oklch(0.66 0.165 28 / .35)}.cell.dn .pl{color:var(--neg)}
 .cell:hover{border-color:var(--gold-deep)}
+.cell .tg{position:absolute;top:6px;right:7px;font:600 7px var(--mono);letter-spacing:.04em;padding:1px 4px;border:1px solid}
+.cell .tg.live{color:var(--gold);border-color:var(--gold-deep)}
+.cell .tg.ppr{color:var(--faint);border-color:var(--line2)}
 .wkcell{border:1px solid var(--line);background:oklch(0.2 0.012 92);padding:7px 9px;display:flex;flex-direction:column;justify-content:center}
 .wkcell .l{font:600 8px var(--mono);letter-spacing:.1em;color:var(--faint);text-transform:uppercase}
 .wkcell .v{font:600 15px var(--mono);margin-top:5px}

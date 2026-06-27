@@ -20,11 +20,16 @@ function barStat(){
   $("barstat").innerHTML = pill("BOT",bot)+pill("FEED",feed)+pill("EXEC",exec)+`<span class="pill">TIER <b class="gold">${h.tier||"—"}</b></span>`;
 }
 
-/* lifetime/today totals from the calendar ledger */
+/* a day's total trade P&L = realised (fill-backed) + modeled/paper */
+const eff = e => (e.pnl||0)+(e.hypothetical_pnl||0);
+const isLive = e => (e.pnl||0)!==0;            // fill-backed/realised vs paper-modeled
 function totals(){
-  let all=0, today=0; const tk=new Date().toISOString().slice(0,10);
-  if(CAL) for(const [d,e] of Object.entries(CAL)){ all+=e.pnl||0; if(d===tk) today=e.pnl||0; }
-  return {all, today};
+  let all=0, today=0, week=0, month=0, real=0, tdays=0;
+  const now=new Date(), tk=now.toISOString().slice(0,10), mk=tk.slice(0,7);
+  const w=new Date(now); w.setDate(now.getDate()-6); const wk=w.toISOString().slice(0,10);
+  if(CAL) for(const [d,e] of Object.entries(CAL)){ const v=eff(e); all+=v; real+=(e.pnl||0); tdays++;
+    if(d===tk)today=v; if(d>=wk)week+=v; if(d.slice(0,7)===mk)month+=v; }
+  return {all, today, week, month, real, tdays};
 }
 
 /* ---------- TOPSTEP CALENDAR (shared: home embeds it, tab adds nav) ---------- */
@@ -41,9 +46,10 @@ function topstep(nav){
     for(let i=0;i<7;i++){ const d=slots[w+i];
       if(d==null){ cells+=`<div class="cell pad"></div>`; continue; }
       const e=CAL[key(d)];
-      if(e){ monTot+=e.pnl; monTr+=e.trades; td++; if(e.pnl>0)wn++; wTot+=e.pnl;
-        const c=e.pnl>0?"up":e.pnl<0?"dn":"";
-        cells+=`<div class="cell ${c}"><span class="dm">${d}</span><span class="pl">${money(e.pnl)}</span><span class="tr">${e.trades} trade${e.trades==1?'':'s'}</span></div>`;
+      if(e){ const v=eff(e); monTot+=v; monTr+=e.trades; td++; if(v>0)wn++; wTot+=v;
+        const c=v>0?"up":v<0?"dn":"";
+        const tg=isLive(e)?`<span class="tg live">LIVE</span>`:`<span class="tg ppr">PPR</span>`;
+        cells+=`<div class="cell ${c}"><span class="dm">${d}</span>${tg}<span class="pl">${money(v)}</span><span class="tr">${e.trades} trade${e.trades==1?'':'s'}</span></div>`;
       } else cells+=`<div class="cell"><span class="dm">${d}</span></div>`;
     }
     cells+=`<div class="wkcell"><div class="l">Week</div><div class="v mono ${cls(wTot)}">${wTot?money(wTot):'·'}</div></div>`;
@@ -83,12 +89,12 @@ function vOverview(){
   const open=(pf.evals||0)+(pf.funded||0);
   // ledger
   const ledger = `<div class="ledger rise">
-    <div class="total"><div class="l">Total P&L</div><div class="v mono ${cls(T.all)}">${money(T.all)}<small>realised</small></div></div>
+    <div class="total"><div class="l">Total P&L</div><div class="v mono ${cls(T.all)}">${money(T.all)}<small>net · ${T.tdays} days</small></div></div>
     <div class="periods">
       <div class="per"><div class="l">Today</div><div class="v mono ${cls(T.today)}">${money(T.today)}</div></div>
-      <div class="per"><div class="l">This week</div><div class="v mono ${cls(pf.pnl_week)}">${money(pf.pnl_week)}</div></div>
-      <div class="per"><div class="l">This month</div><div class="v mono ${cls(pf.pnl_month)}">${money(pf.pnl_month)}</div></div>
-      <div class="per"><div class="l">Payouts</div><div class="v mono ${cls(pf.payouts)}">${money(pf.payouts)}</div></div>
+      <div class="per"><div class="l">This week</div><div class="v mono ${cls(T.week)}">${money(T.week)}</div></div>
+      <div class="per"><div class="l">This month</div><div class="v mono ${cls(T.month)}">${money(T.month)}</div></div>
+      <div class="per"><div class="l">Realised <span style="color:var(--faint)">· broker-proven</span></div><div class="v mono ${cls(T.real)}">${money(T.real)}</div></div>
     </div></div>`;
   // stages pipeline (open accounts + current stage)
   const stg=(ph,ct,nm,cur,act,arr)=>`<div class="stg ${cur?'cur':''}"><div class="ph">${ph}</div><div class="ct mono ${act?'act':''}">${ct}</div><div class="nm">${nm}</div>${arr?`<div class="ar">${arr}</div>`:''}</div>`;
@@ -104,7 +110,7 @@ function vOverview(){
     </div>
     ${open===0?`<div class="note">Pre-deployment · no accounts live yet. <b>Next move:</b> buy a 50K EOD eval and spray Stage 1 (~86% pass, ~8 days).</div>`:''}</div>`;
   // home calendar (current month, no nav)
-  const cal = `<div class="panel rise" style="margin-top:18px">${topstep(false)}<div class="note">Daily realised P&L &amp; trade count, Topstep-style. <b>NET</b> is the month; the right column totals each week.</div></div>`;
+  const cal = `<div class="panel rise" style="margin-top:18px">${topstep(false)}<div class="note">Daily P&L &amp; trade count, Topstep-style. <b>PPR</b> = paper/modeled test trades; <b>LIVE</b> = broker-proven fills. NET is the month; the right column totals each week.</div></div>`;
   return head("01","Home", `${new Date().toDateString()}<br>APEX 50K · EOD trail · strategy frozen`)
     + ledger
     + `<div style="margin:18px 0">${pipe}</div>`
@@ -147,7 +153,7 @@ function vTrades(){
 }
 
 /* ---------- CALENDAR (full, Topstep + nav) ---------- */
-function vCalendar(){ return head("05","Calendar","daily P&L · trade count · weekly totals")+`<div class="panel rise">${topstep(true)}</div>`; }
+function vCalendar(){ return head("05","Calendar","daily P&L · trade count · weekly totals")+`<div class="panel rise">${topstep(true)}<div class="note"><b>PPR</b> = paper/modeled test trades; <b>LIVE</b> = broker-proven fills. Last 2 weeks: Jun 16 A +$1,400 (paper), Jun 22 B −$229, Jun 24 B −$249, Jun 25 B +$369 (operator-confirmed live win). Jun 26 ran flat (no qualifying setup; ORB missed on a late feed).</div></div>`; }
 
 /* ---------- HEALTH ---------- */
 function statusRows(){
@@ -168,10 +174,13 @@ function vHealth(){ return head("06","Health","integrity &amp; ops · broker is 
 const VIEWS={overview:vOverview,playbook:vPlaybook,fleet:vFleet,trades:vTrades,calendar:vCalendar,health:vHealth};
 function renderView(){ $("v-"+VIEW).innerHTML = VIEWS[VIEW](); }
 async function refresh(){
-  try{ S=await (await fetch("/api/state")).json(); }catch(e){ return; }
-  if(!CAL){ try{ CAL=await (await fetch("/api/calendar")).json(); }catch(e){ CAL={}; } }
+  try{ S=await (await fetch("/api/state",{cache:"no-store"})).json(); }catch(e){ return; }
+  try{ CAL=await (await fetch("/api/calendar",{cache:"no-store"})).json(); }catch(e){ CAL=CAL||{}; }
   barStat(); renderView();
 }
+/* re-pull fresh when the dashboard is re-opened / re-focused */
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) refresh(); });
+window.addEventListener("focus", refresh);
 document.querySelectorAll(".nv").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".nv").forEach(x=>x.classList.remove("on"));
   document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
