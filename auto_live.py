@@ -364,9 +364,16 @@ class LiveAuto:
             self.m_engine.add_bar(ts, o, h, l, c)
             sig = self.m_engine.latest_signal()
             if sig is not None:
-                self.m_executor.on_signal(sig, ts)
-                for bk in self.books:                        # FAN-OUT: same Momentum signal -> each book (its mm)
-                    bk.route_m(sig, ts)
+                route = sig
+                if self.p3.braked and sig.get("action") in ("enter", "flip"):
+                    # P3 cushion brake: near the floor, add NO new momentum exposure (flatten if holding, else skip)
+                    route = ({**sig, "action": "flatten", "position": 0, "side": "flat"}
+                             if getattr(self.m_executor, "position", 0) else None)
+                    print(f"[momentum] P3-braked → no new exposure ({sig.get('action')} blocked)", flush=True)
+                if route is not None:
+                    self.m_executor.on_signal(route, ts)
+                    for bk in self.books:                    # FAN-OUT: same Momentum signal -> each book (its mm)
+                        bk.route_m(route, ts)
             return sig
         except Exception as e:                               # noqa: BLE001 — momentum must never break the loop
             print(f"[momentum] on_m_bar error (skipped): {type(e).__name__}: {e}", flush=True)
