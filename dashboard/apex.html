@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>APEX // BLACKBOX</title>
+<link rel="stylesheet" href="apex.css">
+</head>
+<body>
+
+<header id="bar">
+  <div class="brand">
+    <svg class="peak" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 22 21H2L12 2zm0 6.6L7.2 18h9.6L12 8.6z"/></svg>
+    <div class="wm">APEX<small>BLACKBOX&nbsp;·&nbsp;PROP&nbsp;DESK</small></div>
+  </div>
+  <div class="bar-stat" id="barstat"></div>
+  <div id="clock">––:––:––</div>
+</header>
+
+<aside id="rail">
+  <nav>
+    <div class="nv on" data-view="overview"><i>01</i>Overview</div>
+    <div class="nv" data-view="playbook"><i>02</i>Playbook</div>
+    <div class="nv" data-view="fleet"><i>03</i>Fleet</div>
+    <div class="nv" data-view="trades"><i>04</i>Trades</div>
+    <div class="nv" data-view="calendar"><i>05</i>Calendar</div>
+    <div class="nv" data-view="health"><i>06</i>Health</div>
+  </nav>
+  <div class="rail-foot">APEX 50K · EOD TRAIL<br>strategy <b>FROZEN</b> · display-only</div>
+</aside>
+
+<main id="main">
+  <section class="view on" id="v-overview"></section>
+  <section class="view" id="v-playbook"></section>
+  <section class="view" id="v-fleet"></section>
+  <section class="view" id="v-trades"></section>
+  <section class="view" id="v-calendar"></section>
+  <section class="view" id="v-health"></section>
+</main>
+
+<script src="apex.js"></script>
+</body>
+</html>

@@ -726,7 +726,12 @@ def api_ack():
 
 @APP.route("/")
 def index():
-    return send_from_directory("dashboard", "zeus.html")
+    return send_from_directory("dashboard", "apex.html")     # APEX // BLACKBOX (new)
+
+
+@APP.route("/legacy")
+def legacy():
+    return send_from_directory("dashboard", "zeus.html")     # old ZEUS God Terminal
 
 
 @APP.route("/<path:p>")
