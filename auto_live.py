@@ -355,9 +355,11 @@ class LiveAuto:
                        traderspost_status=_reason, live=(self.mode == "live"), profile="B")
 
     def on_m_bar(self, ts, o, h, l, c):
-        """Profile MOMENTUM: feed the engine a completed 5m bar, route any position change. OFF unless wired."""
+        """Profile MOMENTUM: feed the engine a completed 5m bar, route any position change. OFF unless wired.
+        Returns the engine's latest_signal() dict (or None if not wired / still warming up) so the caller
+        can log the evaluation (ARGUS-M) — a zero-trade momentum session must be provable, like A."""
         if self.m_engine is None or self.m_executor is None:
-            return
+            return None
         try:
             self.m_engine.add_bar(ts, o, h, l, c)
             sig = self.m_engine.latest_signal()
@@ -365,8 +367,39 @@ class LiveAuto:
                 self.m_executor.on_signal(sig, ts)
                 for bk in self.books:                        # FAN-OUT: same Momentum signal -> each book (its mm)
                     bk.route_m(sig, ts)
+            return sig
         except Exception as e:                               # noqa: BLE001 — momentum must never break the loop
             print(f"[momentum] on_m_bar error (skipped): {type(e).__name__}: {e}", flush=True)
+            return None
+
+    def _log_m_decision(self, ts, sig, data_state="GREEN", engine_bar=None):
+        """ARGUS-M: one JSONL row per momentum 5m RTH evaluation so a zero-trade (shadow) momentum session
+        is provable — mirrors Profile A's _dlogger. Fail-safe: NEVER raises into the loop, NEVER places/affects
+        a send. `ts` is naive ET (same convention as the A/B loggers)."""
+        dl = getattr(self, "m_dlogger", None)
+        if dl is None:
+            return
+        try:
+            ds = dict(data_state=data_state, data_ready=(data_state == "GREEN"),
+                      engine_bar=engine_bar, exit_model="MOMENTUM_POSITION")
+            if data_state != "GREEN":                         # feed not ready -> the engine couldn't decide
+                dl.log("skipped", bar_ts=str(ts), candidate_detected=False,
+                       rejection_reason="feed_not_green", **ds); return
+            if sig is None:                                   # ready feed, engine still warming up
+                dl.log("skipped", bar_ts=str(ts), candidate_detected=False,
+                       rejection_reason="momentum_warmup", **ds); return
+            live = (self.mode == "live") and not getattr(self.m_executor, "shadow", True)
+            if sig.get("changed"):                            # enter / flip / flatten -> a real momentum signal
+                dl.log("live_send" if live else "paper_signal",
+                       bar_ts=str(ts), candidate_detected=True, side=sig.get("side"),
+                       m_action=sig.get("action"), position=sig.get("position"), prev=sig.get("prev"),
+                       slot=sig.get("slot"), close_price=sig.get("close"), shadow=(not live), **ds)
+            else:                                             # ready, no position change (flat or holding)
+                dl.log("no_signal", bar_ts=str(ts), candidate_detected=False,
+                       position=sig.get("position"), slot=sig.get("slot"), close_price=sig.get("close"),
+                       note=("holding" if sig.get("position") else "flat"), **ds)
+        except Exception:                                     # noqa: BLE001 — logging never breaks momentum
+            return
 
     def overlap_new_day(self):
         """Clear A/B from the overlap gate at a new ET day (intraday positions; conservative)."""
@@ -498,6 +531,8 @@ def main(argv=None):
         from overlap_gate import OverlapGate
         auto.overlap = OverlapGate(factor=0.5, participants={"A", "B", "M"})   # half-size 2nd same-dir concurrent
         auto.m_engine = ProfileMomentumEngine()
+        auto.m_dlogger = DecisionLogger(a.account, mode, _session_id, profile="M",   # ARGUS-M: provable
+                                        feed_source=a.feed, engine_timeframe="5m")    # zero-trade momentum log
         m_tracker = MomentumPaperTracker(a.account, mode, dpp=2.0, stop_pts=a.momentum_stop,
                                          notify=tg, journal=journal)
         auto.m_executor = MomentumExecutor(a.account, sender, root="MNQ", base_qty=a.momentum_qty,
@@ -555,6 +590,8 @@ def main(argv=None):
     _hb = {"t": _t_mod.time()}             # Telegram heartbeat tracker (last ping ts)
     _ctl = {"c": None, "t": 0.0}           # Telegram remote-control poller (set once live) + last-poll ts
     _md = {"d": None}                      # overlap-gate day tracker (clear A/B each new ET day)
+    from preopen_guard import PreopenGuard
+    _preopen = PreopenGuard()              # pre-open feed-readiness alerts (ORB + Momentum need a clean open)
     runner = PaperLiveRunner(store, "live", "live")
     runner.bot.on_decision = lambda sig, placed, reason, ts: (
         runner._orig(sig, placed, reason, ts), auto.on_decision(sig, placed, reason, ts))
@@ -708,7 +745,7 @@ def main(argv=None):
                 auto.b_tracker.on_bar(_bar["i"], bts, bo, bh, bl, bc)   # fills/exits -> calendar
             except Exception as _be:                               # noqa: BLE001 — B never breaks A
                 print(f"[auto-live] B engine error (ignored): {_be!r}", flush=True)
-            auto.on_m_bar(bts, bo, bh, bl, bc)                     # Profile MOMENTUM lane (no-op unless wired)
+            _msig = auto.on_m_bar(bts, bo, bh, bl, bc)             # Profile MOMENTUM lane (no-op unless wired)
             # ARGUS: an in-window decision bar with NO signal must still be logged (zero-trade proof)
             try:
                 _mins = bts.hour * 60 + bts.minute
@@ -716,6 +753,15 @@ def main(argv=None):
                     _ds = feed.data_state()[0] if hasattr(feed, "data_state") else "GREEN"
                     _dlogger.no_signal(bts, data_state=_ds, data_ready=(_ds == "GREEN"),
                                        engine_bar=_bar["i"])
+            except Exception:                                      # noqa: BLE001 — never break the loop
+                pass
+            # ARGUS-M: log every momentum 5m RTH evaluation (warmup/flat/holding/signal) — zero-trade proof
+            try:
+                if getattr(auto, "m_dlogger", None) is not None:
+                    _mmin = bts.hour * 60 + bts.minute
+                    if (9 * 60 + 30) <= _mmin < (16 * 60):         # momentum RTH window (engine ignores non-RTH)
+                        _mds = feed.data_state()[0] if hasattr(feed, "data_state") else "GREEN"
+                        auto._log_m_decision(bts, _msig, data_state=_mds, engine_bar=_bar["i"])
             except Exception:                                      # noqa: BLE001 — never break the loop
                 pass
             runner.bot._persist()
@@ -750,6 +796,19 @@ def main(argv=None):
                     conf = readback.poll(_rb_broker)
                     if conf:
                         print(f"[auto-live] read-back: {[(c,d) for c,_,d in conf]}", flush=True)
+            # --- Pre-open feed-readiness guard: if the feed isn't GREEN before the 09:30 ET open, alert the
+            #     operator EARLY to fix Chrome — a late feed silently kills the ORB + Momentum opening range.
+            #     Advisory only: never changes sizing/entries (the fail-closed data gate already blocks trades). ---
+            try:
+                _pt = pd.Timestamp(ts); _net = (_pt.tz_convert(NY) if _pt.tzinfo else _pt)
+                _pds = feed.data_state()[0] if hasattr(feed, "data_state") else "GREEN"
+                _pa = _preopen.evaluate(_net, _pds)
+                if _pa is not None:
+                    print(f"[preopen] {_pa['kind'].upper()} {_pa['et']} — {_pa['msg']}", flush=True)
+                    if tg.enabled:
+                        tg.send(f"⏰ Pre-open · {a.account}\n{_pa['msg']}")
+            except Exception:                                  # noqa: BLE001 — guard never breaks the loop
+                pass
             # --- Telegram heartbeat: periodic 'still alive + healthy' ping while live ---
             if tg.enabled and a.heartbeat_min > 0 and armed["v"]:
                 _now = _t_mod.time()
