@@ -53,11 +53,14 @@ FUNDED_TIERS = {
     # (withdraw DOWN to it, partial — never reset to $50k), $500 min, first-5 payouts capped $2k then
     # uncapped, 100% of first $25k cumulative then 90/10, monthly cadence (dilutes 50% consistency),
     # first payout needs 8 trading days + 5 profitable days.
-    # mm=0 — Momentum OFF on funded (its variance stresses the $2k trail; off until separately validated).
-    # Switch tiers MANUALLY at lock (no broker read-back to auto-scale on). (/tmp/funded_lock.py)
-    "Apex-50K":          dict(account="50K",  firm="apex", am=4, bm=2, mm=0, daily_stop=550, worst_day=550,
+    # ★ MOMENTUM ON FUNDED — VALIDATED 2026-06-27 (apex_funded_momentum_test/mm_sweep, EOD+Databento; the old
+    # "OFF until validated" is now resolved). Under the EOD rule momentum HELPS funded: grind mm2 lifts reach-lock
+    # 68.8→79.8% (joint-bar-sim confirmed), post-lock mm6 adds income → E[payout/acct] $12.6k→$19.4k (+54%).
+    # The P3 cushion brake (already live) cuts A/B near the floor; mm rides the $550 daily stop. Combined w/ the
+    # brake → ~98% reach-lock. Switch tiers MANUALLY at lock (no broker read-back to auto-scale on).
+    "Apex-50K":          dict(account="50K",  firm="apex", am=4, bm=2, mm=2, daily_stop=550, worst_day=550,
                               dll=1000, kill_margin=0.85),    # PHASE 1: profit < +$2k, floor still trailing
-    "Apex-50K-scaled":   dict(account="50K",  firm="apex", am=6, bm=3, mm=0, daily_stop=550, worst_day=550,
+    "Apex-50K-scaled":   dict(account="50K",  firm="apex", am=6, bm=3, mm=6, daily_stop=550, worst_day=550,
                               dll=1000, kill_margin=0.85),    # PHASE 2: profit >= +$2k, floor LOCKED at $50k
 }
 DD_ALLOWANCE = {"50K": 2000, "150K": 4500}
@@ -87,9 +90,10 @@ def momentum_active_for_tier(tier):
         return False, f"unknown tier {tier!r}"
     apex = spec.get("firm") == "apex"
     if apex:
-        active = (phase == "eval")
-        why = ("Apex eval — extra shots beat the 30-day clock ($550 daily stop caps the day)" if active
-               else "Apex funded — momentum's variance stresses the $2k trailing drawdown; off until validated")
+        active = True   # eval AND funded — funded VALIDATED 2026-06-27 (EOD rule + Databento, joint-bar-sim)
+        why = ("Apex eval — extra shots beat the 30-day clock ($550 daily stop caps the day)" if phase == "eval"
+               else "Apex funded — VALIDATED 2026-06-27 (EOD): momentum lifts reach-lock 68→79% + income +54%; "
+                    "$550 daily stop caps the day, P3 brake protects A/B near the floor")
     else:
         active = (phase == "funded")
         why = ("funded — no daily limit, momentum adds ~+35% income" if active

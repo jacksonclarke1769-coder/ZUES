@@ -224,18 +224,19 @@ def apex_playbook():
                       stop=ev["daily_stop"], pass_pct=57, bust_pct=40, expire_pct=3, median_days=7,
                       note="EOD rule + real Databento · median 7d / mean 9d · per-year 48-68% (worst 2022) · "
                            "A8/B6/mm6 tilt → ~60% peak. (old 86% was fabricated)"),
-            funded=dict(phase1=f"A{f1['am']}/B{f1['bm']}", phase2=f"A{f2['am']}/B{f2['bm']}",
-                        stop=f1["daily_stop"], lock="+$2.6k floor-lock at $50.1k", lock_days=51, lock_pct=68,
-                        income_mo=1924,
-                        busts="RESEARCH (pending live): grind A4/B2+mm2 → 79.8% · +cushion-brake → ~98% lock"),
+            funded=dict(phase1=f"A{f1['am']}/B{f1['bm']}/mm{f1['mm']}", phase2=f"A{f2['am']}/B{f2['bm']}/mm{f2['mm']}",
+                        stop=f1["daily_stop"], lock="+$2.6k floor-lock at $50.1k", lock_days=51, lock_pct=80,
+                        income_mo=2412,
+                        busts="APPLIED 2026-06-27: momentum ON funded (+54% value) + P3 cushion brake (live) → "
+                              "~80% reach-lock (mm) → ~90-98% with the brake (paper-validate before real money)"),
             rules=["$1k DLL = SOFT daily stop (pause-the-day, NOT a fail)",
                    "ONLY account-fail = $2k EOD trailing drawdown (set at the CLOSE, intraday liquidates)",
                    "floor LOCKS at $50.1k once +$2.6k banked → then near-unbustable",
                    "payouts: PARTIAL, down to the $52,100 safety net (never reset to $50k)",
                    "first 5 payouts capped $2k then uncapped · 100% of first $25k then 90/10"],
-            economics=dict(per_acct_mo=1924, fleet20_mo=18000, eval_to_mature_wk=7,
-                           momentum="PF 1.67 (Databento) · ON eval (+10pts pass) · RESEARCH: HELPFUL on funded "
-                                    "too (+54% value, pending live). Fleet ~$15-20k/mo realistic (5yr MC gross ~$33k)"))
+            economics=dict(per_acct_mo=2412, fleet20_mo=18000, eval_to_mature_wk=7,
+                           momentum="PF 1.67 (Databento) · ON eval (+10pts) + funded (APPLIED 2026-06-27, +54% "
+                                    "value → $19.4k/acct). Fleet ~$15-20k/mo realistic (5yr MC gross ~$33k)"))
     except Exception as e:                                  # never break the dashboard
         return dict(error=str(e))
 

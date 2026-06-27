@@ -11,8 +11,8 @@
   ],
   "eval_deployed": {"size": "A10/B5/mm6", "pass_pct": 57.5, "bust_pct": 39.6, "expire_pct": 2.9, "median_days": 7},
   "eval_highest_prob": {"size": "A8/B6/mm6", "pass_pct": 59.8},
-  "funded_deployed": {"grind": "A4/B2", "reach_lock_pct": 68.2, "median_lock_days": 51, "income_mo": 1924, "ev_per_funded_acct": 12268},
-  "funded_highest_prob": {"grind": "A2/B1", "reach_lock_pct": 87.6},
+  "funded_deployed": {"grind": "A4/B2/mm2", "scaled": "A6/B3/mm6", "reach_lock_pct": 79.8, "median_lock_days": 51, "income_mo": 2412, "ev_per_funded_acct": 19419, "note": "momentum ON funded APPLIED 2026-06-27 (was mm0/68.2%/$1924/$12.3k); P3 cushion brake already live pushes reach-lock toward ~90-98%"},
+  "funded_highest_prob": {"grind": "A4/B2/mm2 + cushion brake", "reach_lock_pct": 98},
   "retired_fabrications": {"eval_pass_pct": 86, "funded_lock_pct": 87, "eval_worst_year_pct": 81, "reason": "came from deleted /tmp scripts that modeled the wrong (too-lenient) drawdown rule; not reproducible. The '81% worst year (2024)' claim is triply false: 2024 actually passes 55.8%, no year reaches 81% (best is 2026 at 68.0%), and the real worst year is 2022 (48.3%, bear)"},
   "eval_per_year_pass_pct_eod": {"2021": 53.2, "2022": 48.3, "2023": 60.2, "2024": 55.8, "2025": 63.2, "2026": 68.0, "ALL": 57.5, "source": "apex_eval_peryear.py"},
   "caveats": [
