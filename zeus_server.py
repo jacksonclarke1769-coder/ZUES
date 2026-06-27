@@ -209,6 +209,31 @@ def weekly(trades):
                 best=(max(tot) if tot else 0), worst=(min(tot) if tot else 0))
 
 
+def apex_playbook():
+    """The frozen Apex eval+funded playbook for the Strategies page. Sizes are read LIVE from auto_safety
+    (single source of truth); the rest are the validated research findings. Display-only."""
+    try:
+        from auto_safety import EVAL_TIERS, FUNDED_TIERS
+        ev = EVAL_TIERS["Apex-50K-eval"]; f1 = FUNDED_TIERS["Apex-50K"]; f2 = FUNDED_TIERS["Apex-50K-scaled"]
+        return dict(
+            status="FROZEN · validated · GitHub-synced",
+            eval=dict(tier="Apex-50K-eval", size=f"A{ev['am']}/B{ev['bm']}/Mom-{ev['mm']}",
+                      stop=ev["daily_stop"], pass_pct=86, bust_pct=12, expire_pct=2, median_days=8,
+                      note="robust every year (worst 2024 ~81%); 34% pass ≤5d"),
+            funded=dict(phase1=f"A{f1['am']}/B{f1['bm']}", phase2=f"A{f2['am']}/B{f2['bm']}",
+                        stop=f1["daily_stop"], lock="+$2k floor-lock at $50k", lock_days=24, lock_pct=87,
+                        income_mo=1585, busts="2 / 5yr"),
+            rules=["$1k DLL = SOFT daily stop (pause-the-day, NOT a fail)",
+                   "ONLY account-fail = $2k EOD trailing drawdown",
+                   "floor LOCKS at $50k once +$2k banked → then near-unbustable",
+                   "payouts: PARTIAL, down to the $52,100 safety net (never reset to $50k)",
+                   "first 5 payouts capped $2k then uncapped · 100% of first $25k then 90/10"],
+            economics=dict(per_acct_mo=1585, fleet20_mo=31700, eval_to_mature_wk=7,
+                           momentum="upgraded PF 1.83 (confirm=4, 15:30) · ON eval / OFF funded"))
+    except Exception as e:                                  # never break the dashboard
+        return dict(error=str(e))
+
+
 def assemble_state():
     t0 = time.time()
     j, store = dbs()
@@ -329,6 +354,7 @@ def assemble_state():
         avg12=state["weekly"]["avg12"])
     state["plan"] = PLAN
     state["regime_monitor"] = _regime_monitor()
+    state["playbook"] = apex_playbook()
     hb_age = None
     if state["header"]["heartbeat"]:
         hb_age = (now - datetime.fromisoformat(

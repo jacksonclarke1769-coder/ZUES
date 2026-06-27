@@ -204,9 +204,27 @@ function stratBlock(s){
     ["Baseline", s.baseline.exp_r?`+${s.baseline.exp_r}R/trade · PF ${s.baseline.pf}`:`+${s.baseline.exp_pts}pt/trade · PF ${s.baseline.pf}`]]))
 }
 function renderStrategies(){
-  $("#page-strategies").innerHTML = `<div class="grid g2">${stratBlock(S.strategies.A)}${stratBlock(S.strategies.B)}</div>
+  $("#page-strategies").innerHTML = apexPlaybook()
+   + `<div class="grid g2">${stratBlock(S.strategies.A)}${stratBlock(S.strategies.B)}</div>
    <div style="margin-top:14px">${panel("Weekly Points Tracker", weeklyTable())}</div>
    <div class="note">Edge health per RAGNAROK decay monitor: ≥90% FULL STRENGTH · ≥70% WATCHING · ≥50% DEGRADED (half size) · &lt;50% CRITICAL (halt) · HALTED. The live strategy is frozen — health drives SIZE, never rules.</div>`;
+}
+function apexPlaybook(){
+  const p=S.playbook; if(!p||p.error) return "";
+  const ev=p.eval, f=p.funded, ec=p.economics;
+  const body = kv([
+    [`EVAL · ${ev.tier}`, `<b>${ev.size}</b> @ $${ev.stop} daily stop`],
+    ["Eval result", `~${ev.pass_pct}% pass · ${ev.bust_pct}% bust · ${ev.expire_pct}% expire · median <b>${ev.median_days} days</b>`],
+    ["", `<span class="dim">${ev.note}</span>`],
+    ["FUNDED phase 1", `<b>${f.phase1}</b> @ $${f.stop} — grind to ${f.lock} (~${f.lock_days}d / ~5wk, ${f.lock_pct}% reach it)`],
+    ["FUNDED phase 2", `<b>${f.phase2}</b> — locked → near-unbustable · ~$${f.income_mo.toLocaleString()}/mo · busts ${f.busts}`],
+    ["Fleet (20 × 50K)", `~$${ec.fleet20_mo.toLocaleString()}/mo · ~${ec.eval_to_mature_wk}wk eval→mature`],
+    ["Momentum", ec.momentum]
+  ]);
+  return `<div style="margin-bottom:14px">`
+    + panel(`APEX PLAYBOOK · ${p.status}`, body
+        + `<div class="note"><b>Apex rules:</b> ${p.rules.map(r=>"· "+r).join(" ")}</div>`)
+    + `</div>`;
 }
 function weeklyTable(){
   const w=S.weekly;
