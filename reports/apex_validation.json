@@ -1,0 +1,23 @@
+{
+  "_comment": "SOURCE OF TRUTH for Apex pass/lock rates shown on the dashboard. Every % the operator sees must trace to here, and here must trace to a COMMITTED harness (never /tmp). Re-run the harness, update this file, then update any displayed constant. test_apex_validation_provenance.py enforces it.",
+  "verified": "2026-06-27",
+  "rule": "EOD drawdown (threshold set at daily close + ratchets on EOD-balance highs; intraday equity still liquidates on the downside)",
+  "data": "real Databento CME NQ 1m resampled to 5m (run_d1c_real.load_1m)",
+  "harness": [
+    "apex_eval_eod_databento.py",
+    "apex_funded_eod_databento.py",
+    "apex_optimize_eod.py",
+    "apex_eval_validate.py"
+  ],
+  "eval_deployed": {"size": "A10/B5/mm6", "pass_pct": 57.5, "bust_pct": 39.6, "expire_pct": 2.9, "median_days": 7},
+  "eval_highest_prob": {"size": "A8/B6/mm6", "pass_pct": 59.8},
+  "funded_deployed": {"grind": "A4/B2", "reach_lock_pct": 68.2, "median_lock_days": 51, "income_mo": 1924, "ev_per_funded_acct": 12268},
+  "funded_highest_prob": {"grind": "A2/B1", "reach_lock_pct": 87.6},
+  "retired_fabrications": {"eval_pass_pct": 86, "funded_lock_pct": 87, "eval_worst_year_pct": 81, "reason": "came from deleted /tmp scripts that modeled the wrong (too-lenient) drawdown rule; not reproducible. The '81% worst year (2024)' claim is triply false: 2024 actually passes 55.8%, no year reaches 81% (best is 2026 at 68.0%), and the real worst year is 2022 (48.3%, bear)"},
+  "eval_per_year_pass_pct_eod": {"2021": 53.2, "2022": 48.3, "2023": 60.2, "2024": 55.8, "2025": 63.2, "2026": 68.0, "ALL": 57.5, "source": "apex_eval_peryear.py"},
+  "caveats": [
+    "per-trade give-back proxy is slightly optimistic on the intraday-liquidation leg (true bust could be a touch higher)",
+    "funded drawdown TYPE (EOD vs intraday) not yet confirmed vs the live Apex contract: EOD -> ~68% lock, intraday -> ~83%",
+    "engine validated: apex_eval_validate.py reproduces apex_sim.py exactly (A-only/3MNQ/no-clock = 90.3%)"
+  ]
+}

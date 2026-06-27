@@ -217,12 +217,15 @@ def apex_playbook():
         ev = EVAL_TIERS["Apex-50K-eval"]; f1 = FUNDED_TIERS["Apex-50K"]; f2 = FUNDED_TIERS["Apex-50K-scaled"]
         return dict(
             status="FROZEN · validated · GitHub-synced",
+            # NUMBERS BELOW = output of the COMMITTED harnesses (EOD rule + real Databento), verified
+            # 2026-06-27. DO NOT hand-edit: re-run apex_eval_eod_databento.py / apex_funded_eod_databento.py.
+            # (The old 86%/87% came from deleted /tmp scripts that modeled the wrong drawdown rule.)
             eval=dict(tier="Apex-50K-eval", size=f"A{ev['am']}/B{ev['bm']}/Mom-{ev['mm']}",
-                      stop=ev["daily_stop"], pass_pct=86, bust_pct=12, expire_pct=2, median_days=8,
-                      note="robust every year (worst 2024 ~81%); 34% pass ≤5d"),
+                      stop=ev["daily_stop"], pass_pct=57, bust_pct=40, expire_pct=3, median_days=7,
+                      note="EOD rule + real Databento (apex_eval_eod_databento.py); A8/B6/mm6 tilt → ~60% peak"),
             funded=dict(phase1=f"A{f1['am']}/B{f1['bm']}", phase2=f"A{f2['am']}/B{f2['bm']}",
-                        stop=f1["daily_stop"], lock="+$2k floor-lock at $50k", lock_days=24, lock_pct=87,
-                        income_mo=1585, busts="2 / 5yr"),
+                        stop=f1["daily_stop"], lock="+$2.6k floor-lock at $50.1k", lock_days=51, lock_pct=68,
+                        income_mo=1924, busts="grind-to-lock A2/B1 → 88% (vs A4/B2 68%)"),
             rules=["$1k DLL = SOFT daily stop (pause-the-day, NOT a fail)",
                    "ONLY account-fail = $2k EOD trailing drawdown",
                    "floor LOCKS at $50k once +$2k banked → then near-unbustable",

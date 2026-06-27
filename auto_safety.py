@@ -27,9 +27,11 @@ EVAL_TIERS = {
     # trailing drawdown (or the 30-day clock). So we spray BIG for a fast pass and use a tight DAILY STOP to
     # slow the trail-bleed (a tight stop caps the down day -> fewer trailing busts).
     # STACK (locked 2026-06-27): A10 / B5 / MOMENTUM-6, daily_stop $550 (bot flattens the day at -$550, well
-    # inside the $1k DLL). Validated: PASS ~86% / BUST 12% / EXPIRE 2%, median 8 trading days (~2wk), robust
-    # EVERY year (worst 2024 ~81%). Eval contract cap is 60 MNQ so 21 MNQ fits. Spray model: bust ~= $19 rebuy.
-    # (size x stop grid /tmp/eval_opt.py + per-year /tmp/eval_yr.py + ttp /tmp/eval_ttp.py)
+    # inside the $1k DLL). Eval contract cap is 60 MNQ so 21 MNQ fits.
+    # ⚠️ CORRECTED 2026-06-27: the old "PASS ~86%" came from DELETED /tmp scripts that modeled the wrong
+    # drawdown rule and is NOT reproducible. REAL number (committed harness apex_eval_eod_databento.py:
+    # EOD drawdown rule + real Databento CME) = PASS ~57.5% / BUST ~40% / EXPIRE ~3% / median 7 days.
+    # Highest-PASS tilt = A8/B6/mm6 (~60%, apex_optimize_eod.py). DO NOT hand-edit %s — re-run the harness.
     # NOTE: Momentum must be LIVE on the Apex book for mm to fire (phase gate enables it for Apex eval).
     "Apex-50K-eval":     dict(account="50K",  firm="apex", am=10, bm=5, mm=6, daily_stop=550, worst_day=550,
                               dll=1000, kill_margin=0.70, eval_days=30, spray_accept_bust=True,
@@ -42,8 +44,11 @@ FUNDED_TIERS = {
     # the ONLY fail is the $2k EOD trailing drawdown). An account is bust-vulnerable ONLY while the floor
     # still TRAILS (banked profit < +$2k); once you bank +$2k the floor LOCKS at $50k and a $1k-capped day
     # can no longer bust it. So the "once funded" plan SCALES: start SMALL (A4/B2) through the trailing
-    # window, then bump to A6/B3 once locked. Validated SCALE path @ $550 stop: ~$1,585/mo, 2 busts/5yr
-    # (both 2022), 0 infant deaths; lock takes ~24 trading days (~5wk), 87% reach it. (vs old A2/B1 ~$631.)
+    # window, then bump to A6/B3 once locked.
+    # ⚠️ CORRECTED 2026-06-27 (apex_funded_eod_databento.py: EOD rule + real Databento): the deployed A4/B2
+    # grind reaches the lock ~68% (median ~51d), income ~$1,924/mo once locked, E[payout/acct] ~$12.3k.
+    # The old "87% reach it" was the intraday+Dukascopy number. ★ MAX-SURVIVAL grind = A2/B1 → ~88% reach-lock
+    # (apex_optimize_eod.py): size the grind SMALL to survive the trail, THEN scale A6/B3 post-lock for income.
     # Income modelled with the CONFIRMED Apex payout rules (run_apex_funded_payout.py): $52,100 safety net
     # (withdraw DOWN to it, partial — never reset to $50k), $500 min, first-5 payouts capped $2k then
     # uncapped, 100% of first $25k cumulative then 90/10, monthly cadence (dilutes 50% consistency),
