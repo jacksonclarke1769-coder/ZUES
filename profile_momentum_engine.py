@@ -4,8 +4,11 @@ Profile MOMENTUM (Zarattini noise-band) LIVE engine — streaming, live/backtest
 The validated refined edge (PF 1.62, Sharpe 1.63 on real futures): per time-of-day slot, a noise band
 UB/LB = open*(1 +/- k*sigma_i) where sigma_i = trailing 14-day mean of |return-from-open| at that slot
 (prior days only). Go LONG on a close above UB, SHORT below LB, GATED by a 50-day prior-day trend filter
-(no shorts in an uptrend / no longs in a downtrend), CONFIRMED by 3 consecutive same-direction bars, with
-NO entries in the first 15min (slot<3) or after ~15:00 ET (slot>65). Flat at EOD. NO fixed stop/target —
+(no shorts in an uptrend / no longs in a downtrend), CONFIRMED by 4 consecutive same-direction bars, with
+NO entries in the first 15min (slot<3) or after ~15:30 ET (slot>72). Flat at EOD. NO fixed stop/target —
+(Edge upgrade 2026-06-27: confirm 3->4 + last-entry 15:00->15:30, IS/OOS-validated PF 1.67->1.83,
+Sharpe 1.75->1.91, maxDD 677->641pt, every proven year up. Requires holding past 14:30 -> momentum 15:30
+guardian, NOT the shared 14:30 A-flat. See reports/momentum_edge_upgrade.md.)
 it is a POSITION that flips on signal change and flattens at the close.
 
 This engine recomputes those SAME causal features on a rolling buffer and returns the latest bar's TARGET
@@ -23,14 +26,14 @@ RTH_END = 16 * 60               # 16:00 ET
 
 
 class ProfileMomentumEngine:
-    def __init__(self, nd=14, k=1.0, trend_len=50, confirm_bars=3,
-                 skip_slots=3, last_entry_slot=65, buffer_days=90):
+    def __init__(self, nd=14, k=1.0, trend_len=50, confirm_bars=4,
+                 skip_slots=3, last_entry_slot=72, buffer_days=90):
         self.nd = nd                       # sigma lookback (days)
         self.k = k                         # band width multiple
         self.trend_len = trend_len         # daily-trend SMA length
         self.cb = confirm_bars             # consecutive same-dir bars required
         self.skip = skip_slots             # no entries in first `skip` slots (15min)
-        self.last_slot = last_entry_slot   # no new entries after this slot (~15:00 ET)
+        self.last_slot = last_entry_slot   # no new entries after this slot (~15:30 ET)
         self.buffer_days = buffer_days
         self.buf = pd.DataFrame(columns=["date", "slot", "Open", "High", "Low", "Close", "Volume"])
         self.position = 0                  # last emitted target position (+1/0/-1)
@@ -53,7 +56,7 @@ class ProfileMomentumEngine:
 
     # ---- the frozen feature/signal math (vectorised; parity-tested vs the backtest) ----
     @staticmethod
-    def compute(df, nd=14, k=1.0, trend_len=50, confirm_bars=3, skip_slots=3, last_entry_slot=65):
+    def compute(df, nd=14, k=1.0, trend_len=50, confirm_bars=4, skip_slots=3, last_entry_slot=72):
         df = df.copy()
         op = df.groupby("date")["Open"].transform("first")
         df["rfo"] = df["Close"] / op - 1.0

@@ -670,15 +670,23 @@ def main(argv=None):
         from tv_feed import Bar5Aggregator
         _gmode = "live" if mode == "live" else "dry-run"
         _gurl = os.environ.get("TRADERSPOST_LIVE_URL")
+        # Momentum holds to ~15:30 ET; the validated edge (PF 1.83) needs it past the 14:30 A-flat. When the
+        # momentum lane is on, defer the EOD BACKSTOP to 15:30 so it doesn't cut momentum. SAFE: A is flat by
+        # 14:30 via its own model logic and B closes via its own bracket/max-hold(2h)/RTH-end — a 15:30 backstop
+        # is actually MORE faithful to B's backtest, not less. KILL flattens still fire instantly (unaffected).
+        from scheduler import Scheduler as _Sched
+        from datetime import time as _dtime
+        _mom_on = getattr(a, "profile_momentum", False)
+        _g_sched = _Sched(flatten_at=_dtime(15, 30)) if _mom_on else None   # half-day flat (12:45) unchanged
         guardian = FlattenGuardian(
-            a.account, root="MNQ",
+            a.account, root="MNQ", scheduler=_g_sched,
             hb_meta=dict(mode=mode, account=a.account, tier=a.tier, d1c_mode=d1c_mode,
                          execution=a.execution, ares_tier=a.tier),
             build=lambda: (BridgeSender(store=Store(), journal=Journal(), mode=_gmode, live_url=_gurl),
                            Store(), Journal()))
         guardian.start()
-        print(f"  flatten guardian armed (wall-clock EOD 14:30 + kill, feed-independent, {_gmode})",
-              flush=True)
+        print(f"  flatten guardian armed (wall-clock EOD {'15:30 (momentum lane)' if _mom_on else '14:30'} "
+              f"+ kill, feed-independent, {_gmode})", flush=True)
         # entries are blocked until ARMED (live arms only after the preflight passes); paper trades now.
         armed = {"v": (mode != "live")}
 

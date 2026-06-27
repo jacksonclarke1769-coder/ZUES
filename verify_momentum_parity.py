@@ -1,7 +1,7 @@
 """
 Standalone PARITY check: ProfileMomentumEngine.compute() == the refined backtest signal, on real data.
 Proves the live engine's signal math reproduces the validated backtest (z.build + 50d trend filter +
-3-bar confirm + time gates) exactly. Run: python3 verify_momentum_parity.py  (needs the backtests repo).
+4-bar confirm + time gates slot 3..72) exactly. Run: python3 verify_momentum_parity.py  (needs the backtests repo).
 Result on 2026-06-26: 0 mismatches / 94,344 post-warmup bars -> EXACT.
 """
 import sys, numpy as np, pandas as pd
@@ -29,10 +29,10 @@ def main():
     s = bd.sig.values; gg = bd.groupby("date").ngroup().values
     conf = np.zeros(len(s))
     for i in range(len(s)):
-        if s[i] != 0 and i >= 2 and all(gg[i-j] == gg[i] and s[i-j] == s[i] for j in range(3)):
-            conf[i] = s[i]
+        if s[i] != 0 and i >= 3 and all(gg[i-j] == gg[i] and s[i-j] == s[i] for j in range(4)):
+            conf[i] = s[i]                                   # 4-bar confirm (edge upgrade 2026-06-27)
     slot = bd.slot.values
-    backtest = np.where((slot >= 3) & (slot <= 65), conf, 0.0)
+    backtest = np.where((slot >= 3) & (slot <= 72), conf, 0.0)   # last-entry ~15:30 (slot<=72)
 
     eng = PME.compute(df)
     days = np.unique(df.date.values)
