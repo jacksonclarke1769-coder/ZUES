@@ -22,15 +22,16 @@ EVAL_TIERS = {
     "150K-balanced":     dict(account="150K", am=8, bm=4, daily_stop=1600, worst_day=3841),
     "150K-aggressive":   dict(account="150K", am=10, bm=6, daily_stop=1600, worst_day=4892,
                               requires_approval=True),
-    # --- APEX EVAL (PROMOTED sizing 2026-06-26): A8/B4 SPRAY to beat the 30-day clock (~56% pass/~8d).
-    # firm="apex" -> the $1k daily-KILL guard + 30-day expiry apply. worst_day far over the $1k kill is
-    # INTENTIONAL (disposable eval, cheap retry); the daily-kill guard salvages the day before -$1k.
-    # APEX EVAL STACK (locked 2026-06-26): A8 / B4 / MOMENTUM-4, under the tight -$700 daily-kill guard.
-    # Validated pass-rate path: raw A8/B4 56% -> +(-$700 guard) ~70% -> +Momentum-4 81% in the 30-day
-    # window (median ~8d). The guard (kill_margin 0.70 -> flatten ~-$700) eliminates DLL fails + caps the
-    # trailing giveback; Momentum-4 (low-corr 3rd edge) collapses EXPIRE 14%->5%. (run_apex_eval_momentum.py)
-    # NOTE: Momentum must be LIVE on the Apex book for mm to fire; until then the book runs A8/B4 (~70%).
-    "Apex-50K-eval":     dict(account="50K",  firm="apex", am=8, bm=4, mm=4, daily_stop=350, worst_day=3793,
+    # --- APEX EVAL (RE-VALIDATED 2026-06-27 vs the REAL rules): the $1k DLL is a SOFT daily stop (positions
+    # auto-flat + trading pauses for the day, the account is NOT failed); the ONLY eval fail is the $2k EOD
+    # trailing drawdown (or the 30-day clock). So we spray BIG for a fast pass and use a tight DAILY STOP to
+    # slow the trail-bleed (a tight stop caps the down day -> fewer trailing busts).
+    # STACK (locked 2026-06-27): A10 / B5 / MOMENTUM-6, daily_stop $550 (bot flattens the day at -$550, well
+    # inside the $1k DLL). Validated: PASS ~86% / BUST 12% / EXPIRE 2%, median 8 trading days (~2wk), robust
+    # EVERY year (worst 2024 ~81%). Eval contract cap is 60 MNQ so 21 MNQ fits. Spray model: bust ~= $19 rebuy.
+    # (size x stop grid /tmp/eval_opt.py + per-year /tmp/eval_yr.py + ttp /tmp/eval_ttp.py)
+    # NOTE: Momentum must be LIVE on the Apex book for mm to fire (phase gate enables it for Apex eval).
+    "Apex-50K-eval":     dict(account="50K",  firm="apex", am=10, bm=5, mm=6, daily_stop=550, worst_day=550,
                               dll=1000, kill_margin=0.70, eval_days=30, spray_accept_bust=True,
                               requires_approval=True),
 }

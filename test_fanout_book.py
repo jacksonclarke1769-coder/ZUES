@@ -3,6 +3,7 @@ enforces the daily-stop + Apex $1k daily-kill (flatten + halt), fully isolated (
 import pytest
 from fanout_book import SecondaryBook
 from auto_safety import EVAL_TIERS
+_T = EVAL_TIERS["Apex-50K-eval"]                            # read sizes from the tier (robust to config changes)
 
 
 class FakeSender:
@@ -26,15 +27,15 @@ def _book(sender=None, mode="paper"):
 def test_route_a_exit3_at_apex_size():
     s = FakeSender(); b = SecondaryBook("APEX-50K-1", EVAL_TIERS["Apex-50K-eval"], s, "paper")
     b.route_a(A_SIG, TS)
-    assert len(s.cap) == 2 and b.sent == 1                  # exit3_split(8) = (4,4) -> 2 legs
-    assert sum(p["quantity"] for p in s.cap) == 8
+    assert len(s.cap) == 2 and b.sent == 1                  # exit3_split(am) -> 2 legs
+    assert sum(p["quantity"] for p in s.cap) == _T["am"]
     assert all(p["extras"]["strategy"] == "A" for p in s.cap)
 
 
 def test_route_b_partial_at_apex_size():
     s = FakeSender(); b = SecondaryBook("APEX-50K-1", EVAL_TIERS["Apex-50K-eval"], s, "paper")
     b.route_b(B_SIG, TS)
-    assert sum(p["quantity"] for p in s.cap) == 4 and b.sent == 1   # B4 split
+    assert sum(p["quantity"] for p in s.cap) == _T["bm"] and b.sent == 1   # B split at the tier's bm
     assert all(p["extras"]["strategy"] == "B" for p in s.cap)
 
 
@@ -51,19 +52,20 @@ def test_apex_daily_kill_flattens_and_halts():
 
 def test_daily_stop_halts_without_flatten():
     s = FakeSender(); b = SecondaryBook("APEX-50K-1", EVAL_TIERS["Apex-50K-eval"], s, "paper")
-    # losses summing to <= -$350 (the daily stop) but each under the kill: B -1R at 4 MNQ = -$200 x2 = -$400
-    b.on_resolved("B", -1.0, 25.0, TS)                      # -1*25*2*4 = -$200
-    b.on_resolved("B", -1.0, 25.0, TS)                      # -$400 total -> daily-stop
+    # losses summing past the daily stop but UNDER the kill: 2x B -1R sized to land between the two
+    _r = ((_T["daily_stop"] + _T["dll"] * _T["kill_margin"]) / 2) / (4 * _T["bm"])   # total ~ midpoint
+    b.on_resolved("B", -1.0, _r, TS)
+    b.on_resolved("B", -1.0, _r, TS)                        # -> crosses the daily-stop, stays under the kill
     assert b.halted() and b.halt_reason == "daily-stop"
     assert not any(p.get("action") == "exit" for p in s.cap)  # daily-stop halts entries, no forced flatten
 
 
 def test_pnl_scales_to_book_size_and_resets_next_day():
     b = _book()
-    b.on_resolved("B", 2.0, 25.0, TS)                        # +2*25*2*4 = +$400
-    assert round(b.day_pnl) == 400 and not b.halted()
-    b.on_resolved("A", 1.0, 44.0, "2026-07-01 10:00:00-04:00")  # new day -> resets, +1*44*2*8 = +$704
-    assert round(b.day_pnl) == 704
+    b.on_resolved("B", 2.0, 25.0, TS)                        # +2*25*2*bm
+    assert round(b.day_pnl) == 2 * 25 * 2 * _T["bm"] and not b.halted()
+    b.on_resolved("A", 1.0, 44.0, "2026-07-01 10:00:00-04:00")  # new day -> resets, +1*44*2*am
+    assert round(b.day_pnl) == 1 * 44 * 2 * _T["am"]
 
 
 def test_halt_blocks_all_routes():
@@ -82,4 +84,4 @@ def test_isolation_never_raises():
 
 def test_momentum_lane_built_from_mm():
     b = _book()
-    assert b.m_exec is not None and b.m_exec.base_qty == 4   # mm=4 on the Apex eval tier
+    assert b.m_exec is not None and b.m_exec.base_qty == _T["mm"]   # momentum size from the Apex eval tier

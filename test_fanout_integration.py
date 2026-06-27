@@ -32,15 +32,16 @@ def test_signals_fan_out_to_apex_book_at_apex_size(tmp_path):
     bs, bcap = _cap_sender(tmp_path, "b")
     auto.books.append(SecondaryBook("APEX-50K-1", EVAL_TIERS["Apex-50K-eval"], bs, "paper"))
 
+    _apex = EVAL_TIERS["Apex-50K-eval"]
     auto.on_decision(A_SIG, True, "placed", pd.Timestamp(A_SIG["ts_signal"]))
     assert sum(p["quantity"] for p in pcap) == 4              # primary MFFU A4 (unchanged)
-    assert sum(p["quantity"] for p in bcap) == 8              # Apex book A8
+    assert sum(p["quantity"] for p in bcap) == _apex["am"]    # Apex book A at its tier size
     assert all(p["extras"]["account"] == "APEX-50K-1" for p in bcap)
 
     pcap.clear(); bcap.clear()
     auto.on_b_signal(B_SIG, pd.Timestamp(B_SIG["ts_signal"]))
     assert sum(p["quantity"] for p in pcap) == 2              # MFFU B2
-    assert sum(p["quantity"] for p in bcap) == 4              # Apex book B4
+    assert sum(p["quantity"] for p in bcap) == _apex["bm"]    # Apex book B at its tier size
 
 
 def test_primary_unaffected_with_no_books(tmp_path):
