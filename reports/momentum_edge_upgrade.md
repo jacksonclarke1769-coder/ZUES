@@ -54,12 +54,17 @@ flattens (daily-stop / operator / lockout) still fire instantly.
 ## Where it pays — phase/firm gate (momentum trades VARIANCE for income)
 Validated on the real combined stacks. Momentum auto-enables ONLY where the ruleset rewards variance:
 
+> **Correction (2026-06-27, after this report):** Apex's $1k "daily-kill" turned out to be a *soft* daily
+> stop (pause-the-day, NOT an account fail) — the only Apex fail is the $2k EOD trailing drawdown. So the
+> Apex-funded "kill-day = bust" reasoning below is superseded: momentum stays OFF on Apex funded because its
+> variance stresses the $2k *trailing* drawdown (pending separate re-validation), not because of a daily kill.
+
 | Firm · phase | Momentum | Evidence |
 |---|---|---|
 | **MFFU funded** | ✅ ON | A+B $1,502/mo → **A+B+M $2,001–2,125/mo** (+33–41%), Sharpe 3.11→3.29 |
 | MFFU eval | ❌ OFF | pass 83% → 78–82% (wider DD trips the trailing drawdown) |
-| **Apex eval** | ✅ ON | pass 69% → **81%** (extra shots beat the 30-day clock; −$700 guard caps the day) |
-| Apex funded | ❌ OFF | A2/B1 worst −$948 (0 kill-days) → +1 MNQ → −$1,225 (**1 kill-day = bust**). Needs its own account. |
+| **Apex eval** | ✅ ON | pass 69% → **81%** (extra shots beat the 30-day clock; tight daily stop caps the day) |
+| Apex funded | ❌ OFF | momentum's variance stresses the $2k EOD trailing drawdown; off until separately re-validated |
 
 Implemented as `auto_safety.momentum_active_for_tier(tier)`: the `--profile-momentum` flag *requests* the
 lane; the tier (firm + eval/funded) decides if it **arms**. The 15:30 guardian defers only when momentum
