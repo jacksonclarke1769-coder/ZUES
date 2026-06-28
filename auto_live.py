@@ -30,8 +30,16 @@ import config
 from store import Store
 from journal import Journal
 from instance_lock import InstanceLock, LockHeld
-from auto_safety import (EVAL_TIERS, APPROVAL_DIR, DailyGuard,
+from auto_safety import (EVAL_TIERS, FUNDED_TIERS, APPROVAL_DIR, DailyGuard,
                          resolve_d1c_for_feed, full_auto_preflight, feed_timeframe)
+
+
+def _tier_spec(tier):
+    """Resolve a --tier name to its sizing spec — eval OR funded (Apex-50K / Apex-50K-scaled etc.)."""
+    s = EVAL_TIERS.get(tier) or FUNDED_TIERS.get(tier)
+    if s is None:
+        raise ValueError(f"unknown tier {tier!r}; options: {list(EVAL_TIERS) + list(FUNDED_TIERS)}")
+    return s
 import bridge_traderspost as BP
 from bridge_sender import BridgeSender
 from flatten import LOCK_KEY
@@ -196,7 +204,7 @@ class LiveAuto:
                            reason=f"drift disagrees (drift={drift})", d1c_mode=self.d1c_mode,
                            d1c_checked=True, d1c_allowed=False)
                 return
-        spec = EVAL_TIERS[self.tier]
+        spec = _tier_spec(self.tier)
         # P3 cushion brake: near the floor, cut A to max(am//2,1) (and B to 0, handled in on_b_signal)
         braked = self._apply_p3()
         a_size, _ = self.p3.size(spec["am"], spec.get("bm", 0))
@@ -284,7 +292,7 @@ class LiveAuto:
                 self.b_blocked += 1
                 self._dlog("blocked", "data", bar_ts=ts, side=sig.get("side"), reason=why, profile="B")
                 return
-        spec = EVAL_TIERS[self.tier]
+        spec = _tier_spec(self.tier)
         self._apply_p3()
         _, b_size = self.p3.size(spec["am"], spec.get("bm", 0))
         if b_size <= 0:                                  # P3 brake (or tier has no B) -> no B trade
@@ -417,7 +425,7 @@ class LiveAuto:
 def main(argv=None):
     p = argparse.ArgumentParser(description="ARES AUTO LIVE (Profile A, fail-closed)")
     p.add_argument("--account", required=True)
-    p.add_argument("--tier", required=True, choices=list(EVAL_TIERS))
+    p.add_argument("--tier", required=True, choices=list(EVAL_TIERS) + list(FUNDED_TIERS))
     p.add_argument("--live", action="store_true", help="fire REAL webhooks (gated)")
     p.add_argument("--poll", type=int, default=60)
     p.add_argument("--d1c-mode", default="active-eval-filter",
@@ -492,7 +500,7 @@ def main(argv=None):
 
     store = Store(getattr(config, "PAPER_DB_PATH", "data/paper.db"))
     j = Journal()
-    spec = EVAL_TIERS[a.tier]
+    spec = _tier_spec(a.tier)
     # ARES sizing into the engine's eval qty (Profile A only live)
     config.SIZING = dict(getattr(config, "SIZING", {}), eval_qty=spec["am"], fund_qty=2)
 
@@ -562,7 +570,6 @@ def main(argv=None):
     for _spec in getattr(a, "apex_book", []):
         try:
             from fanout_book import SecondaryBook
-            from auto_safety import FUNDED_TIERS
             _acct, _tname = _spec.split(":", 1)
             _tspec = EVAL_TIERS.get(_tname) or FUNDED_TIERS.get(_tname)
             if not _tspec:
