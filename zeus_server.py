@@ -698,16 +698,50 @@ def api_oracle():
 
 
 def calendar_pnl():
-    """Per-day realised P&L for the dashboard calendar (Topstep-style). Display-only —
+    """Per-day LIVE P&L for the dashboard calendar (Topstep-style). Display-only —
     recomputed every request from the trade-results ledger the bot appends to as trades
-    resolve; nothing here can fake a day. Shares one implementation with the recorder."""
+    resolve; nothing here can fake a day. live_only=True so paper/demo never shows."""
     import trade_results
-    return trade_results.by_day()
+    return trade_results.by_day(live_only=True)
 
 
 @APP.route("/api/calendar")
 def api_calendar():
     return jsonify(calendar_pnl())
+
+
+@APP.route("/api/review_trades")
+def api_review_trades():
+    """Every live trade as an individual row for the review screen (newest-first). Read-only.
+    Each carries `confirmed` (broker/operator-verified vs bot-modeled pending eye-check)."""
+    import trade_results
+    acct = (request.args.get("account") or "").strip() or None
+    return jsonify(trade_results.live_trades(account=acct))
+
+
+@APP.route("/api/review_week")
+def api_review_week():
+    """Read-only weekly STRATEGY-FIDELITY review (trailing 7d): the week's live trades +
+    GREEN-LIGHT/HOLD verdict (did the trades reflect the strategy, win/lose-blind). Joins the
+    ledger with the engine decision log. Robust: if the decision log is unreadable it still
+    returns the trade list so the panel renders (just without the verdict)."""
+    import trade_results
+    from datetime import date, timedelta
+    acct = (request.args.get("account") or "").strip() or None
+    until = date.today(); since = until - timedelta(days=7)
+    try:
+        import review_week
+        return jsonify(review_week.review(acct, since, until))
+    except Exception as e:                                          # noqa: BLE001
+        trades = [t for t in trade_results.live_trades(account=acct)
+                  if since.isoformat() <= t["date"] <= until.isoformat()]
+        return jsonify(account=acct, since=since.isoformat(), until=until.isoformat(),
+                       trades=trades, n_trades=len(trades),
+                       modeled_pnl=round(sum(t["pnl"] for t in trades), 2),
+                       pending_confirm=sum(1 for t in trades if not t["confirmed"]),
+                       blocks={}, off_strategy=[], by_day={},
+                       fidelity_ok=None, verdict="verdict unavailable (decision log unreadable)",
+                       error=str(e))
 
 
 @APP.route("/api/trade/<cl>")

@@ -1,6 +1,6 @@
 /* ===== ZEUS · terminal logic ===== */
 const $ = id => document.getElementById(id);
-let S = {}, CAL = null, VIEW = "overview", CALV = null;
+let S = {}, CAL = null, RW = null, VIEW = "overview", CALV = null;
 const money = (n,dp=0) => { n=+n||0; const s=n<0?"−":n>0?"+":""; return s+"$"+Math.abs(n).toLocaleString(undefined,{maximumFractionDigits:dp}); };
 const cls = n => (+n>0?"pos":+n<0?"neg":"");
 const k = n => "$"+(Math.round(n/100)/10)+"k";
@@ -34,8 +34,14 @@ function barStat(){
   const bot = d.status==="RED"?["r","HALTED"]:d.green?["p","LIVE"]:["a","ARMED"];
   const feed = d.data_state==="GREEN"?["p","GREEN"]:d.data_state==="YELLOW"?["a","YELLOW"]:["r","RED"];
   const exec = d.webhook_mode==="LIVE"?["p","LIVE"]:["a", d.webhook_mode||"DRY-RUN"];
+  // weekly strategy-fidelity verdict (mirrors the Trades/Home review panel)
+  const rv = !RW ? ["a","…"] : RW.fidelity_ok===true?["p","GREEN-LIGHT"]
+                  : RW.fidelity_ok===false?["r","HOLD"]:["a","—"];
   const pill=(l,[c,v])=>`<span class="pill"><span class="dot ${c}"></span>${l} <b>${v}</b></span>`;
-  $("barstat").innerHTML = `<span class="pill" id="sync"></span>`+pill("BOT",bot)+pill("FEED",feed)+pill("EXEC",exec)+`<span class="pill">TIER <b class="gold">${h.tier||"—"}</b></span>`;
+  $("barstat").innerHTML = `<span class="pill" id="sync"></span>`+pill("BOT",bot)+pill("FEED",feed)+pill("EXEC",exec)
+    +`<span class="pill">TIER <b class="gold">${h.tier||"—"}</b></span>`
+    +`<span class="pill rvpill ${rv[0]}" title="weekly strategy-fidelity review — click for detail"><span class="dot ${rv[0]}"></span>REVIEW <b>${rv[1]}</b></span>`;
+  const rp=$("barstat").querySelector(".rvpill"); if(rp) rp.onclick=()=>{ const t=document.querySelector('.nv[data-view="trades"]'); if(t) t.click(); };
   syncStatus();
 }
 
@@ -136,6 +142,7 @@ function vOverview(){
   return head("01","Home", `${new Date().toDateString()}<br>APEX 50K · EOD trail · strategy frozen`)
     + banner
     + ledger
+    + `<div style="margin:18px 0">${weekReview(true)}</div>`
     + `<div style="margin:18px 0">${pipe}</div>`
     + campaign(true)
     + cal;
@@ -168,11 +175,39 @@ function vFleet(){
     + `<div class="panel rise"><div class="l">Projected fleet ramp &amp; run-rate</div><table style="margin-top:8px"><tr><th>Week</th><th>Funded</th><th>In eval</th><th>Run-rate /mo</th><th>State</th></tr>${rows}</table><div class="note">5-yr-average basis · partial monthly payouts to the $52,100 safety net · expect materially less live (correlated fleet).</div></div>`;
 }
 
+/* ---------- WEEKLY REVIEW (live trades + strategy-fidelity verdict) ---------- */
+function weekReview(compact){
+  const r=RW;
+  if(!r) return `<div class="panel rise"><div class="l">This week · live trades</div><div class="note">loading weekly review…</div></div>`;
+  const tr=r.trades||[], ok=r.fidelity_ok;
+  const vc = ok===true?"g":ok===false?"r":"n", vt = ok===true?"GREEN-LIGHT":ok===false?"HOLD":"NO VERDICT";
+  const verdict = `<div class="rvb ${vc}"><span class="tag ${vc}">${vt}</span><div class="rvt">${r.verdict||""}</div><div class="rvm">${r.since||""} → ${r.until||""} · win/lose-blind</div></div>`;
+  const chip=(l,v,c)=>`<div class="rvc"><div class="l">${l}</div><div class="v mono ${c||''}">${v}</div></div>`;
+  const summary = `<div class="rvs">
+      ${chip("Live trades", r.n_trades||0)}
+      ${chip("Modeled P&L", money(r.modeled_pnl||0), cls(r.modeled_pnl))}
+      ${chip("Pending confirm", r.pending_confirm||0, (r.pending_confirm||0)>0?"gold":"")}
+      ${chip("Engine signals", r.engine_signals_live??"—")}
+      ${chip("No-trade blocks", r.n_blocks||0)}</div>`;
+  const off = (r.off_strategy&&r.off_strategy.length)
+    ? `<div class="banner rise" style="border-color:var(--neg);color:var(--neg);background:var(--neg-bg);margin:14px 0 0">⚠ ${r.off_strategy.length} OFF-STRATEGY trade(s): a live fill with no matching engine signal. Investigate before buying the next account.</div>` : "";
+  if(compact) return `<div class="panel rise">${verdict}${summary}${off}</div>`;
+  const clean=s=>(s||"").replace(/^(fill-backed|HYPOTHETICAL)\s*·\s*/i,"").slice(0,72);
+  const rows = tr.length ? tr.map(x=>`<tr><td>${x.date}</td><td>${x.strategy}</td><td>${x.direction} ×${x.contracts}</td><td class="${cls(x.pnl)}">${money(x.pnl)}</td><td>${x.confirmed?'<span class="tag p">CONFIRMED</span>':'<span class="tag n">PENDING</span>'}</td><td style="color:var(--faint)">${clean(x.note)}</td></tr>`).join("")
+    : `<tr><td colspan="6" style="text-align:center;color:var(--faint);padding:18px">No live trades in the last 7 days.</td></tr>`;
+  return `<div class="panel rise">${verdict}${summary}${off}
+      <table style="margin-top:16px"><tr><th>Date</th><th>Strat</th><th>Side</th><th>$ modeled</th><th>Status</th><th>Why / note</th></tr>${rows}</table>
+      <div class="note"><b>Fidelity</b> is win/lose-blind: it only checks every live trade was a rule-based engine signal. P&L is <b>modeled</b> until you eye-confirm the fill in Tradovate (then it flips to CONFIRMED). <b>review_week.py</b> gives the full terminal report incl. block reasons.</div></div>`;
+}
+
 /* ---------- TRADES ---------- */
 function vTrades(){
   const t=S.trades||[];
-  if(!t.length) return head("04","Trades","0 on record")+`<div class="panel rise"><div class="l">Ledger empty</div><div style="font:700 30px var(--mono)">0 trades</div><div class="note">No routed Apex trades yet. Every fill lands here, hash-chained and reconstructable from the journal.</div></div>`;
-  return head("04","Trades",`${t.length} on record`)+`<div class="panel rise" style="padding:4px 0"><table><tr><th>Time</th><th>Strat</th><th>Account</th><th>Side</th><th>Entry</th><th>Exit</th><th>R</th><th>$</th><th>Chain</th></tr>${t.slice(0,100).map(x=>`<tr><td>${new Date(x.ts).toLocaleString()}</td><td>${x.strategy}</td><td>${x.account}</td><td>${x.side} ${x.qty}</td><td>${(+x.entry||0).toFixed(2)}</td><td>${(+x.exit||0).toFixed(2)}</td><td class="${cls(x.r)}">${(+x.r||0).toFixed(2)}</td><td class="${cls(x.usd)}">${money(x.usd)}</td><td>${x.chain_ok?'<span class="tag p">✓</span>':'<span class="tag r">✗</span>'}</td></tr>`).join("")}</table></div>`;
+  const chain = t.length
+    ? `<div class="panel rise" style="margin-top:18px;padding:4px 0"><div class="l" style="padding:13px 20px 0">Execution-chain detail · journal-reconstructed</div><table><tr><th>Time</th><th>Strat</th><th>Account</th><th>Side</th><th>Entry</th><th>Exit</th><th>R</th><th>$</th><th>Chain</th></tr>${t.slice(0,100).map(x=>`<tr><td>${new Date(x.ts).toLocaleString()}</td><td>${x.strategy}</td><td>${x.account}</td><td>${x.side} ${x.qty}</td><td>${(+x.entry||0).toFixed(2)}</td><td>${(+x.exit||0).toFixed(2)}</td><td class="${cls(x.r)}">${(+x.r||0).toFixed(2)}</td><td class="${cls(x.usd)}">${money(x.usd)}</td><td>${x.chain_ok?'<span class="tag p">✓</span>':'<span class="tag r">✗</span>'}</td></tr>`).join("")}</table></div>`
+    : `<div class="panel rise" style="margin-top:18px"><div class="l">Execution-chain detail</div><div class="note">No journal-confirmed chains yet. Every routed fill lands here, hash-chained and reconstructable.</div></div>`;
+  const n = (RW&&RW.n_trades)||0;
+  return head("04","Trades",`this week · ${n} live trade${n==1?'':'s'} · fidelity review`)+weekReview(false)+chain;
 }
 
 /* ---------- CALENDAR (full, Topstep + nav) ---------- */
@@ -200,6 +235,7 @@ async function refresh(){
   let ok=true;
   try{ S=await (await fetch("/api/state",{cache:"no-store"})).json(); lastOk=Date.now(); }catch(e){ ok=false; }
   if(ok){ try{ CAL=await (await fetch("/api/calendar",{cache:"no-store"})).json(); }catch(e){ CAL=CAL||{}; } }
+  if(ok){ try{ RW=await (await fetch("/api/review_week",{cache:"no-store"})).json(); }catch(e){ RW=RW||null; } }
   const d=S.deployment||{}, pf=S.portfolio||{};
   document.body.classList.toggle("offline", d.status==="RED" || !d.green || ((pf.funded||0)+(pf.evals||0))===0);
   barStat(); renderView();

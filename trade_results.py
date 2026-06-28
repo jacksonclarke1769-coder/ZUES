@@ -90,15 +90,20 @@ def record_resolved(rows, start_n, mode, account, contracts, strategy="A", path=
     return n
 
 
-def by_day(path=PATH):
+def by_day(path=PATH, live_only=False):
     """Aggregate the ledger by calendar date -> {date: {pnl, trades, mode}}. One shared
-    implementation for the dashboard API and tests. A day with any live trade reads LIVE."""
+    implementation for the dashboard API and tests. A day with any live trade reads LIVE.
+
+    live_only=True drops every paper-mode row before aggregating, so the live dashboard
+    never shows a paper/demo trade. (Default False keeps the full ledger for tests/back-compat.)"""
     days = {}
     if os.path.exists(path):
         with open(path) as fh:
             for r in csv.DictReader(fh):
                 d = (r.get("date") or "").strip()
                 if not d:
+                    continue
+                if live_only and (r.get("mode") or "paper").strip().lower() != "live":
                     continue
                 try:
                     pnl = float(r.get("pnl") or 0)
@@ -116,3 +121,32 @@ def by_day(path=PATH):
                 "trades": v["trades"],
                 "mode": "live" if "live" in v["modes"] else "paper"}
             for d, v in days.items()}
+
+
+def live_trades(path=PATH, account=None):
+    """Every LIVE-mode trade as an individual row, newest-first — the dashboard review list.
+    Each row carries `confirmed` (True = broker/operator-verified fill, False = bot-modeled,
+    pending eye-confirm) so the review screen can flag what still needs a manual fill check.
+    Optionally filter to one `account` (e.g. 'APEX-50K-1')."""
+    rows = []
+    if os.path.exists(path):
+        with open(path) as fh:
+            for r in csv.DictReader(fh):
+                if (r.get("mode") or "").strip().lower() != "live":
+                    continue
+                if account and (r.get("account") or "").strip() != account:
+                    continue
+                try:
+                    pnl = round(float(r.get("pnl") or 0), 2)
+                except ValueError:
+                    pnl = 0.0
+                rows.append({"date": (r.get("date") or "").strip(),
+                             "account": (r.get("account") or "").strip(),
+                             "strategy": (r.get("strategy") or "").strip(),
+                             "direction": (r.get("direction") or "").strip(),
+                             "contracts": (r.get("contracts") or "").strip(),
+                             "pnl": pnl,
+                             "confirmed": is_realised(r.get("note")),
+                             "note": (r.get("note") or "").strip()})
+    rows.sort(key=lambda x: x["date"], reverse=True)
+    return rows

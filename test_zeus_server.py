@@ -73,7 +73,9 @@ def test_SAFETY_no_control_endpoints():
         r = str(rule).lower()
         if r.startswith("/api/"):
             assert r in ("/api/state", "/api/oracle", "/api/trade/<cl>", "/api/ack",
-                         "/api/calendar"), r       # calendar = read-only daily-P&L view
+                         "/api/calendar",          # calendar = read-only daily-P&L view
+                         "/api/review_trades",     # review_trades = read-only per-trade list
+                         "/api/review_week"), r    # review_week = read-only fidelity verdict
         methods = rule.methods - {"HEAD", "OPTIONS"}
         if "POST" in methods:
             assert str(rule) == "/api/ack"              # the ONLY write: journaled ack
@@ -176,7 +178,8 @@ def test_regime_monitor_block_read_only(client):
     # no new routes were added for this (safety whitelist untouched)
     from zeus_server import APP as _APP
     api_rules = sorted(str(r) for r in _APP.url_map.iter_rules() if str(r).startswith("/api/"))
-    assert api_rules == ["/api/ack", "/api/calendar", "/api/oracle", "/api/state", "/api/trade/<cl>"]
+    assert api_rules == ["/api/ack", "/api/calendar", "/api/oracle", "/api/review_trades",
+                         "/api/review_week", "/api/state", "/api/trade/<cl>"]
 
 
 def test_ares_safety_rail(client):
