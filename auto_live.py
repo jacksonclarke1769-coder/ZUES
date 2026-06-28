@@ -26,6 +26,7 @@ import os
 import sys
 from datetime import datetime, timezone
 
+import env_loader  # noqa: F401 — loads .env into os.environ (TRADERSPOST_LIVE_URL etc.) before any env reads
 import config
 from store import Store
 from journal import Journal

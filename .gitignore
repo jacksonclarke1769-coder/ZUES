@@ -12,3 +12,6 @@ logs/
 # research data cache (regenerable, large) + runtime P&L ledger (written by the live runner)
 data/nightwatch/
 out/ares/trade_results.csv
+
+# local secrets — webhook URLs etc. (never commit)
+.env
