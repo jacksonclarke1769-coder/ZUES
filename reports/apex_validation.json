@@ -17,7 +17,7 @@
   "eval_per_year_pass_pct_eod": {"2021": 53.2, "2022": 48.3, "2023": 60.2, "2024": 55.8, "2025": 63.2, "2026": 68.0, "ALL": 57.5, "source": "apex_eval_peryear.py"},
   "caveats": [
     "per-trade give-back proxy is slightly optimistic on the intraday-liquidation leg (true bust could be a touch higher)",
-    "funded drawdown TYPE (EOD vs intraday) not yet confirmed vs the live Apex contract: EOD -> ~68% lock, intraday -> ~83%",
+    "funded drawdown TYPE = EOD, CONFIRMED by operator 2026-06-28 (same as eval) -> ~68% reach-lock stands; the ~83% intraday alternative is ruled out",
     "engine validated: apex_eval_validate.py reproduces apex_sim.py exactly (A-only/3MNQ/no-clock = 90.3%)"
   ]
 }
