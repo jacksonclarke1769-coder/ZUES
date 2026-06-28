@@ -234,7 +234,7 @@ def apex_playbook():
                    "floor LOCKS at $50.1k once +$2.6k banked → then near-unbustable",
                    "payouts: PARTIAL, down to the $52,100 safety net (never reset to $50k)",
                    "first 5 payouts capped $2k then uncapped · 100% of first $25k then 90/10"],
-            economics=dict(per_acct_mo=2412, fleet20_mo=18000, eval_to_mature_wk=7,
+            economics=dict(per_acct_mo=2412, fleet20_mo=18000, eval_to_mature_wk=8,  # ~1wk eval + ~7wk (51d) to lock
                            momentum="PF 1.67 (Databento) · ON eval (+10pts) + funded (APPLIED 2026-06-27, +54% "
                                     "value → $19.4k/acct). Fleet ~$15-20k/mo realistic (5yr MC gross ~$33k)"))
     except Exception as e:                                  # never break the dashboard

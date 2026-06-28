@@ -14,7 +14,7 @@ import numpy as np, pandas as pd
 import apex_eval_deployed as H
 import funded_rules as FR
 
-EVAL_COST = 35.0          # Apex 50K eval/reset on sale (parameterise to taste)
+EVAL_COST = 45.0          # Apex 50K eval/reset on sale (parameterise to taste)
 SPEC = FR.APEX_ACCOUNTS["50K"]
 
 # A:B:mm grid — proportional scale-downs of the deployed 10/5/6, plus momentum-off variants

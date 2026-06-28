@@ -13,7 +13,7 @@ import apex_eval_eod_databento as DB
 START, TRAIL, LOCK_EOD, FLOOR = 50_000.0, 2_500.0, 52_600.0, 50_100.0
 SAFETY, CF, CL, NC, MINP = 52_100.0, 2_000.0, 4_000.0, 5, 500.0
 DAILY_STOP = -550.0
-EVAL_COST, ACTIVATION, EVAL_PASS, MAX_ACTIVE = 35.0, 130.0, 0.575, 20
+EVAL_COST, ACTIVATION, EVAL_PASS, MAX_ACTIVE = 45.0, 130.0, 0.575, 20
 N_ITERS, BLOCK = 400, 63   # quarter-length blocks: preserve multi-month regime persistence (the tail)
 np.random.seed(7)
 

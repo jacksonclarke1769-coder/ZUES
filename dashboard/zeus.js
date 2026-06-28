@@ -224,7 +224,7 @@ function apexPlaybook(){
     +`<svg viewBox="0 0 24 24" width="24" height="24"><path d="M3 12h15M13 5.5 19.5 12 13 18.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
   const journey =
     phase(0,   "Phase I · The Trial", ev.tier, `${ev.size} · $${ev.stop} stop`,
-          ev.pass_pct+"%", "pass", `median ${ev.median_days}d · spray ~$19, rebuy on bust`)
+          ev.pass_pct+"%", "pass", `median ${ev.median_days}d · spray ~$45, rebuy on bust`)
     + arrow(.13)
     + phase(.26,"Phase II · The Ascent", "Funded — scale at the lock", `${f.phase1} → +$2k lock → ${f.phase2}`,
           "$"+f.income_mo.toLocaleString(), "/mo", `~5wk to lock · ${f.lock_pct}% reach it · ${f.busts} busts`)

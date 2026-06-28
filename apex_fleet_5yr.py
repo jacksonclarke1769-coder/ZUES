@@ -12,7 +12,7 @@ START, TRAIL, LOCK_EOD, FLOOR = 50_000.0, 2_500.0, 52_600.0, 50_100.0
 SAFETY, CF, CL, NC, MINP = 52_100.0, 2_000.0, 4_000.0, 5, 500.0
 DAILY_STOP = -550.0
 # ---- cost assumptions (Apex 50K; verify vs current pricing) ----
-EVAL_COST = 35.0          # per eval attempt (sale/reset price)
+EVAL_COST = 45.0          # per eval attempt (sale/reset price)
 ACTIVATION = 130.0        # one-time PA activation per funded account
 EVAL_PASS = 0.575         # eval pass rate -> attempts per funded acct = 1/pass
 MAX_ACTIVE = 20           # Apex simultaneous-account cap

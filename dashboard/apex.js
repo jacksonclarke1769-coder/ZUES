@@ -98,8 +98,8 @@ function campaign(compact){
   const ev=p.eval,f=p.funded,ec=p.economics;
   const arr=`<div class="arr"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M3 12h15M13 5.5 19.5 12 13 18.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
   const step=(d,kk,t,c,n,u,s)=>`<div class="step" style="animation-delay:${d}s"><div class="k">${kk}</div><div class="t">${t}</div><div class="c">${c}</div><div class="n">${n}<s>${u}</s></div><div class="s">${s}</div></div>`;
-  const flow = step(0,"Phase I · The Trial",ev.tier,`${ev.size} · $${ev.stop} stop`,ev.pass_pct+"%","pass",`median ${ev.median_days}d · spray ~$19/try`)+arr
-    + step(.22,"Phase II · The Ascent","Funded · scale at the lock",`${f.phase1} → +$2k lock → ${f.phase2}`,money(f.income_mo),"/mo",`~5wk to lock · ${f.lock_pct}% reach it · ${f.busts}`)+arr
+  const flow = step(0,"Phase I · The Trial",ev.tier,`${ev.size} · $${ev.stop} stop`,ev.pass_pct+"%","pass",`median ${ev.median_days}d · spray ~$45/try`)+arr
+    + step(.22,"Phase II · The Ascent","Funded · scale at the lock",`${f.phase1} → +$2k lock → ${f.phase2}`,money(f.income_mo),"/mo",`~${Math.round((f.lock_days||51)/7)}wk to lock · ${f.lock_pct}% reach it · ${f.busts}`)+arr
     + step(.44,"The Legion","20 × 50K fleet","scaled · near-unbustable",k(ec.fleet20_mo),"/mo",`~${ec.eval_to_mature_wk}wk eval→mature`);
   const live=((S.portfolio||{}).funded||0)+((S.portfolio||{}).evals||0)>0;
   return `<div class="camp rise"><div class="camp-h"><div class="ttl">APEX CAMPAIGN<small>PATH&nbsp;TO&nbsp;THE&nbsp;THRONE</small></div><div class="seal${live?'':' proj'}">${live?p.status:'PROJECTED'}</div></div>
