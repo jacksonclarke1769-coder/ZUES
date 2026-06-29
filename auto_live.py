@@ -828,6 +828,24 @@ def main(argv=None):
             else:
                 _engine_bar(ts, o, h, l, c)
             _persist_data_status(store)
+            # --- DAILY STOP enforcement on MODELED P&L (no broker read-back). Derived from the ledger
+            #     every bar (idempotent — a restart re-reads the same total, never double-counts),
+            #     EXCLUDING rejected/blocked rows (trades never entered). Trips the persistent DailyGuard
+            #     -> killed()='daily loss stop hit' blocks new entries + the flatten guardian flattens. ---
+            try:
+                import trade_results as _tr
+                _ed = et_date()
+                _dp = _tr.day_entered_pnl(auto.account, _ed)
+                if _dp <= -abs(auto.daily_stop) and not auto.guard.is_stopped(auto.account, _ed):
+                    auto.guard.stop_now(auto.account, _ed,
+                                        reason=f"daily loss ${_dp:.0f} <= -${auto.daily_stop} (modeled)")
+                    print(f"[auto-live] 🛑 DAILY STOP HIT — modeled day P&L ${_dp:.0f} <= "
+                          f"-${auto.daily_stop}; new entries blocked, guardian will flatten", flush=True)
+                    if tg.enabled:
+                        tg.send(f"🛑 DAILY STOP — {auto.account}\nModeled day P&L ${_dp:.0f} hit "
+                                f"-${auto.daily_stop}. New entries blocked for the day.")
+            except Exception:                                  # noqa: BLE001 — never break the loop
+                pass
             if auto.overlap is not None:                  # overlap gate: clear A/B at each new ET day
                 _d2 = pd.Timestamp(ts).tz_convert(NY).date() if pd.Timestamp(ts).tzinfo else pd.Timestamp(ts).date()
                 if _md["d"] != _d2:

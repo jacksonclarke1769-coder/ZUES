@@ -29,6 +29,28 @@ def is_realised(note):
     return any(m in n for m in _REALISED_MARKERS)
 
 
+def day_entered_pnl(account, date, path=PATH):
+    """Sum today's ENTERED-trade P&L for an account from the ledger, EXCLUDING rows for trades the
+    bot never actually entered (rejected/blocked by a risk gate, e.g. too_close_to_floor). Used to
+    enforce the daily-loss stop on MODELED P&L when no broker read-back exists. Idempotent — derived
+    from the persisted ledger, so a restart re-reads the same total instead of double-counting."""
+    if not os.path.exists(path):
+        return 0.0
+    total = 0.0
+    with open(path, newline="") as fh:
+        for r in csv.DictReader(fh):
+            if r.get("account") != account or r.get("date") != str(date):
+                continue
+            note = (r.get("note") or "").lower()
+            if "rejected" in note or "blocked" in note:        # never entered — gate stopped it pre-order
+                continue
+            try:
+                total += float(r.get("pnl") or 0)
+            except (TypeError, ValueError):
+                pass
+    return round(total, 2)
+
+
 def pnl_from_r(result_r, entry, stop, contracts, dpp=DOLLARS_PER_POINT):
     """Realised $ for a trade from its R-multiple outcome and bracket geometry.
     Returns None for an unfilled/unresolved trade (result_r is None)."""
