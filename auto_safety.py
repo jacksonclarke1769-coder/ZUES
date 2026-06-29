@@ -271,6 +271,19 @@ def feed_timeframe(feed_name):
     return 5
 
 
+def webhook_route_collisions(routes):
+    """ROUTING-INTEGRITY guard. Given [(account, webhook_url), ...] for the primary + every fan-out
+    book, return {url: [accounts]} for any non-empty URL shared by two or more DISTINCT accounts.
+    Empty/None URLs are ignored (unconfigured / dry-run). A NON-EMPTY result means two accounts would
+    fire into the SAME broker account (a copy-paste slip or a shared TRADERSPOST_APEX_URL fallback) —
+    the caller MUST refuse to launch. The same account appearing twice on its own URL is fine."""
+    by_url = {}
+    for acct, url in routes:
+        if url:
+            by_url.setdefault(url, set()).add(acct)
+    return {u: sorted(accts) for u, accts in by_url.items() if len(accts) > 1}
+
+
 def resolve_d1c_for_feed(requested_mode, feed_name, realtime_confirmed):
     """D1c may ONLY be ACTIVE_EVAL_FILTER on a real-time 1-minute feed (its validated fidelity).
     On a 5m feed, or without confirmed real-time data, it is forced to SHADOW. Returns

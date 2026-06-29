@@ -32,7 +32,8 @@ from store import Store
 from journal import Journal
 from instance_lock import InstanceLock, LockHeld
 from auto_safety import (EVAL_TIERS, FUNDED_TIERS, APPROVAL_DIR, DailyGuard,
-                         resolve_d1c_for_feed, full_auto_preflight, feed_timeframe)
+                         resolve_d1c_for_feed, full_auto_preflight, feed_timeframe,
+                         webhook_route_collisions)
 
 
 def _tier_spec(tier):
@@ -590,6 +591,20 @@ def main(argv=None):
         except Exception as _fe:                              # noqa: BLE001 — a book never breaks the primary
             print(f"  [fan-out] book '{_spec}' FAILED to build (skipped): {_fe!r}", flush=True)
     journal.books = auto.books                                # feed each book the primary's scaled resolved P&L
+
+    # --- ROUTING-INTEGRITY GUARD: refuse to launch if two accounts resolve to the SAME webhook URL ---
+    # A shared URL (copy-paste slip, or two books both falling back to TRADERSPOST_APEX_URL) would fire
+    # one account's orders into another's broker. Catch it BEFORE the loop — never at order time.
+    _routes = [(a.account, sender.live_url)] + [(b.account, b.sender.live_url) for b in auto.books]
+    _collisions = webhook_route_collisions(_routes)
+    if _collisions:
+        print("REFUSED: routing-integrity guard — these accounts share ONE webhook URL (orders would CROSS):",
+              flush=True)
+        for _u, _accts in _collisions.items():
+            print(f"   {' + '.join(_accts)}  ->  webhook …{_u[-12:]}", flush=True)
+        print("   Fix: give EACH account its own TRADERSPOST_<ACCOUNT>_URL. A shared TRADERSPOST_APEX_URL "
+              "fallback routes multiple books to the SAME broker account.", flush=True)
+        return 2
 
     if readback is not None:
         # critical mismatch -> flatten via the SAME bridge route as the guardian, then stay halted.
