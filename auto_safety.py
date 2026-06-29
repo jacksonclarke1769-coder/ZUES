@@ -79,7 +79,11 @@ def momentum_active_for_tier(tier):
     enabled ONLY where the ruleset rewards that and disabled where variance is punished (validated on real
     Databento — see reports/momentum_edge_upgrade.md):
         Apex   EVAL   -> ON  : extra shots beat the 30-day clock; the -$700 guard caps the down day.
-        Apex   FUNDED -> OFF : the $1k daily-kill makes one bad momentum day fatal on a shared account.
+        Apex   FUNDED -> ON  : REVERSED 2026-06-27 (was OFF) — EOD-rule + Databento showed momentum LIFTS
+                               reach-lock (68->79%) + income (+54%); $550 daily stop caps the day, P3 brake
+                               protects A/B near the floor. ⚠ AUDIT 2026-06-30: that validation leaned on a
+                               daily-aggregate proxy that can't model the intraday $1k kill — run a per-trade
+                               tail-risk Monte-Carlo before a real account locks (the code arms it ON below).
         MFFU   EVAL   -> OFF : momentum's wider swings trip the trailing drawdown -> lower pass rate.
         MFFU   FUNDED -> ON  : no daily limit; momentum adds ~+35% income (+$500-620/mo).
     Returns (active: bool, reason: str). Firm is read from the tier spec ('apex' vs MFFU/static default)."""
