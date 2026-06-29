@@ -628,6 +628,7 @@ def main(argv=None):
     _hb = {"t": _t_mod.time()}             # Telegram heartbeat tracker (last ping ts)
     _ctl = {"c": None, "t": 0.0}           # Telegram remote-control poller (set once live) + last-poll ts
     _md = {"d": None}                      # overlap-gate day tracker (clear A/B each new ET day)
+    _mo = {"d": None}                      # market-open ping tracker (one 09:30 ET Telegram ping per trading day)
     from preopen_guard import PreopenGuard
     _preopen = PreopenGuard()              # pre-open feed-readiness alerts (ORB + Momentum need a clean open)
     runner = PaperLiveRunner(store, "live", "live")
@@ -855,6 +856,21 @@ def main(argv=None):
                         tg.send(f"⏰ Pre-open · {a.account}\n{_pa['msg']}")
             except Exception:                                  # noqa: BLE001 — guard never breaks the loop
                 pass
+            # --- Market-open ping: ONE Telegram message per ET trading day at the 09:30 cash open ---
+            #     Fires off the bar clock (so it tracks real market time), once per ET date, only when
+            #     armed live and it's a trading day. The per-day latch + 09:30-window means a mid-morning
+            #     restart won't re-fire, and it never fires on weekends/holidays. Advisory only.
+            if tg.enabled and armed["v"]:
+                try:
+                    _mpt = pd.Timestamp(ts); _met = (_mpt.tz_convert(NY) if _mpt.tzinfo else _mpt)
+                    _mday = _met.date()
+                    if (_mo["d"] != _mday and _met.hour == 9 and _met.minute >= 30
+                            and _Sched().is_trading_day(_mday)):
+                        _mo["d"] = _mday
+                        tg.send("🔔 Market is OPEN — ZEUS is watching. Time to trade.\n"
+                                f"{a.account} · {a.tier} · NY-AM window live (A{spec['am']}/B{spec['bm']}).")
+                except Exception:                              # noqa: BLE001 — never break the loop
+                    pass
             # --- Telegram heartbeat: periodic 'still alive + healthy' ping while live ---
             if tg.enabled and a.heartbeat_min > 0 and armed["v"]:
                 _now = _t_mod.time()
