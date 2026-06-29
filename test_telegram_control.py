@@ -23,7 +23,10 @@ def _getter(payload):
     return get, calls
 
 
-def test_noop_when_unconfigured():
+def test_noop_when_unconfigured(monkeypatch):
+    # isolate the operator's shell env — the constructor falls back to TELEGRAM_* when args are None
+    monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
+    monkeypatch.delenv("TELEGRAM_CHAT_ID", raising=False)
     c = TelegramControl(token=None, chat_id=None)
     assert not c.enabled and c.poll() == []
 

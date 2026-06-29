@@ -1,27 +1,10 @@
 #!/usr/bin/env bash
-# MONDAY PROOF — launch a dedicated TradingView Chrome with CDP on :9222 and anti-throttle
-# flags (so a backgrounded tab never freezes the feed — the 2026-06-15 root cause). Operator
-# then loads CME_MINI:NQ1! (or MNQ1!) at 1m. No trading happens here — this only opens Chrome.
+# Launch the dedicated TradingView feed Chrome (CDP :9222, anti-throttle, persistent login profile).
+#
+# Thin delegator to the single source of truth at ~/trading-team/tools/launch-tv-chrome.sh.
+# The previous standalone version omitted --user-data-dir, so `open -na "Google Chrome"` collided with
+# the operator's already-running main Chrome (default-profile lock) and --remote-debugging-port was
+# silently ignored — CDP never came up (root cause, 2026-06-29). The canonical launcher passes a
+# separate --user-data-dir, so it spawns a genuine 2nd instance alongside the main Chrome and binds CDP.
 set -uo pipefail
-
-PORT="${CDP_PORT:-9222}"
-if curl -s -o /dev/null "http://127.0.0.1:${PORT}/json/version" 2>/dev/null; then
-  echo "CDP already live on :${PORT} — reusing existing Chrome."
-  exit 0
-fi
-
-echo "launching TradingView Chrome (CDP :${PORT}, anti-throttle)…"
-open -na "Google Chrome" --args \
-  --remote-debugging-port="${PORT}" \
-  --disable-background-timer-throttling \
-  --disable-backgrounding-occluded-windows \
-  --disable-renderer-backgrounding \
-  --disable-features=CalculateNativeWinOcclusion
-
-echo "Now, in the Chrome window that opened:"
-echo "  1. open tradingview.com chart"
-echo "  2. symbol CME_MINI:NQ1!  (or MNQ1!)"
-echo "  3. timeframe 1m"
-echo "  4. confirm: candles moving, NO 'delayed data' marker"
-echo
-echo "verify CDP: curl -s http://127.0.0.1:${PORT}/json/version"
+exec bash "$HOME/trading-team/tools/launch-tv-chrome.sh" "$@"

@@ -154,6 +154,11 @@ def run(interval=60, once=False, heal=False):
             os.makedirs(os.path.dirname(MARKER) or ".", exist_ok=True)
             with open(MARKER, "w") as f:
                 f.write("SEMI_AUTO_ONLY %s — %s\n" % (now.isoformat(), "; ".join(reasons)))
+        elif os.path.exists(MARKER):
+            # Feed is healthy again — clear the stale degraded marker so the dashboard/preflight
+            # don't keep reading a false SEMI_AUTO_ONLY state forever (write-on-degrade was never cleared).
+            os.remove(MARKER)
+            _log("    feed healthy — cleared %s" % MARKER)
 
         # --- auto-heal ---
         if heal:
