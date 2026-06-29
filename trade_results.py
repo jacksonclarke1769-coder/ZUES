@@ -29,6 +29,15 @@ def is_realised(note):
     return any(m in n for m in _REALISED_MARKERS)
 
 
+def is_rejected(note):
+    """A ledger row for a signal the bot NEVER ENTERED — a risk gate stopped it pre-order (e.g.
+    too_close_to_floor, daily-stop, blocked). Such rows are modeled 'what-if' P&L only and must NOT
+    count toward the dashboard P&L total or the live review list (they'd inflate a loss that never
+    happened — e.g. the rejected 2026-06-29 Profile A −$2,746)."""
+    n = (note or "").lower()
+    return "rejected" in n or "blocked" in n
+
+
 def day_entered_pnl(account, date, path=PATH):
     """Sum today's ENTERED-trade P&L for an account from the ledger, EXCLUDING rows for trades the
     bot never actually entered (rejected/blocked by a risk gate, e.g. too_close_to_floor). Used to
@@ -41,8 +50,7 @@ def day_entered_pnl(account, date, path=PATH):
         for r in csv.DictReader(fh):
             if r.get("account") != account or r.get("date") != str(date):
                 continue
-            note = (r.get("note") or "").lower()
-            if "rejected" in note or "blocked" in note:        # never entered — gate stopped it pre-order
+            if is_rejected(r.get("note")):                     # never entered — gate stopped it pre-order
                 continue
             try:
                 total += float(r.get("pnl") or 0)
@@ -127,6 +135,8 @@ def by_day(path=PATH, live_only=False):
                     continue
                 if live_only and (r.get("mode") or "paper").strip().lower() != "live":
                     continue
+                if is_rejected(r.get("note")):                  # never entered — don't inflate the day's P&L
+                    continue
                 try:
                     pnl = float(r.get("pnl") or 0)
                 except ValueError:
@@ -157,6 +167,8 @@ def live_trades(path=PATH, account=None):
                 if (r.get("mode") or "").strip().lower() != "live":
                     continue
                 if account and (r.get("account") or "").strip() != account:
+                    continue
+                if is_rejected(r.get("note")):                  # never entered — keep out of the review P&L
                     continue
                 try:
                     pnl = round(float(r.get("pnl") or 0), 2)
