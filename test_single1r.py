@@ -69,3 +69,16 @@ def test_single1r_is_not_the_2R_misfire():
     t1r = CD.single1r_target(entry, stop, "long")              # 20100
     t2r = entry + 2 * abs(entry - stop)                        # 20200 = what the old else->2R would send
     assert t1r == 20100.0 and t1r != t2r
+
+
+def test_requested_override_is_gated(monkeypatch):
+    """--exit-model launch override goes through the SAME gates as config.EXIT_MODEL."""
+    assert RC.resolve_exit_model("paper", requested="SINGLE_1R") == "SINGLE_1R"           # paper ok (real gate)
+    monkeypatch.setattr(CD, "single1r_live_ok", lambda mode, approval_dir=None: True)
+    assert RC.resolve_exit_model("live", requested="SINGLE_1R") == "SINGLE_1R"            # live + flag
+    monkeypatch.setattr(CD, "single1r_live_ok", lambda mode, approval_dir=None: False)
+    assert RC.resolve_exit_model("live", requested="SINGLE_1R") == "EXIT3_FIXED_PARTIAL"  # live, no flag -> fail-safe
+    with pytest.raises(RC.ConfigLockError):                     # research-only override still raises
+        RC.resolve_exit_model("live", requested="SINGLE_TARGET")
+    with pytest.raises(RC.ConfigLockError):                     # unknown override still raises
+        RC.resolve_exit_model("live", requested="NONSENSE")

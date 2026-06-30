@@ -18,15 +18,20 @@ class ConfigLockError(RuntimeError):
     """Raised when an unsafe/unknown exit model is requested for execution."""
 
 
-def resolve_exit_model(mode: str = "live") -> str:
+def resolve_exit_model(mode: str = "live", requested: str = None) -> str:
     """Return the exit model to use. `mode` in {live,paper,controlled} fails closed on an
-    unsafe override; `research`/`test` may use a research-only model for comparison."""
-    exit_model = DEFAULT_EXIT_MODEL
-    try:
-        import config                                   # gitignored local override (optional)
-        exit_model = getattr(config, "EXIT_MODEL", exit_model) or DEFAULT_EXIT_MODEL
-    except Exception:                                    # noqa: BLE001 — no local config is SAFE
+    unsafe override; `research`/`test` may use a research-only model for comparison.
+    `requested` (e.g. an explicit --exit-model launch flag) overrides config.EXIT_MODEL but is
+    subject to the SAME gates: research-only raises, unknown raises, SINGLE_1R live needs its flag."""
+    if requested:
+        exit_model = requested
+    else:
         exit_model = DEFAULT_EXIT_MODEL
+        try:
+            import config                                   # gitignored local override (optional)
+            exit_model = getattr(config, "EXIT_MODEL", exit_model) or DEFAULT_EXIT_MODEL
+        except Exception:                                    # noqa: BLE001 — no local config is SAFE
+            exit_model = DEFAULT_EXIT_MODEL
 
     execution = mode in EXECUTION_MODES
     if execution:

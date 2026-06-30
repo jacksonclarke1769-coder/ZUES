@@ -91,7 +91,8 @@ class LiveAuto:
     def __init__(self, account, tier, mode, store, journal, sender, daily_stop,
                  d1c_mode="ACTIVE_EVAL_FILTER", basis_offset=0.0, d1c_stale_after_s=360,
                  entry_gate=None, logger=None, cushion_fn=None, p3_enabled=True,
-                 profile_b=True, readback=None, notify=None, tjournal=None):
+                 profile_b=True, readback=None, notify=None, tjournal=None, exit_override=None):
+        self.exit_override = exit_override   # explicit --exit-model launch override (still gated by resolve_exit_model)
         self.logger = logger           # ARGUS decision logger (auditability; fail-safe, optional)
         self.entry_gate = entry_gate   # infrastructure readiness gate (data GREEN + dead-man alive)
         self.readback = readback       # Stage B: live broker read-back sentinel (closes-the-loop). Optional.
@@ -214,7 +215,8 @@ class LiveAuto:
         # CONFIGLOCK: resolve the official exit model fail-closed (never silently SINGLE_TARGET).
         from runtime_config import resolve_exit_model, ConfigLockError
         try:
-            _exit_model = resolve_exit_model(self.mode if self.mode in ("live", "paper") else "live")
+            _exit_model = resolve_exit_model(self.mode if self.mode in ("live", "paper") else "live",
+                                             requested=self.exit_override)
         except ConfigLockError as e:
             print(f"[auto-live] CONFIGLOCK: unsafe exit model blocked — {e}", flush=True)
             self._dlog("blocked", "exitlock", bar_ts=ts, side=sig.get("side"), reason=str(e))
@@ -321,7 +323,8 @@ class LiveAuto:
         # (paper-test parity). resolve_exit_model applies the same live approval gate, so a non-approved
         # live session resolves to EXIT3 here -> _single1r False -> B keeps its normal partial/single.
         from runtime_config import resolve_exit_model as _rxm
-        _single1r = (_rxm(self.mode if self.mode in ("live", "paper") else "live") == "SINGLE_1R")
+        _single1r = (_rxm(self.mode if self.mode in ("live", "paper") else "live",
+                          requested=self.exit_override) == "SINGLE_1R")
         b_common = dict(
             account=self.account, strategy="B", setup=sig.get("liq", "orb"),
             signal_ts=sig["ts_signal"], side=sig["side"], qty=b_size,
@@ -479,6 +482,9 @@ def main(argv=None):
                    help="fan-out a secondary book (e.g. APEX-50K-1:Apex-50K-eval); webhook from "
                         "TRADERSPOST_<ACCOUNT>_URL or TRADERSPOST_APEX_URL. Repeatable. MFFU/primary unaffected.")
     p.add_argument("--no-p3", action="store_true", help="disable the P3 cushion brake")
+    p.add_argument("--exit-model", dest="exit_model", default=None,
+                   help="override the exit model for this launch (e.g. SINGLE_1R). Still gated: "
+                        "live SINGLE_1R needs single-1r-approved.flag, else fail-safe to EXIT3.")
     p.add_argument("--confirm", action="store_true",
                    help="required (with --live) to arm SUPERVISED LIVE AUTO; extra human gate")
     p.add_argument("--readback", action="store_true",
@@ -564,7 +570,8 @@ def main(argv=None):
                     d1c_mode=d1c_mode, basis_offset=a.basis_offset,
                     d1c_stale_after_s=(120 if dual_1m else 360), logger=_dlogger,
                     profile_b=not getattr(a, "no_profile_b", False),
-                    p3_enabled=not getattr(a, "no_p3", False), readback=readback, notify=tg, tjournal=journal)
+                    p3_enabled=not getattr(a, "no_p3", False), readback=readback, notify=tg, tjournal=journal,
+                    exit_override=getattr(a, "exit_model", None))
 
     # --- Profile MOMENTUM lane (default OFF; --profile-momentum routes it via the same bridge) ---
     # PHASE/FIRM gate: momentum trades variance for income, so it auto-enables ONLY where the ruleset rewards
