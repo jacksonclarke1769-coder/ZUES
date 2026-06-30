@@ -545,10 +545,18 @@ def main(argv=None):
     _dlogger = DecisionLogger(a.account, mode, _session_id, profile="A", feed_source=a.feed,
                               engine_timeframe="5m")
     # --- Stage B: live read-back sentinel (closes the fills-by-eye loop) ---
-    readback, _rb_broker = build_readback(a, mode, j) if getattr(a, "readback", False) else (None, None)
-    if getattr(a, "readback", False) and mode == "live" and _rb_broker is None:
-        print("REFUSED LIVE: --readback requested but no Tradovate read-back connection could be built "
-              "(missing/invalid API creds). Read-back is fail-closed — refusing to run live blind.", flush=True)
+    # LIVE REQUIRES read-back. Without a Tradovate read connection the bot cannot see its own fills/
+    # positions and trades BLIND — phantom fills + unmanaged orphan positions (the 2026-06-30 finding:
+    # an unfilled retest-limit was booked as a real trade because the bot never reads the broker).
+    # Build read-back for ANY real-order (live) run, not only when --readback was passed; paper is exempt.
+    _need_readback = (mode == "live")
+    readback, _rb_broker = (build_readback(a, mode, j)
+                            if (getattr(a, "readback", False) or _need_readback) else (None, None))
+    if _need_readback and _rb_broker is None:
+        print("REFUSED LIVE — NO READ-BACK: the bot cannot see its fills/positions on TradersPost's one-way "
+              "feed, so it would trade BLIND (phantom fills, unmanaged orphans). Add Tradovate READ-ONLY API "
+              "creds in config.TRADOVATE so the read-back sentinel can poll position+balance, then relaunch. "
+              "Standing down — refusing to run live blind.", flush=True)
         return 2
 
     # --- Telegram notifier (signals + modeled outcomes) — no-op unless TELEGRAM_BOT_TOKEN/CHAT_ID set ---
