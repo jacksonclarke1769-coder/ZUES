@@ -75,6 +75,12 @@ def a_events(df5):
 
 # ---------------- Profile B events (@5) — frozen retest-fill + mfe ----------------
 def b_events(df5):
+    """Profile B (ORB) per-trade events — modelled here as a SINGLE 1.5R target (full qty).
+    ⚠️ FIDELITY NOTE (2026-06-30 audit): the LIVE bot trades B as the 50/50 PARTIAL (50%@+1R +
+    50%@+1.5R, shared stop), which is gentler AND out-earns single-1.5R — so this generator
+    UNDERSTATES the deployed B edge (eval pass ~57.5% here vs ~59.8% faithful, wins 5/6 yrs).
+    For the TRUE deployed pass-rate use bpartial_fidelity.py (b_events_partial). Left as-is to
+    avoid rippling every harness; the dashboard/report cite the faithful partial number."""
     df = df5.copy()
     et = df.index.tz_convert(NY); mins = et.hour * 60 + et.minute
     df["rth"] = (mins >= 570) & (mins < 960)

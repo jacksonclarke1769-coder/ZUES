@@ -221,9 +221,10 @@ def apex_playbook():
             # 2026-06-27. DO NOT hand-edit: re-run apex_eval_eod_databento.py / apex_funded_eod_databento.py.
             # (The old 86%/87% came from deleted /tmp scripts that modeled the wrong drawdown rule.)
             eval=dict(tier="Apex-50K-eval", size=f"A{ev['am']}/B{ev['bm']}/Mom-{ev['mm']}",
-                      stop=ev["daily_stop"], pass_pct=57, bust_pct=40, expire_pct=3, median_days=7,
-                      note="EOD rule + real Databento · median 7d / mean 9d · per-year 48-68% (worst 2022) · "
-                           "A8/B6/mm6 tilt → ~60% peak. (old 86% was fabricated)"),
+                      stop=ev["daily_stop"], pass_pct=60, bust_pct=38, expire_pct=3, median_days=7,
+                      note="EOD rule + real Databento · ~59.8% with Profile B modelled as the LIVE 50/50 "
+                           "partial (was 57.5% understated as single-1.5R) — re-run bpartial_fidelity.py · "
+                           "median 7d · wins 5/6 yrs vs single · (old 86% was fabricated)"),
             funded=dict(phase1=f"A{f1['am']}/B{f1['bm']}/mm{f1['mm']}", phase2=f"A{f2['am']}/B{f2['bm']}/mm{f2['mm']}",
                         stop=f1["daily_stop"], lock="+$2.6k floor-lock at $50.1k", lock_days=51, lock_pct=80,
                         income_mo=2412,
