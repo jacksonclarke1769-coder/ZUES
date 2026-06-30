@@ -236,13 +236,24 @@ class LiveAuto:
                 return
             res = self.sender.send_exit3(legs, self.account, root="MNQ")
             ok = res.get("ok")
-        else:
-            payload, err = BP.build_entry(**common)
+        elif _exit_model == "SINGLE_1R":
+            # full-qty single +1R target (gated paper-test candidate). resolve_exit_model already
+            # fail-safed to EXIT3 if SINGLE_1R wasn't approved for this live mode, so reaching here is intentional.
+            from config_defaults import single1r_target
+            _t1r = single1r_target(common["entry"], common["stop"], sig["side"])
+            payload, err = BP.build_entry(**dict(common, target=_t1r, r_target=1.0))
             if err:
-                print(f"[auto-live] FAIL CLOSED — payload not built: {err}", flush=True)
+                print(f"[auto-live] FAIL CLOSED — single@1R payload not built: {err}", flush=True)
                 return
             res = self.sender.send(payload)
             ok = res.get("sent")
+        else:
+            # FAIL CLOSED: never silently route an unknown exit (kills the old SINGLE_TARGET@2R misfire).
+            print(f"[auto-live] FAIL CLOSED — unknown/unsafe exit model '{_exit_model}' — no order sent",
+                  flush=True)
+            self._dlog("blocked", "exitlock", bar_ts=ts, side=sig.get("side"),
+                       reason=f"unknown exit model {_exit_model}")
+            return
         if ok or self.mode != "live":
             self.sent += 1
             if self.overlap is not None:                   # feed the cross-strategy overlap gate (A open)
@@ -306,6 +317,11 @@ class LiveAuto:
         # else the prior SINGLE bracket. Frozen B signal/stop/1.5R-target are UNCHANGED — exit split only.
         from config_defaults import resolve_b_exit
         b_exit = resolve_b_exit(self.mode)
+        # If this session runs the SINGLE_1R candidate (A-side, flag-gated), B routes full-qty @ +1R too
+        # (paper-test parity). resolve_exit_model applies the same live approval gate, so a non-approved
+        # live session resolves to EXIT3 here -> _single1r False -> B keeps its normal partial/single.
+        from runtime_config import resolve_exit_model as _rxm
+        _single1r = (_rxm(self.mode if self.mode in ("live", "paper") else "live") == "SINGLE_1R")
         b_common = dict(
             account=self.account, strategy="B", setup=sig.get("liq", "orb"),
             signal_ts=sig["ts_signal"], side=sig["side"], qty=b_size,
@@ -314,7 +330,16 @@ class LiveAuto:
             target=float(sig["target"]) + self.basis_offset,
             root="MNQ", order_type="limit", mode_meta=dict(mode="ARES", tier=self.tier, profile="B"))
         b_legs = None
-        if b_exit == "PARTIAL_1R" and b_size >= 2:
+        if _single1r:                                        # SINGLE_1R candidate: full-qty B @ +1R, shared stop
+            from config_defaults import single1r_target
+            _t1r = single1r_target(b_common["entry"], b_common["stop"], sig["side"])
+            payload, err = BP.build_entry(**dict(b_common, target=_t1r, r_target=1.0))
+            if err:
+                print(f"[auto-live] B FAIL CLOSED — single@1R payload not built: {err}", flush=True)
+                return
+            res = self.sender.send(payload)
+            ok = res.get("sent")
+        elif b_exit == "PARTIAL_1R" and b_size >= 2:
             b_legs, err = BP.build_entry_exit3(**b_common)   # TP1 @ +1R, TP2 @ B's 1.5R target, shared stop
             if err:
                 print(f"[auto-live] B FAIL CLOSED — partial legs not built: {err}", flush=True)
@@ -341,7 +366,7 @@ class LiveAuto:
                 self.b_tracker.on_signal(sig, b_size, bar_i, ts, partial=(b_legs is not None))
             for bk in self.books:                        # FAN-OUT: same B signal -> each secondary book
                 bk.route_b(sig, ts)
-        _xlabel = "PARTIAL(50%@1R/50%@1.5R)" if b_legs is not None else "single"
+        _xlabel = "single@1R" if _single1r else ("PARTIAL(50%@1R/50%@1.5R)" if b_legs is not None else "single")
         print(f"[auto-live] B {sig['side']} {b_size}MNQ ORB {_xlabel} @ {sig['entry']:.2f} "
               f"stop {sig['stop']:.2f} tgt {sig['target']:.2f} -> {res.get('reason', 'sent')}",
               flush=True)

@@ -14,6 +14,7 @@ EXIT_MODEL = "EXIT3_FIXED_PARTIAL"
 # Only these may be used for live/paper/controlled execution.
 EXIT_MODEL_ALLOWED = {
     "EXIT3_FIXED_PARTIAL",
+    "SINGLE_1R",          # full-qty single +1R target — OPT-IN paper-test candidate (see below); live needs the flag
 }
 
 # SINGLE_TARGET (full position to one 2R target) is RESEARCH-ONLY. It is retired for live
@@ -42,8 +43,36 @@ def exit3_split(qty):
 # UNCHANGED — this only splits the exit (adds a +1R partial). Split = exit3_split (50/50; qty=1 -> all-core).
 # SINGLE = the prior single-OCO-bracket B exit; kept as the qty=1 fallback + the un-approved-live fallback.
 B_EXIT_MODEL = "PARTIAL_1R"
-B_EXIT_MODEL_ALLOWED = {"PARTIAL_1R", "SINGLE"}
+B_EXIT_MODEL_ALLOWED = {"PARTIAL_1R", "SINGLE", "SINGLE_1R"}
 B_PARTIAL_APPROVAL_FLAG = "b-exit-partial-approved.flag"   # required to route the partial in LIVE mode
+
+
+# --- SINGLE_1R candidate exit (certified causally-clean 2026-06-30; NOT the live default) ----------
+# Full position to a SINGLE +1R target, shared -1R stop (no partial, no +2R core). On 5y real Databento
+# it beats the partial (eval pass +3.8pp, funded reach-lock +14pp / E[payout] +22-40%) and is look-ahead
+# clean — BUT it is OPT-IN ONLY: select via config.EXIT_MODEL="SINGLE_1R"; LIVE/controlled routing then
+# ADDITIONALLY requires single-1r-approved.flag (else the runner fails SAFE to the frozen EXIT3 model).
+# Default stays EXIT3_FIXED_PARTIAL. Intended path: PAPER-TEST behind EXITLOCK — never an auto-live default.
+SINGLE_1R_APPROVAL_FLAG = "single-1r-approved.flag"
+
+
+def single1r_target(entry, stop, side):
+    """Full-qty +1R take-profit price for SINGLE_1R: R = |entry-stop| projected in the trade direction.
+    long -> entry + R ; short -> entry - R. (Deliberately NOT the strategy's +2R target.)"""
+    r = abs(float(entry) - float(stop))
+    d = 1 if side == "long" else -1
+    return float(entry) + d * r
+
+
+def single1r_live_ok(mode="paper", approval_dir=None):
+    """May SINGLE_1R route a REAL order in this mode? paper -> yes (dry-run, safe). Anything else
+    (live/controlled) -> only if single-1r-approved.flag exists. Never raises. The exit model is
+    SELECTED via config.EXIT_MODEL; this only gates whether a live order may use it (else fail-safe)."""
+    import os
+    if mode == "paper":
+        return True
+    d = approval_dir or os.path.join(os.path.dirname(os.path.abspath(__file__)), "evidence", "approvals")
+    return os.path.exists(os.path.join(d, SINGLE_1R_APPROVAL_FLAG))
 
 
 MOMENTUM_APPROVAL_FLAG = "momentum-approved.flag"        # required to ROUTE momentum live
