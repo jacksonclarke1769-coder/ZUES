@@ -553,10 +553,11 @@ def main(argv=None):
     readback, _rb_broker = (build_readback(a, mode, j)
                             if (getattr(a, "readback", False) or _need_readback) else (None, None))
     if _need_readback and _rb_broker is None:
-        print("REFUSED LIVE — NO READ-BACK: the bot cannot see its fills/positions on TradersPost's one-way "
-              "feed, so it would trade BLIND (phantom fills, unmanaged orphans). Add Tradovate READ-ONLY API "
-              "creds in config.TRADOVATE so the read-back sentinel can poll position+balance, then relaunch. "
-              "Standing down — refusing to run live blind.", flush=True)
+        print("REFUSED LIVE — NO READ-BACK: the bot cannot see its fills/positions, so it would trade BLIND "
+              "(phantom fills, unmanaged orphans — the 2026-06-30 finding). NOTE: Apex forbids Tradovate API "
+              "keys on eval/funded, so read-back must come from the TradersPost API (TradersPostBrokerView) — "
+              "wire that + a TradersPost API key, then relaunch. Standing down — refusing to run live blind.",
+              flush=True)
         return 2
 
     # --- Telegram notifier (signals + modeled outcomes) — no-op unless TELEGRAM_BOT_TOKEN/CHAT_ID set ---
