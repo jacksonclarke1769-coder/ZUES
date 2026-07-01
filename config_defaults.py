@@ -7,15 +7,25 @@ silent SINGLE_TARGET fallback (the exact mismatch EXITLOCK caught).
 NO secrets, NO credentials, NO URLs in this file — defaults only.
 """
 
-# EXIT3_FIXED_PARTIAL is the official live/eval model (1 MNQ @ +1R, 2 MNQ @ +2R, shared
-# stop, no trailing, no breakeven). It is the validated, eval-buffer-safe model.
-EXIT_MODEL = "EXIT3_FIXED_PARTIAL"
+# SINGLE_1R (1RR) is the official live/eval model as of 2026-07-01: full position to a single +1R
+# target, shared -1R stop (no partial, no +2R core). PROMOTED from EXIT3 after a definitive 5y real-
+# Databento gate (tools_exit_final_compare.py): eval pass 63.1% vs 59.3%, bust 34.4% vs 37.2%, funded
+# reach-lock 84.4% vs 79.5%, funded E[payout] $22.1k vs $17.8k (+23.7%) — 1RR wins every business axis.
+# Certified causally-clean + IS/OOS/MC-validated. EXIT3_FIXED_PARTIAL (1 MNQ @ +1R, 2 MNQ @ +2R, shared
+# stop) is RETAINED as the flag-gated fail-safe fallback. LIVE routing of SINGLE_1R still requires
+# single-1r-approved.flag (else fail-safe to EXIT3) AND the live read-back guard — deliberate live-arms.
+EXIT_MODEL = "SINGLE_1R"
 
 # Only these may be used for live/paper/controlled execution.
 EXIT_MODEL_ALLOWED = {
     "EXIT3_FIXED_PARTIAL",
-    "SINGLE_1R",          # full-qty single +1R target — OPT-IN paper-test candidate (see below); live needs the flag
+    "SINGLE_1R",          # now the DEFAULT (see top); still flag-gated for live routing
 }
+
+# The always-safe fail-safe target — DECOUPLED from EXIT_MODEL on purpose. It needs no approval flag
+# and is eval-buffer-safe, so it is what a live/controlled SINGLE_1R falls back to WITHOUT the approval
+# flag. Must NOT be the configured default (else the fail-safe would fail OPEN). Keep it EXIT3.
+SAFE_FALLBACK_EXIT_MODEL = "EXIT3_FIXED_PARTIAL"
 
 # SINGLE_TARGET (full position to one 2R target) is RESEARCH-ONLY. It is retired for live
 # eval — it breaches the $2k eval drawdown buffer — and must NEVER be the silent live
@@ -47,12 +57,11 @@ B_EXIT_MODEL_ALLOWED = {"PARTIAL_1R", "SINGLE", "SINGLE_1R"}
 B_PARTIAL_APPROVAL_FLAG = "b-exit-partial-approved.flag"   # required to route the partial in LIVE mode
 
 
-# --- SINGLE_1R candidate exit (certified causally-clean 2026-06-30; NOT the live default) ----------
-# Full position to a SINGLE +1R target, shared -1R stop (no partial, no +2R core). On 5y real Databento
-# it beats the partial (eval pass +3.8pp, funded reach-lock +14pp / E[payout] +22-40%) and is look-ahead
-# clean — BUT it is OPT-IN ONLY: select via config.EXIT_MODEL="SINGLE_1R"; LIVE/controlled routing then
-# ADDITIONALLY requires single-1r-approved.flag (else the runner fails SAFE to the frozen EXIT3 model).
-# Default stays EXIT3_FIXED_PARTIAL. Intended path: PAPER-TEST behind EXITLOCK — never an auto-live default.
+# --- SINGLE_1R exit (PROMOTED TO DEFAULT 2026-07-01; certified causally-clean 2026-06-30) ----------
+# Full position to a SINGLE +1R target, shared -1R stop (no partial, no +2R core). Now the default
+# EXIT_MODEL (see top of file for the 5y gate numbers). Look-ahead clean + IS/OOS/MC-validated.
+# LIVE/controlled routing STILL requires single-1r-approved.flag (else the runner fails SAFE to the
+# RETAINED EXIT3 model) — the flag + the live read-back guard are the deliberate live-arm steps.
 SINGLE_1R_APPROVAL_FLAG = "single-1r-approved.flag"
 
 

@@ -1,6 +1,6 @@
-"""SINGLE_1R exit model — gated, opt-in, look-ahead-clean (certified 2026-06-30), built but NOT live-default.
-Proves: default unchanged; +1R target geometry; live flag-gate fail-safe; full-qty OSO with TP at +1R
-(no +2R misfire); paper routes it; live needs the flag."""
+"""SINGLE_1R exit model — the DEFAULT since 2026-07-01, look-ahead-clean (certified 2026-06-30).
+Proves: SINGLE_1R is the default; +1R target geometry; live flag-gate fail-safe to the RETAINED EXIT3;
+full-qty OSO with TP at +1R (no +2R misfire); paper routes it; live needs the flag."""
 import sys, types
 import pytest
 import config_defaults as CD
@@ -8,11 +8,13 @@ import runtime_config as RC
 import bridge_traderspost as BP
 
 
-def test_default_exit_model_unchanged():
-    # with no local config override, the frozen default still resolves everywhere
-    assert RC.resolve_exit_model("live") == "EXIT3_FIXED_PARTIAL"
-    assert RC.resolve_exit_model("paper") == "EXIT3_FIXED_PARTIAL"
-    assert "SINGLE_1R" in CD.EXIT_MODEL_ALLOWED          # known/allowed, just not the default
+def test_default_exit_model_is_single1r(monkeypatch):
+    # SINGLE_1R promoted to the default 2026-07-01 (eval pass 63.1 vs 59.3%, funded E[payout] +23.7%)
+    assert CD.EXIT_MODEL == "SINGLE_1R"
+    assert RC.resolve_exit_model("paper") == "SINGLE_1R"            # paper routes the default
+    monkeypatch.setattr(CD, "single1r_live_ok", lambda mode, approval_dir=None: False)
+    assert RC.resolve_exit_model("live") == "EXIT3_FIXED_PARTIAL"   # live w/o flag -> fail-safe (EXIT3 retained)
+    assert CD.SAFE_FALLBACK_EXIT_MODEL == "EXIT3_FIXED_PARTIAL"     # the decoupled safe fallback
 
 
 def test_single1r_target_long_short():

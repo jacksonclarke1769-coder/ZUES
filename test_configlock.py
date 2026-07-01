@@ -1,6 +1,7 @@
-"""CONFIGLOCK — the official exit model is version-controlled and fail-closed. A fresh
-clone (no config.py / no EXIT_MODEL) resolves EXIT3_FIXED_PARTIAL; a SINGLE_TARGET or
-unknown local override RAISES for live/paper; synthetic P&L never shows as realised."""
+"""CONFIGLOCK — the official exit model is version-controlled and fail-closed. The committed
+default is SINGLE_1R (promoted 2026-07-01): a fresh clone / missing EXIT_MODEL resolves to it for
+paper, but LIVE fails SAFE to EXIT3_FIXED_PARTIAL without single-1r-approved.flag; a SINGLE_TARGET
+or unknown local override RAISES for live/paper; synthetic P&L never shows as realised."""
 import sys
 import types
 import os
@@ -9,6 +10,7 @@ import pytest
 
 import runtime_config as RC
 from runtime_config import resolve_exit_model, ConfigLockError
+import config_defaults as CD
 import trade_results as TR
 
 _REAL = sys.modules.get("config")
@@ -21,22 +23,24 @@ def _fake_config(monkeypatch, exit_model="__MISSING__"):
     monkeypatch.setitem(sys.modules, "config", m)
 
 
-# ---- 1 — missing config / missing attr -> committed default ----
-def test_missing_exit_model_resolves_to_exit3(monkeypatch):
+# ---- 1 — missing config / missing attr -> committed default (SINGLE_1R); live fail-safe to EXIT3 ----
+def test_missing_exit_model_is_safe(monkeypatch):
     _fake_config(monkeypatch, "__MISSING__")               # config exists but has no EXIT_MODEL
-    assert resolve_exit_model("live") == "EXIT3_FIXED_PARTIAL"
-    assert resolve_exit_model("paper") == "EXIT3_FIXED_PARTIAL"
+    monkeypatch.setattr(CD, "single1r_live_ok", lambda mode, approval_dir=None: mode == "paper")  # no live approval
+    assert resolve_exit_model("live") == "EXIT3_FIXED_PARTIAL"   # SINGLE_1R default, no flag -> fail-safe
+    assert resolve_exit_model("paper") == "SINGLE_1R"           # paper (dry-run) = the committed default
 
-def test_empty_or_none_exit_model_resolves_to_exit3(monkeypatch):
+def test_empty_or_none_exit_model_is_safe(monkeypatch):
+    monkeypatch.setattr(CD, "single1r_live_ok", lambda mode, approval_dir=None: mode == "paper")
     _fake_config(monkeypatch, "")
     assert resolve_exit_model("live") == "EXIT3_FIXED_PARTIAL"
     _fake_config(monkeypatch, None)
-    assert resolve_exit_model("paper") == "EXIT3_FIXED_PARTIAL"
+    assert resolve_exit_model("paper") == "SINGLE_1R"
 
 def test_config_import_failure_is_safe(monkeypatch):
-    # simulate no importable config at all
+    # simulate no importable config at all -> committed default, live still fail-safe to EXIT3
     monkeypatch.setitem(sys.modules, "config", None)       # import config -> None attr access guarded
-    # force the import to raise by removing then blocking
+    monkeypatch.setattr(CD, "single1r_live_ok", lambda mode, approval_dir=None: mode == "paper")
     assert resolve_exit_model("live") == "EXIT3_FIXED_PARTIAL"
 
 

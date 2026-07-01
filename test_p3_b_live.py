@@ -7,6 +7,14 @@ from auto_live import LiveAuto
 from bridge_sender import BridgeSender
 from store import Store
 from journal import Journal
+import config as _cfg
+
+
+@pytest.fixture(autouse=True)
+def _pin_exit3_partial(monkeypatch):
+    # This file validates the EXIT3 + PARTIAL_1R routing (A split bracket, B partial). Since 2026-07-01
+    # the DEFAULT is SINGLE_1R, so pin EXIT3 here to keep exercising the retained fail-safe mechanics.
+    monkeypatch.setattr(_cfg, "EXIT_MODEL", "EXIT3_FIXED_PARTIAL")
 
 A_SIG = dict(side="short", entry=30654.83, stop=30771.50, target=30421.49,
              ts_signal="2026-06-22T13:46:00+00:00", liq="pdh")

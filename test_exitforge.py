@@ -74,9 +74,9 @@ def test_send_order_is_core_first():
     assert [L["role"] for L in _legs()] == ["entry_tp2", "entry_tp1"]
 
 def test_no_single_full_qty_target_under_exit3():
-    import config
-    assert config.EXIT_MODEL == "EXIT3_FIXED_PARTIAL"
-    assert all(L["payload"]["quantity"] < 3 for L in _legs())       # never full 3 @ one target
+    import config_defaults as CD
+    assert CD.SAFE_FALLBACK_EXIT_MODEL == "EXIT3_FIXED_PARTIAL"      # EXIT3 retained as the fail-safe
+    assert all(L["payload"]["quantity"] < 3 for L in _legs())       # build_entry_exit3 never full 3 @ one target
 
 
 # ---- 1,2 — gate still holds for the split path ----

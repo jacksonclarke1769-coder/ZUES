@@ -8,6 +8,7 @@ never blocked.
 """
 from config_defaults import (
     EXIT_MODEL as DEFAULT_EXIT_MODEL,
+    SAFE_FALLBACK_EXIT_MODEL,
     EXIT_MODEL_ALLOWED,
     EXIT_MODEL_RESEARCH_ONLY,
     EXECUTION_MODES,
@@ -43,13 +44,15 @@ def resolve_exit_model(mode: str = "live", requested: str = None) -> str:
             raise ConfigLockError(
                 f"CONFIGLOCK: unsafe exit model blocked — unknown EXIT_MODEL='{exit_model}' "
                 f"for {mode} execution")
-        # SINGLE_1R is ALLOWED but OPT-IN + flag-gated for REAL orders. Selected for a live/controlled
-        # mode without single-1r-approved.flag -> fail SAFE to the frozen default (run the validated
-        # EXIT3; never silently route an unapproved exit live). paper (dry-run) is unaffected.
+        # SINGLE_1R is the default but flag-gated for REAL orders. Selected for a live/controlled mode
+        # without single-1r-approved.flag -> fail SAFE to SAFE_FALLBACK_EXIT_MODEL (the validated,
+        # no-flag EXIT3; never silently route an unapproved exit live). NB: fall back to the hardcoded
+        # SAFE model, NOT DEFAULT_EXIT_MODEL — DEFAULT is now SINGLE_1R, so returning it would fail OPEN.
+        # paper (dry-run) is unaffected.
         if exit_model == "SINGLE_1R":
             from config_defaults import single1r_live_ok
             if not single1r_live_ok(mode):
-                return DEFAULT_EXIT_MODEL
+                return SAFE_FALLBACK_EXIT_MODEL
     else:
         # research/test path: only allowed or explicitly research-only values are valid
         if exit_model not in (EXIT_MODEL_ALLOWED | EXIT_MODEL_RESEARCH_ONLY):
