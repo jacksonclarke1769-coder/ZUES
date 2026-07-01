@@ -69,6 +69,23 @@ def build_readback(a, mode, journal):
     floor = float(ev.get("start_balance", 50_000.0)) - float(ev.get("trail_dd", 2_000.0))
     broker = None
     acct_id = a.account
+
+    # Apex-legal read-back: the :9222 TradingView account-manager panel (NO API key — Tradovate API is
+    # banned on Apex eval/funded and the TradersPost API is waitlisted). Reads positions/fills off the
+    # SAME CDP channel the feed uses. Opt-in via READBACK_SOURCE=tradingview; fail-closed until
+    # readback_tradingview._PANEL_JS is pointed at the connected broker (then build+verify per RUNBOOK).
+    import os as _os
+    if _os.environ.get("READBACK_SOURCE", "").lower() in ("tradingview", "tv"):
+        try:
+            from readback_tradingview import TradingViewBrokerView
+            broker = TradingViewBrokerView(account_label=acct_id)
+            broker.net_by_account()                 # probe: raises TradingViewReadbackUnconfigured until _PANEL_JS is set
+        except Exception as e:                      # noqa: BLE001 — degrade, never crash the launcher
+            print(f"  read-back: TradingView panel not ready ({type(e).__name__}: {e})", flush=True)
+            broker = None
+        sentinel = ReadbackSentinel(acct_id, floor=floor, journal=journal)
+        return sentinel, broker
+
     try:
         from tradovate_client import TradovateClient
         # READ-ONLY: pass NO safety -> live_orders_ok=False -> this client can NEVER place an order
