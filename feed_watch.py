@@ -28,7 +28,7 @@ MARKER = "out/heimdall/FEED_DEGRADED.flag"
 LAUNCH_SCRIPT = os.path.expanduser("~/trading-team/tools/launch-tv-chrome.sh")
 ET = ZoneInfo("America/New_York")
 
-FREEZE_HEAL_S = 300      # last-bar age beyond this (during a session) = frozen -> heal
+FREEZE_HEAL_S = 180      # last-bar age beyond this (during a session) = frozen -> heal (tightened 300->180)
 HEAL_COOLDOWN_S = 180    # min seconds between heal attempts (let a reload take effect)
 MAX_HEALS = 3            # attempts before giving up (reload, reload, relaunch) -> then manual
 
@@ -125,6 +125,40 @@ def heal_reload_tab():
         return False
 
 
+# Anti-throttle KEEP-ALIVE: the Chrome launch flags stop the BROWSER throttling, but TradingView's own
+# chart widget slows its data feed when it thinks the tab is hidden/unfocused. Spoof the page as always
+# visible + focused so it never throttles the 1m series. PREVENTS the freeze rather than reacting to it.
+# Re-asserted every tick (and after a reload, which clears the overrides). Read-only; no clicks/orders.
+KEEPALIVE_JS = r"""
+(() => {
+  try {
+    const def = (o,p,v) => { try { Object.defineProperty(o,p,{get:()=>v,configurable:true}); } catch(e){} };
+    def(document,'hidden',false); def(document,'visibilityState','visible');
+    def(document,'webkitHidden',false); def(document,'webkitVisibilityState','visible');
+    document.hasFocus = () => true;
+    document.dispatchEvent(new Event('visibilitychange'));
+    window.dispatchEvent(new Event('focus'));
+    return 'ok';
+  } catch(e){ return String(e); }
+})()
+"""
+
+
+def keepalive_nudge():
+    """Re-assert the always-visible spoof so TradingView never throttles its data feed on a backgrounded
+    tab. Cheap CDP eval; fail-safe (never raises into the watchdog loop)."""
+    try:
+        from tv_feed import _CDP
+        c = _CDP(); c.connect()
+        try:
+            return c.eval(KEEPALIVE_JS) == "ok"
+        finally:
+            c.close()
+    except Exception as e:                                    # noqa: BLE001 — nudge is best-effort
+        _log("    keepalive nudge error: %s" % e)
+        return False
+
+
 def heal_relaunch_chrome():
     """Heavier recovery: kill the :9222 Chrome and relaunch it (anti-throttle flags) via the script."""
     try:
@@ -160,6 +194,10 @@ def run(interval=60, once=False, heal=False):
             os.remove(MARKER)
             _log("    feed healthy — cleared %s" % MARKER)
 
+        # --- preventive keep-alive: keep TradingView's feed un-throttled so it's fresh at the open ---
+        if heal:
+            keepalive_nudge()
+
         # --- auto-heal ---
         if heal:
             if s["healthy"]:
@@ -176,6 +214,7 @@ def run(interval=60, once=False, heal=False):
                     if action == "reload":
                         _log("    HEAL #%d: reloading chart tab (frozen %ss)" % (attempts, s["last_bar_age_s"]))
                         heal_reload_tab()
+                        time.sleep(6); keepalive_nudge()      # re-assert the spoof on the fresh page
                     else:
                         _log("    HEAL #%d: relaunching Chrome (reload did not resume bars)" % attempts)
                         heal_relaunch_chrome()
