@@ -88,6 +88,24 @@ MOMENTUM_APPROVAL_FLAG = "momentum-approved.flag"        # required to ROUTE mom
 APEX_APPROVAL_FLAG = "apex-approved.flag"                # required to ROUTE a fan-out Apex book live
 
 
+# --- Daily loss stop, authored in POINTS × CONTRACTS (self-imposed ARES stop; Apex has NO hard DLL) ----
+# daily_stop_$ = DAILY_STOP_POINTS × DAILY_STOP_CONTRACTS × POINT_VALUE_MNQ.  275 × 1 × $2 = $550.
+# FIXED-dollar semantics (Option A): a constant $ cap, just expressed transparently in points. NOT
+# book-scaled (that would let a bigger book lose more $/day against the tight eval trailing DD).
+POINT_VALUE_MNQ = 2.0                # $/index-point/MNQ contract (fixed contract spec; full NQ = 20.0)
+DAILY_STOP_POINTS = 275              # the point budget
+DAILY_STOP_CONTRACTS = 1             # reference contracts
+
+
+def daily_stop_dollars(points=None, contracts=None, point_value=POINT_VALUE_MNQ):
+    """The daily-stop dollar cap from the points × contracts authoring. Whole-dollar -> int for clean
+    display + byte-identical downstream ($550 as before, now derived not magic)."""
+    p = DAILY_STOP_POINTS if points is None else points
+    c = DAILY_STOP_CONTRACTS if contracts is None else contracts
+    d = float(p) * float(c) * float(point_value)
+    return int(d) if d == int(d) else d
+
+
 def resolve_apex_live(mode="paper", approval_dir=None):
     """Should a fan-out Apex book route to the BROKER? paper/dry-run -> yes (dry sender, no broker);
     LIVE -> only if apex-approved.flag exists, else the book runs DRY (logs, no live orders). Never raises."""

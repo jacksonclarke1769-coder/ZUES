@@ -9,6 +9,11 @@ import subprocess
 from datetime import datetime, timezone
 
 from store import Store
+from config_defaults import daily_stop_dollars
+
+# Apex daily stop authored in POINTS × CONTRACTS (config_defaults.DAILY_STOP_POINTS/CONTRACTS):
+# 275 pts × 1 contract × $2 = $550. Change the point budget in config_defaults, not here.
+APEX_DAILY_STOP = daily_stop_dollars()
 
 # ---- worst-day-$ per sizing tier from challenger/ares_sizing.py (4y data, real engine)
 EVAL_TIERS = {
@@ -33,7 +38,7 @@ EVAL_TIERS = {
     # EOD drawdown rule + real Databento CME) = PASS ~57.5% / BUST ~40% / EXPIRE ~3% / median 7 days.
     # Highest-PASS tilt = A8/B6/mm6 (~60%, apex_optimize_eod.py). DO NOT hand-edit %s — re-run the harness.
     # NOTE: Momentum must be LIVE on the Apex book for mm to fire (phase gate enables it for Apex eval).
-    "Apex-50K-eval":     dict(account="50K",  firm="apex", am=10, bm=5, mm=6, daily_stop=550, worst_day=550,
+    "Apex-50K-eval":     dict(account="50K",  firm="apex", am=10, bm=5, mm=6, daily_stop=APEX_DAILY_STOP, worst_day=550,
                               dll=1000, kill_margin=0.70, eval_days=30, spray_accept_bust=True,
                               requires_approval=True),
 }
@@ -58,9 +63,9 @@ FUNDED_TIERS = {
     # 68.8→79.8% (joint-bar-sim confirmed), post-lock mm6 adds income → E[payout/acct] $12.6k→$19.4k (+54%).
     # The P3 cushion brake (already live) cuts A/B near the floor; mm rides the $550 daily stop. Combined w/ the
     # brake → ~98% reach-lock. Switch tiers MANUALLY at lock (no broker read-back to auto-scale on).
-    "Apex-50K":          dict(account="50K",  firm="apex", am=4, bm=2, mm=2, daily_stop=550, worst_day=550,
+    "Apex-50K":          dict(account="50K",  firm="apex", am=4, bm=2, mm=2, daily_stop=APEX_DAILY_STOP, worst_day=550,
                               dll=1000, kill_margin=0.85),    # PHASE 1: profit < +$2k, floor still trailing
-    "Apex-50K-scaled":   dict(account="50K",  firm="apex", am=6, bm=3, mm=6, daily_stop=550, worst_day=550,
+    "Apex-50K-scaled":   dict(account="50K",  firm="apex", am=6, bm=3, mm=6, daily_stop=APEX_DAILY_STOP, worst_day=550,
                               dll=1000, kill_margin=0.85),    # PHASE 2: profit >= +$2k, floor LOCKED at $50k
 }
 DD_ALLOWANCE = {"50K": 2000, "150K": 4500}
