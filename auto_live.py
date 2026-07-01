@@ -79,7 +79,10 @@ def build_readback(a, mode, journal):
         try:
             from readback_tradingview import TradingViewBrokerView
             broker = TradingViewBrokerView(account_label=acct_id)
-            broker.net_by_account()                 # probe: raises TradingViewReadbackUnconfigured until _PANEL_JS is set
+            broker.net_by_account()                 # probe: raises TradingViewReadbackUnconfigured until _PANEL_JS reads the panel
+            _pa = broker.primary_account()          # key the sentinel on the REAL Tradovate account id
+            if _pa:
+                acct_id = _pa
         except Exception as e:                      # noqa: BLE001 — degrade, never crash the launcher
             print(f"  read-back: TradingView panel not ready ({type(e).__name__}: {e})", flush=True)
             broker = None

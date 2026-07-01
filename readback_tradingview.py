@@ -34,10 +34,39 @@ class TradingViewReadbackUnconfigured(RuntimeError):
 # (fail-closed). It is read-only JS — it never clicks, submits, or mutates the page.
 _PANEL_JS = r"""
 (() => {
-  // TODO(tv-readback): once the Apex/Tradovate broker is connected in the :9222 TradingView, replace
-  // this body with real reads of the account-manager panel (Positions / Orders tabs + balance header).
-  // Return the documented CONTRACT. tv_readback_inspect.py dumps the DOM to find the selectors.
-  return { __unconfigured__: true };
+  // Reads the connected TRADOVATE account-manager panel (data-name hooks confirmed via tv_readback_inspect).
+  // READ-ONLY: no clicks/submits/mutations. Returns the CONTRACT above.
+  const num = s => { const n = parseFloat(String(s||'').replace(/[^0-9.\-]/g,'')); return isFinite(n)?n:null; };
+  const clean = s => (s||'').replace(/​/g,'').trim();
+  const am = document.querySelector('[class*="accountManager"]');
+  const amtxt = am ? (am.innerText||'') : '';
+  const acctM = amtxt.match(/APEX[0-9]+/);
+  const account = acctM ? acctM[0] : null;
+  if (!am || !account) return { __unconfigured__: true };   // panel not present / no Tradovate account -> fail-closed
+  let equity = null;
+  const eqM = amtxt.match(/Equity\s*\$?([0-9,]+\.[0-9]+)/i);
+  if (eqM) equity = num(eqM[1]);
+  if (equity == null) { const bM = amtxt.match(/Balance\s*\$?([0-9,]+\.[0-9]+)/i); if (bM) equity = num(bM[1]); }
+
+  const cell = (row, name) => clean((row.querySelector('[data-name="'+name+'"]')||{}).innerText);
+  const rowsOf = t => {
+    const tab = document.querySelector('[data-name="'+t+'"]');
+    return tab ? Array.from(tab.querySelectorAll('tr,[role="row"]')).filter(r =>
+      r.querySelector('[data-name$="-column"]') && !r.querySelector('th,[role="columnheader"]')) : [];
+  };
+  const positions = [];
+  for (const r of rowsOf('TRADOVATE.positions-table')) {
+    const sym = cell(r,'symbol-column'); const q = num(cell(r,'qty-column'));
+    if (!sym || !q) continue;
+    const side = cell(r,'side-column');
+    positions.push({ account, symbol: sym, qty: Math.abs(q), side: (/sell|short/i.test(side)||q<0) ? 'short' : 'long' });
+  }
+  const orders = [];
+  for (const r of rowsOf('TRADOVATE.orders-table')) {
+    const st = cell(r,'status-column'); if (!st) continue;
+    orders.push({ account, signal: cell(r,'id-column')||null, status: st.toLowerCase() });
+  }
+  return { positions, balances: [{ account, equity }], orders };
 })()
 """
 
@@ -74,6 +103,14 @@ class TradingViewBrokerView:
         for b in self._panel().get("balances", []):
             if str(b["account"]) == str(account_id):
                 return None if b.get("equity") is None else float(b["equity"])
+        return None
+
+    def primary_account(self):
+        """The connected broker account id (e.g. 'APEX6046970000002') so the sentinel keys on the REAL
+        account, not the human label. None if the panel isn't readable."""
+        for b in self._panel().get("balances", []):
+            if b.get("account"):
+                return str(b["account"])
         return None
 
     def order_filled(self, signal_id):
