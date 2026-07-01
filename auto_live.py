@@ -504,6 +504,11 @@ def main(argv=None):
                         "live SINGLE_1R needs single-1r-approved.flag, else fail-safe to EXIT3.")
     p.add_argument("--confirm", action="store_true",
                    help="required (with --live) to arm SUPERVISED LIVE AUTO; extra human gate")
+    p.add_argument("--eyes-confirmed-blind", dest="eyes_confirmed_blind", action="store_true",
+                   help="OPERATOR OVERRIDE (with --live --confirm): run supervised eye-confirmed live with NO "
+                        "automated read-back. You accept trading blind (modeled P&L/daily-stop may diverge) and "
+                        "will confirm fills by eye on the platform. Use only when read-back is unavailable and "
+                        "you are watching. Bracket stops still protect filled orders.")
     p.add_argument("--readback", action="store_true",
                    help="Stage B: enable the Tradovate read-back sentinel (closes the fills-by-eye loop). "
                         "Reconciles broker position/balance vs the bot's belief every poll; HALTS entries + "
@@ -570,12 +575,23 @@ def main(argv=None):
     readback, _rb_broker = (build_readback(a, mode, j)
                             if (getattr(a, "readback", False) or _need_readback) else (None, None))
     if _need_readback and _rb_broker is None:
-        print("REFUSED LIVE — NO READ-BACK: the bot cannot see its fills/positions, so it would trade BLIND "
-              "(phantom fills, unmanaged orphans — the 2026-06-30 finding). NOTE: Apex forbids Tradovate API "
-              "keys on eval/funded, so read-back must come from the TradersPost API (TradersPostBrokerView) — "
-              "wire that + a TradersPost API key, then relaunch. Standing down — refusing to run live blind.",
-              flush=True)
-        return 2
+        if getattr(a, "eyes_confirmed_blind", False):
+            # OPERATOR OVERRIDE (explicit, per-launch): supervised eye-confirmed live with NO automated
+            # read-back. The operator accepts trading BLIND — modeled P&L & the daily stop run on ASSUMED
+            # fills and may DIVERGE from reality (the 2026-06-30 phantom mode) — and will confirm every
+            # fill by eye on the broker platform. All other rails remain: broker-side bracket stops on
+            # each filled order, the $550 daily stop (on modeled P&L), EOD flatten, and the kill-switch.
+            readback = None
+            print("⚠️  SUPERVISED-LIVE-BLIND (--eyes-confirmed-blind): NO automated read-back. The bot CANNOT "
+                  "see its own fills — modeled P&L & the daily stop MAY DIVERGE from reality. YOU must watch "
+                  "the broker platform and eye-confirm every fill; bracket stops protect filled orders. "
+                  "Proceeding at the operator's explicit instruction.", flush=True)
+        else:
+            print("REFUSED LIVE — NO READ-BACK: the bot cannot see its fills/positions, so it would trade BLIND "
+                  "(phantom fills, unmanaged orphans — the 2026-06-30 finding). Wire read-back (TradingView panel "
+                  "via READBACK_SOURCE=tradingview, or the TradersPost API) and relaunch — OR pass "
+                  "--eyes-confirmed-blind to run supervised eye-confirmed live. Standing down.", flush=True)
+            return 2
 
     # --- Telegram notifier (signals + modeled outcomes) — no-op unless TELEGRAM_BOT_TOKEN/CHAT_ID set ---
     from telegram_notify import Telegram
