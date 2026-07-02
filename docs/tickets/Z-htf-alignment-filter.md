@@ -1,3 +1,12 @@
+# ⛔ CLOSED-INVALIDATED 2026-07-02 (pre-arm testing caught intra-bucket look-ahead)
+
+> The research reference computed HTF slope from the resampled bucket CONTAINING the signal —
+> a full-frame resample fills that bucket with its FINAL close (post-signal data). Under the
+> causal completed-bucket definition the dropped trades have POSITIVE expectancy in both eras
+> (+0.35/+0.29R) and the skip makes the machine strictly worse (pass 49.2 vs 58.2). The 61.4/24.1
+> rev-c candidate numbers are INVALID. Never arm HTF_SKIP_ENABLED on current evidence. The shadow
+> htf_align ARGUS field may remain (harmless, default-OFF knob) for observational data only.
+
 # TASK: Z — Profile A V2: HTF-alignment skip filter [PENDING operator approval + paper-forward gate]
 
 ROLE: Sonnet implement (AFTER operator approval; deploy only after paper-forward confirmation)
