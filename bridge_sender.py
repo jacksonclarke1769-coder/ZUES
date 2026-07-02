@@ -23,6 +23,16 @@ SENT_KEY = "bridge_sent"          # {signalId: {ts, status}}
 LOG = "out/ares/bridge_webhook_log.csv"
 MODES = ("dry-run", "test", "live")
 
+# Actions that are safe to repeat: closing/cancelling twice is safe-direction.
+# Anything not in this set is treated as opening exposure (fail-closed: ambiguous = entry).
+_SAFE_REPEAT_ACTIONS = frozenset({"exit", "cancel"})
+
+
+def _is_entry_payload(payload):
+    """Return True when the payload opens exposure.  Fail-closed: unknown action = entry."""
+    action = (payload or {}).get("action")
+    return action not in _SAFE_REPEAT_ACTIONS
+
 
 def _now():
     return datetime.now(timezone.utc).isoformat()
@@ -122,7 +132,22 @@ class BridgeSender:
                     self._log(sid, payload, self.mode, "confirmed", f"http {r.status_code}")
                     return dict(sent=True, status=r.status_code)
                 last = f"http {r.status_code}"
-            except requests.RequestException as e:           # network — safe to retry SAME id
+            except requests.Timeout as e:
+                # Delivery is UNKNOWN — server may have processed the POST before the timeout.
+                # Retry is safe ONLY for exit/cancel (closing/cancelling twice is safe-direction).
+                # For entry payloads (open exposure): do NOT retry; mark pending-unverified.
+                if _is_entry_payload(payload):
+                    reason = ("timeout-unverified — no blind retry on entries; "
+                              "verify position via read-back before re-sending")
+                    self._mark(sid, "pending-unverified")
+                    self.j.append("STATE_ASSERT",
+                                  payload.get("extras", {}).get("account", "ALL"),
+                                  payload=dict(action="bridge_timeout_unverified",
+                                               signal_id=sid, mode=self.mode, note=reason))
+                    self._log(sid, payload, self.mode, "timeout-unverified", reason)
+                    return dict(sent=False, reason=reason)
+                last = repr(e)        # exit/cancel: safe to retry
+            except requests.RequestException as e:   # ConnectionError etc. — nothing delivered; retry
                 last = repr(e)
         # all attempts failed; left 'pending' (NOT confirmed) so a later manual retry of the
         # SAME signalId cannot create a second order (TradersPost + our dedup both key on it)

@@ -39,6 +39,53 @@ def test_matches_curated_2026():
     assert MC.market_holidays(2026, 2026) == HOLIDAYS_2026
 
 
+def test_roll_window_sep_2026():
+    # 3rd Friday Sep 2026 = Sep 18; 10-day window = Sep 9 to Sep 18
+    assert MC.roll_window(H(2026, 9, 9))  is True    # window start
+    assert MC.roll_window(H(2026, 9, 18)) is True    # expiry day
+    assert MC.roll_window(H(2026, 9, 19)) is False   # day after expiry
+    assert MC.roll_window(H(2026, 8, 1))  is False   # well outside any window
+
+
+def test_roll_window_boundaries():
+    # Sep 2026: expiry = Sep 18; window starts Sep 9 (expiry - 9)
+    assert MC.roll_window(H(2026, 9, 8))  is False   # one day before window
+    assert MC.roll_window(H(2026, 9, 9))  is True    # first day in window
+    assert MC.roll_window(H(2026, 9, 18)) is True    # last day in window (expiry)
+    assert MC.roll_window(H(2026, 9, 19)) is False   # first day after window
+
+
+def test_roll_window_all_quarters():
+    # Verify each of the four quarterly windows fires in 2026
+    # Mar 2026: 3rd Friday = Mar 20 (Mar 1=Sun; first Fri=Mar 6; 3rd Fri=Mar 20)
+    assert MC.roll_window(H(2026, 3, 11)) is True    # 9 days before Mar 20
+    assert MC.roll_window(H(2026, 3, 20)) is True    # expiry
+    assert MC.roll_window(H(2026, 3, 21)) is False   # day after
+    # Jun 2026: 3rd Friday = Jun 19 (Jun 1=Mon; first Fri=Jun 5; 3rd Fri=Jun 19)
+    assert MC.roll_window(H(2026, 6, 10)) is True
+    assert MC.roll_window(H(2026, 6, 19)) is True
+    assert MC.roll_window(H(2026, 6, 20)) is False
+    # Dec 2026: 3rd Friday = Dec 18 (Dec 1=Tue; first Fri=Dec 4; 3rd Fri=Dec 18)
+    assert MC.roll_window(H(2026, 12, 9)) is True
+    assert MC.roll_window(H(2026, 12, 18)) is True
+    assert MC.roll_window(H(2026, 12, 19)) is False
+
+
+def test_roll_window_2027_march():
+    # 2027 Mar: Mar 1=Mon; first Fri=Mar 5; 3rd Fri=Mar 19
+    assert MC.roll_window(H(2027, 3, 10)) is True    # 9 days before Mar 19
+    assert MC.roll_window(H(2027, 3, 19)) is True    # expiry
+    assert MC.roll_window(H(2027, 3, 20)) is False   # day after
+    assert MC.roll_window(H(2027, 3, 9))  is False   # one day before window start
+
+
+def test_roll_window_no_overlap_between_quarters():
+    # Ensure the day after one expiry is not in the next quarter's window
+    # Jun 19 + 1 = Jun 20 should not be in Sep 2026 window (Sep 9 start)
+    assert MC.roll_window(H(2026, 6, 20)) is False
+    assert MC.roll_window(H(2026, 9, 8))  is False
+
+
 def test_scheduler_uses_calendar_by_default():
     s = Scheduler()                                    # holidays=None -> self-maintaining calendar
     assert s.is_trading_day(H(2026, 6, 19)) is False   # Juneteenth

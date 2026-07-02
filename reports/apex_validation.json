@@ -1,23 +1,255 @@
 {
-  "_comment": "SOURCE OF TRUTH for Apex pass/lock rates shown on the dashboard. Every % the operator sees must trace to here, and here must trace to a COMMITTED harness (never /tmp). Re-run the harness, update this file, then update any displayed constant. test_apex_validation_provenance.py enforces it.",
-  "verified": "2026-06-27",
-  "rule": "EOD drawdown (threshold set at daily close + ratchets on EOD-balance highs; intraday equity still liquidates on the downside)",
-  "data": "real Databento CME NQ 1m resampled to 5m (run_d1c_real.load_1m)",
+ "_comment": "SOURCE OF TRUTH for Apex pass/lock rates shown on the dashboard. Every % the operator sees must trace to here, and here must trace to a COMMITTED harness (never /tmp). Re-run the harness, update this file, then update any displayed constant. test_apex_validation_provenance.py enforces it.",
+ "verified": "2026-06-27",
+ "rule": "EOD drawdown (threshold set at daily close + ratchets on EOD-balance highs; intraday equity still liquidates on the downside)",
+ "data": "real Databento CME NQ 1m resampled to 5m (run_d1c_real.load_1m)",
+ "harness": [
+  "apex_eval_eod_databento.py",
+  "apex_funded_eod_databento.py",
+  "apex_optimize_eod.py",
+  "apex_eval_validate.py"
+ ],
+ "eval_deployed": {
+  "size": "A10/B5/mm6",
+  "pass_pct": 57.5,
+  "bust_pct": 39.6,
+  "expire_pct": 2.9,
+  "median_days": 7
+ },
+ "eval_highest_prob": {
+  "size": "A8/B6/mm6",
+  "pass_pct": 59.8
+ },
+ "funded_deployed": {
+  "grind": "A4/B2/mm2",
+  "scaled": "A6/B3/mm6",
+  "reach_lock_pct": 79.8,
+  "median_lock_days": 51,
+  "income_mo": 2412,
+  "ev_per_funded_acct": 19419,
+  "note": "momentum ON funded APPLIED 2026-06-27 (was mm0/68.2%/$1924/$12.3k); P3 cushion brake already live pushes reach-lock toward ~90-98%"
+ },
+ "funded_highest_prob": {
+  "grind": "A4/B2/mm2 + cushion brake",
+  "reach_lock_pct": 98
+ },
+ "retired_fabrications": {
+  "eval_pass_pct": 86,
+  "funded_lock_pct": 87,
+  "eval_worst_year_pct": 81,
+  "reason": "came from deleted /tmp scripts that modeled the wrong (too-lenient) drawdown rule; not reproducible. The '81% worst year (2024)' claim is triply false: 2024 actually passes 55.8%, no year reaches 81% (best is 2026 at 68.0%), and the real worst year is 2022 (48.3%, bear)"
+ },
+ "eval_per_year_pass_pct_eod": {
+  "2021": 53.2,
+  "2022": 48.3,
+  "2023": 60.2,
+  "2024": 55.8,
+  "2025": 63.2,
+  "2026": 68.0,
+  "ALL": 57.5,
+  "source": "apex_eval_peryear.py"
+ },
+ "caveats": [
+  "per-trade give-back proxy is slightly optimistic on the intraday-liquidation leg (true bust could be a touch higher)",
+  "funded drawdown TYPE = EOD, CONFIRMED by operator 2026-06-28 (same as eval) -> ~68% reach-lock stands; the ~83% intraday alternative is ruled out",
+  "engine validated: apex_eval_validate.py reproduces apex_sim.py exactly (A-only/3MNQ/no-clock = 90.3%)"
+ ],
+ "_INVALIDATED_2026-07-02": "AUDIT F1/F3: all pre-2026-07-02 pass/lock/payout numbers in this file were computed with 5m fill-bar target look-ahead (entry-vs-target sequencing unproven) and a short-side MAE sign inversion in the B generators. They are INVALID for certification. Corrected numbers below (tools_1m_truth_recert.py). Funded payout $ additionally pend the Apex 4.0 payout-cap rebuild (audit F5).",
+ "recert_1m_truth": {
+  "verified": "2026-07-02",
   "harness": [
-    "apex_eval_eod_databento.py",
-    "apex_funded_eod_databento.py",
-    "apex_optimize_eod.py",
-    "apex_eval_validate.py"
+   "tools_1m_truth_recert.py",
+   "apex_joint_bar_sim.py"
   ],
-  "eval_deployed": {"size": "A10/B5/mm6", "pass_pct": 57.5, "bust_pct": 39.6, "expire_pct": 2.9, "median_days": 7},
-  "eval_highest_prob": {"size": "A8/B6/mm6", "pass_pct": 59.8},
-  "funded_deployed": {"grind": "A4/B2/mm2", "scaled": "A6/B3/mm6", "reach_lock_pct": 79.8, "median_lock_days": 51, "income_mo": 2412, "ev_per_funded_acct": 19419, "note": "momentum ON funded APPLIED 2026-06-27 (was mm0/68.2%/$1924/$12.3k); P3 cushion brake already live pushes reach-lock toward ~90-98%"},
-  "funded_highest_prob": {"grind": "A4/B2/mm2 + cushion brake", "reach_lock_pct": 98},
-  "retired_fabrications": {"eval_pass_pct": 86, "funded_lock_pct": 87, "eval_worst_year_pct": 81, "reason": "came from deleted /tmp scripts that modeled the wrong (too-lenient) drawdown rule; not reproducible. The '81% worst year (2024)' claim is triply false: 2024 actually passes 55.8%, no year reaches 81% (best is 2026 at 68.0%), and the real worst year is 2022 (48.3%, bear)"},
-  "eval_per_year_pass_pct_eod": {"2021": 53.2, "2022": 48.3, "2023": 60.2, "2024": 55.8, "2025": 63.2, "2026": 68.0, "ALL": 57.5, "source": "apex_eval_peryear.py"},
-  "caveats": [
-    "per-trade give-back proxy is slightly optimistic on the intraday-liquidation leg (true bust could be a touch higher)",
-    "funded drawdown TYPE = EOD, CONFIRMED by operator 2026-06-28 (same as eval) -> ~68% reach-lock stands; the ~83% intraday alternative is ruled out",
-    "engine validated: apex_eval_validate.py reproduces apex_sim.py exactly (A-only/3MNQ/no-clock = 90.3%)"
+  "method": "signals unchanged (causally clean); exits re-walked on real 1m bars; no same-bar target/partial on the 1m fill bar; adverse-first thereafter; F3 sign fix applied",
+  "streams_PF_old_vs_new": {
+   "A_single1": {
+    "old": 1.505,
+    "new": 1.135,
+    "netR_old": 149.1,
+    "netR_new": 45.8,
+    "WR_new": 53.3
+   },
+   "A_exit3": {
+    "old": 1.474,
+    "new": 1.237,
+    "netR_old": 130.5,
+    "netR_new": 74.7,
+    "WR_new": 42.8
+   },
+   "B_single1": {
+    "old": 1.637,
+    "new": 1.079,
+    "netR_old": 246.8,
+    "netR_new": 39.3,
+    "WR_new": 52.4
+   },
+   "B_single15": {
+    "old": 1.27,
+    "new": 1.058,
+    "netR_old": 149.3,
+    "netR_new": 35.3,
+    "WR_new": 42.0
+   },
+   "B_partial": {
+    "old": 1.511,
+    "new": 1.075,
+    "netR_old": 198.1,
+    "netR_new": 37.3,
+    "WR_new": 42.0
+   }
+  },
+  "eval_pass_new": {
+   "SINGLE_1R": {
+    "A10/B5/mm6": [
+     53.0,
+     43.0
+    ],
+    "A10/B5/mm0": [
+     41.1,
+     46.3
+    ],
+    "A8/B4/mm5": [
+     52.8,
+     34.5
+    ],
+    "A6/B3/mm4": [
+     46.2,
+     30.8
+    ]
+   },
+   "EXIT3": {
+    "A10/B5/mm6": [
+     55.1,
+     40.8
+    ],
+    "A10/B5/mm0": [
+     43.5,
+     45.3
+    ],
+    "A8/B4/mm5": [
+     54.0,
+     36.9
+    ],
+    "A6/B3/mm4": [
+     50.1,
+     29.1
+    ]
+   },
+   "_fmt": "[pass%, bust%]; momentum events still 5m-close-fill (no fill bias) but lane is LIVE-DEAD (audit D1) \u2014 mm0 rows describe the current live machine"
+  },
+  "joint_bracket_2026-07-02": {
+   "note": "audit F4: joint per-bar combined adverse marking vs per-trade proxy \u2014 delta is SMALL (legacy exit3/1.5R streams, 5m fills)",
+   "eval": {
+    "A10/B5/mm6": [
+     57.8,
+     39.2
+    ],
+    "A10/B5/mm0": [
+     47.4,
+     44.3
+    ],
+    "A8/B4/mm5": [
+     57.6,
+     33.9
+    ],
+    "A6/B3/mm4": [
+     53.6,
+     26.8
+    ]
+   },
+   "funded_lock": {
+    "A4/B2/mm0": 68.2,
+    "A4/B2/mm2": 78.9
+   }
+  }
+ },
+ "phase3_selected_machine": {
+  "verified": "2026-07-02",
+  "harness": [
+   "tools_phase3_config_sweep.py"
+  ],
+  "config": "A10 Exit#3 + D1c ACTIVE_EVAL_FILTER \u00b7 size-to-risk $1,600/contract-budget (max 10 MNQ) \u00b7 B OFF \u00b7 momentum OFF",
+  "eval": {
+   "pass_pct": 57.7,
+   "bust_pct": 17.7,
+   "expire_pct": 25,
+   "median_days": 14,
+   "era_split_pass": [
+    57.4,
+    58.1
+   ],
+   "worst_day_usd": -1606,
+   "worst_marked_usd": -3675
+  },
+  "alternatives": {
+   "uncapped A10/B0 exit3": [
+    59.5,
+    21.3,
+    19,
+    "worst-day -3143/-6437 \u2014 more pass, 2x tail"
+   ],
+   "budget1600 max14": [
+    61.5,
+    25.6,
+    13,
+    "best pass, higher bust; one-knob upgrade"
+   ],
+   "A10/B2 exit3+B-single1": [
+    59.2,
+    19.0,
+    22,
+    "B adds no pass; rejected for simplicity"
+   ],
+   "80pt-cap A10/B0": [
+    45.2,
+    14.0,
+    41,
+    "REJECTED: cap costs ~14pp pass on 1m truth"
+   ]
+  },
+  "notes": [
+   "D1c attach lifts A exit3 to PF 2.306/+184R on kept 435 (dropped 270, keep-rate 62%)",
+   "B near-breakeven on 1m truth (PF 1.06-1.08) and adds no eval pass -> removed",
+   "momentum stays OFF until warmup engineering + re-certification (audit D1/H)",
+   "SINGLE_1R demoted: certified-on-artifact (F2); EXIT3 restored as default"
   ]
+ },
+ "funded_40_recert": {
+  "verified": "2026-07-02",
+  "harness": [
+   "apex_funded_40.py"
+  ],
+  "rules": "Apex 4.0 EOD ladder (6 payouts ~$13k lifetime cap, PA closes), 50% consistency since last payout, 5x$250 qualifying days, $1k DLL \u2014 VERIFY vs live contract",
+  "stream": "A-only Exit#3 + D1c, 1m-truth fills, size-to-risk $160/ct",
+  "results": {
+   "A3": [
+    11725,
+    0.0,
+    17.8
+   ],
+   "A4": [
+    12649,
+    0.0,
+    16.1
+   ],
+   "A5": [
+    12827,
+    0.0,
+    15.9
+   ],
+   "A6": [
+    12443,
+    2.0,
+    14.9
+   ]
+  },
+  "_fmt": "[E$ paid lifetime, bust%, median months to ladder-close]",
+  "recommended_funded_size": "A4-A5 (bust 0% observed; A6 trades 2% bust for ~1 month faster extraction)",
+  "caveats": [
+   "monthly rolling starts OVERLAP -> effective independent samples ~4-5, bust% has wide CI",
+   "numbers lean on the D1c-kept stream (PF 2.31) \u2014 monitor live D1c keep-rate/edge",
+   "old funded figures $22.1k/$19.4k INVALID (pre-4.0 uncapped payout model)"
+  ]
+ }
 }

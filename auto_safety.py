@@ -361,10 +361,26 @@ def full_auto_preflight(account, feed_name, requested_d1c, data_status, store=No
     # 1. explicit account
     if not account:
         fails.append("no explicit account (silent default forbidden)")
-    # 2. approval flag — controlled test uses a one-time test flag, production uses the supervised-live-auto flag
+    # 2. approval flag — controlled test uses a one-time test flag (24h TTL), production uses the supervised-live-auto flag
     if controlled_test:
-        if not any(os.path.exists(os.path.join(APPROVAL_DIR, f)) for f in CONTROLLED_TEST_FLAGS):
+        _CONTROLLED_TTL = 86400  # 24 hours in seconds
+        _found_flag = None
+        for _f in CONTROLLED_TEST_FLAGS:
+            _p = os.path.join(APPROVAL_DIR, _f)
+            if os.path.exists(_p):
+                _found_flag = _p
+                break
+        if _found_flag is None:
             fails.append("missing %s/%s" % (APPROVAL_DIR, CONTROLLED_TEST_FLAGS[0]))
+        else:
+            _age_s = datetime.now(timezone.utc).timestamp() - os.path.getmtime(_found_flag)
+            if _age_s > _CONTROLLED_TTL:
+                fails.append(
+                    "CONTROLLED-TEST flag is %.1fh old (max 24h) — re-authorize this supervised "
+                    "session deliberately:  touch %s" % (_age_s / 3600, _found_flag)
+                )
+            else:
+                print("[preflight] CONTROLLED-TEST flag accepted (age %.1fh / 24h max)" % (_age_s / 3600))
     elif not os.path.exists(os.path.join(APPROVAL_DIR, FULL_AUTO_FLAG)):
         fails.append("missing %s/%s" % (APPROVAL_DIR, FULL_AUTO_FLAG))
     # 3. live data ready (real-time, warmup>=2wk, not stale, reconnect-stable) — computed by the feed

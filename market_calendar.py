@@ -9,7 +9,7 @@ each with weekend observance. Columbus Day & Veterans Day are federal but the EQ
 so they are deliberately excluded. Half-days (early closes) are a separate concern and not here
 (they don't affect the Profile A NY-AM 09:30–11:00 window).
 """
-from datetime import date
+from datetime import date, timedelta
 from functools import lru_cache
 
 import pandas as pd
@@ -58,3 +58,28 @@ def market_holidays(y0, y1):
     for y in range(y0, y1 + 1):
         out |= _year_holidays(y)
     return out
+
+
+def _quarterly_expiry(year, month):
+    """3rd Friday of the given month in the given year (NQ/ES CME quarterly expiry)."""
+    d = date(year, month, 1)
+    days_to_friday = (4 - d.weekday()) % 7   # Monday=0, Friday=4
+    first_friday = d + timedelta(days=days_to_friday)
+    return first_friday + timedelta(weeks=2)  # 3rd Friday
+
+
+def roll_window(d):
+    """True when date d falls within the quarterly NQ roll window.
+
+    Window: 10 calendar days ending on (and including) the 3rd Friday of Mar/Jun/Sep/Dec.
+    Returns True from expiry-9 through expiry inclusive.
+
+    Note: the spec prose says '8 calendar days' but the stated truth-table
+    (2026-09-09 True, 2026-09-18 True) requires a 10-day window — implemented
+    as 10 days to satisfy the authoritative test specification.
+    """
+    for month in (3, 6, 9, 12):
+        expiry = _quarterly_expiry(d.year, month)
+        if expiry - timedelta(days=9) <= d <= expiry:
+            return True
+    return False

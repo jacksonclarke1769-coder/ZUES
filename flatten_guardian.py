@@ -30,7 +30,7 @@ def _utcnow():
 class FlattenGuardian:
     def __init__(self, account, *, build=None, sender=None, store=None, journal=None,
                  scheduler=None, poll_sec=20, root="MNQ", clock=_utcnow,
-                 heartbeat_path=HEARTBEAT_PATH, hb_meta=None):
+                 heartbeat_path=HEARTBEAT_PATH, hb_meta=None, on_flatten_ok=None):
         self.account = account
         self.heartbeat_path = heartbeat_path
         self.hb_meta = hb_meta or {}
@@ -42,9 +42,12 @@ class FlattenGuardian:
         self.poll = poll_sec
         self.root = root
         self.clock = clock
+        self.on_flatten_ok = on_flatten_ok   # called (no args) after any successful flatten
         self._stop = threading.Event()
         self._thread = None
         self._kill_date = None           # ET date we've already kill-flattened
+        self._eod_pending = False        # EOD flatten attempted but not yet confirmed ok
+        self._eod_last_attempt = None    # wall-clock datetime of last EOD attempt
         if self.store is not None:
             self._restore()
 
@@ -92,7 +95,22 @@ class FlattenGuardian:
                               payload=dict(action="auto_flatten", reason=reason, ok=res.get("ok")))
             except Exception:
                 pass
+        if res.get("ok") and self.on_flatten_ok is not None:
+            try:
+                self.on_flatten_ok()
+            except Exception:
+                pass
         return res
+
+    def _eod_attempt(self, now):
+        """Attempt EOD flatten; persist fired-state only on ok=True; on failure arm a 60s retry."""
+        res = self._flatten("EOD")
+        self._eod_last_attempt = now
+        if res.get("ok"):
+            self._persist_fired(now)
+            self._eod_pending = False
+        else:
+            print("[guardian] EOD flatten FAILED (bridge down?) — will retry in >=60s", flush=True)
 
     def _refresh_data_state(self, now):
         """Wall-clock freshness enforcement: catch a frozen feed (bars stopped, process alive) and
@@ -128,8 +146,13 @@ class FlattenGuardian:
         now = self.clock()
         et_date = self.sched.et(now).date().isoformat()
         if self.sched.flatten_due(now):
-            self._flatten("EOD")
-            self._persist_fired(now)
+            # First time due today: arm pending (do NOT persist until ok=True)
+            self._eod_pending = True
+            self._eod_last_attempt = None
+        if self._eod_pending:
+            if (self._eod_last_attempt is None
+                    or (now - self._eod_last_attempt).total_seconds() >= 60):
+                self._eod_attempt(now)
         kill = self._killed(et_date)
         if kill and self._kill_date != et_date:
             self._kill_date = et_date

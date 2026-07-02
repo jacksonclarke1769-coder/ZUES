@@ -23,19 +23,19 @@ def _fake_config(monkeypatch, exit_model="__MISSING__"):
     monkeypatch.setitem(sys.modules, "config", m)
 
 
-# ---- 1 — missing config / missing attr -> committed default (SINGLE_1R); live fail-safe to EXIT3 ----
+# ---- 1 — missing config / missing attr -> committed default (EXIT3 as of 2026-07-02 recert) ----
 def test_missing_exit_model_is_safe(monkeypatch):
     _fake_config(monkeypatch, "__MISSING__")               # config exists but has no EXIT_MODEL
     monkeypatch.setattr(CD, "single1r_live_ok", lambda mode, approval_dir=None: mode == "paper")  # no live approval
-    assert resolve_exit_model("live") == "EXIT3_FIXED_PARTIAL"   # SINGLE_1R default, no flag -> fail-safe
-    assert resolve_exit_model("paper") == "SINGLE_1R"           # paper (dry-run) = the committed default
+    assert resolve_exit_model("live") == "EXIT3_FIXED_PARTIAL"   # committed default (no flag needed)
+    assert resolve_exit_model("paper") == "EXIT3_FIXED_PARTIAL"  # paper = the committed default
 
 def test_empty_or_none_exit_model_is_safe(monkeypatch):
     monkeypatch.setattr(CD, "single1r_live_ok", lambda mode, approval_dir=None: mode == "paper")
     _fake_config(monkeypatch, "")
     assert resolve_exit_model("live") == "EXIT3_FIXED_PARTIAL"
     _fake_config(monkeypatch, None)
-    assert resolve_exit_model("paper") == "SINGLE_1R"
+    assert resolve_exit_model("paper") == "EXIT3_FIXED_PARTIAL"
 
 def test_config_import_failure_is_safe(monkeypatch):
     # simulate no importable config at all -> committed default, live still fail-safe to EXIT3

@@ -220,11 +220,11 @@ def apex_playbook():
             # NUMBERS BELOW = output of the COMMITTED harnesses (EOD rule + real Databento), verified
             # 2026-06-27. DO NOT hand-edit: re-run apex_eval_eod_databento.py / apex_funded_eod_databento.py.
             # (The old 86%/87% came from deleted /tmp scripts that modeled the wrong drawdown rule.)
-            eval=dict(tier="Apex-50K-eval", size=f"A{ev['am']}/B{ev['bm']}/Mom-{ev['mm']}",
-                      stop=ev["daily_stop"], pass_pct=60, bust_pct=38, expire_pct=3, median_days=7,
-                      note="EOD rule + real Databento · ~59.8% with Profile B modelled as the LIVE 50/50 "
-                           "partial (was 57.5% understated as single-1.5R) — re-run bpartial_fidelity.py · "
-                           "median 7d · wins 5/6 yrs vs single · (old 86% was fabricated)"),
+            eval=dict(tier="Apex-50K-eval", size="A10 Exit#3 + D1c · size-to-risk $1.6k · B off · mm0",
+                      stop=ev["daily_stop"], pass_pct=57.7, bust_pct=17.7, expire_pct=25, median_days=14,
+                      note="1m-TRUTH recert 2026-07-02 (tools_phase3_config_sweep.py): 5m fill-bar "
+                           "look-ahead removed — old 57.5-63.1% figures INVALID (as was the 86%). "
+                           "Selected machine: A-only Exit#3 with D1c, $1,600 size-to-risk budget."),
             funded=dict(phase1=f"A{f1['am']}/B{f1['bm']}/mm{f1['mm']}", phase2=f"A{f2['am']}/B{f2['bm']}/mm{f2['mm']}",
                         stop=f1["daily_stop"], lock="+$2.6k floor-lock at $50.1k", lock_days=51, lock_pct=80,
                         income_mo=2412,

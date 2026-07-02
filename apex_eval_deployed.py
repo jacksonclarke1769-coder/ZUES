@@ -122,8 +122,9 @@ def b_events(df5):
                 entry = lvl; stop = entry - d * 1.0 * atr0; tgt = entry + d * 1.5 * atr0
                 ex = None; mfe = 0.0; mae = 0.0
                 for x in range(fill, min(fill + 24, n)):
-                    mfe = max(mfe, (H[x] - entry) * d if d > 0 else (entry - L[x]) * d)
-                    mae = min(mae, (L[x] - entry) * d if d > 0 else (entry - H[x]) * d)
+                    # F3 fix (2026-07-02): favorable extreme = H long / L short; adverse = L long / H short.
+                    mfe = max(mfe, (H[x] - entry) * d if d > 0 else (L[x] - entry) * d)
+                    mae = min(mae, (L[x] - entry) * d if d > 0 else (H[x] - entry) * d)
                     if d > 0:
                         if L[x] <= stop: ex = stop; break
                         if H[x] >= tgt: ex = tgt; break

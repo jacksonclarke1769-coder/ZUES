@@ -44,9 +44,9 @@ _PANEL_JS = r"""
   const account = acctM ? acctM[0] : null;
   if (!am || !account) return { __unconfigured__: true };   // panel not present / no Tradovate account -> fail-closed
   let equity = null;
-  const eqM = amtxt.match(/Equity\s*\$?([0-9,]+\.[0-9]+)/i);
+  const eqM = amtxt.match(/Equity\s*\$?([0-9][0-9,]*(?:\.[0-9]+)?)/i);   // decimals optional (audit N/S2)
   if (eqM) equity = num(eqM[1]);
-  if (equity == null) { const bM = amtxt.match(/Balance\s*\$?([0-9,]+\.[0-9]+)/i); if (bM) equity = num(bM[1]); }
+  if (equity == null) { const bM = amtxt.match(/Balance\s*\$?([0-9][0-9,]*(?:\.[0-9]+)?)/i); if (bM) equity = num(bM[1]); }
 
   const cell = (row, name) => clean((row.querySelector('[data-name="'+name+'"]')||{}).innerText);
   const rowsOf = t => {

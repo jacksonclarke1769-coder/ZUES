@@ -88,7 +88,10 @@ def b_sim(df5):
         realized = 0.0; remaining = 1.0; took_partial = False; mae = 0.0
         for x in range(fill, min(fill + 24, n)):
             hi, lo = H_[x], L_[x]
-            mae = min(mae, (lo - entry) * d if d > 0 else (entry - hi) * d)
+            # adverse extreme is LOW for longs, HIGH for shorts (2026-07-02 audit F3: old short
+            # branch (entry-hi)*d = hi-entry, POSITIVE under water -> real short MAE never recorded,
+            # phantom MAE on winning shorts).
+            mae = min(mae, (lo - entry) * d if d > 0 else (hi - entry) * d)
             # 1) stop first
             if (lo <= stop) if d > 0 else (hi >= stop):
                 realized += remaining * (-1.0)

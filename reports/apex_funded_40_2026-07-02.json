@@ -1,0 +1,42 @@
+{
+ "rules": "Apex 4.0 EOD 50K (ladder 6 payouts ~$13k cap, 50% consistency, 5x$250 qual days, $1k DLL) \u2014 VERIFY vs live contract",
+ "stream": "A-only exit3+D1c 1m-truth, size-to-risk $160/ct",
+ "results": {
+  "A3": {
+   "n": 49,
+   "bust": 0.0,
+   "closed_max": 95.9,
+   "any_payout": 100.0,
+   "e_paid": 11725,
+   "med_paid": 12008,
+   "med_months": 17.8
+  },
+  "A4": {
+   "n": 49,
+   "bust": 0.0,
+   "closed_max": 100.0,
+   "any_payout": 100.0,
+   "e_paid": 12649,
+   "med_paid": 12815,
+   "med_months": 16.1
+  },
+  "A5": {
+   "n": 49,
+   "bust": 0.0,
+   "closed_max": 100.0,
+   "any_payout": 100.0,
+   "e_paid": 12827,
+   "med_paid": 13000,
+   "med_months": 15.9
+  },
+  "A6": {
+   "n": 49,
+   "bust": 2.0,
+   "closed_max": 95.9,
+   "any_payout": 100.0,
+   "e_paid": 12443,
+   "med_paid": 13000,
+   "med_months": 14.9
+  }
+ }
+}

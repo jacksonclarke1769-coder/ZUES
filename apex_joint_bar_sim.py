@@ -187,11 +187,12 @@ def main():
     fstarts = [b for b in dfb if (pd.Timestamp(day[-1]) - pd.Timestamp(day[b])).days >= 270]
 
     print(f"\n  === JOINT (pessimistic) vs PROXY (optimistic) — EOD + Databento ===")
-    # EVAL deployed 10/5/6
-    rz, oa = precompute(A, B, mompos, day, rth, H, L, C, 10, 5, 6)
-    res = [run_eod(rz, oa, day, s, 3000.0) for s in starts]
-    print(f"  EVAL  A10/B5/mm6   JOINT pass {pct(res,'PASS'):.1f}%  bust {pct(res,'BUST'):.1f}%  "
-          f"exp {pct(res,'EXPIRE'):.1f}%   (proxy 57.5%)")
+    # EVAL grid (2026-07-02 audit F4: record the joint bracket for the deployed + fallback sizes)
+    for (na, nb, nm) in [(10, 5, 6), (10, 5, 0), (8, 4, 5), (6, 3, 4)]:
+        rz, oa = precompute(A, B, mompos, day, rth, H, L, C, na, nb, nm)
+        res = [run_eod(rz, oa, day, s, 3000.0) for s in starts]
+        print(f"  EVAL  A{na}/B{nb}/mm{nm}   JOINT pass {pct(res,'PASS'):.1f}%  bust {pct(res,'BUST'):.1f}%  "
+              f"exp {pct(res,'EXPIRE'):.1f}%")
     # FUNDED reach-lock A4/B2 mm0
     rz, oa = precompute(A, B, mompos, day, rth, H, L, C, 4, 2, 0)
     res = [run_eod(rz, oa, day, s, 0, until_lock=True) for s in fstarts]

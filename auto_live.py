@@ -57,6 +57,17 @@ def et_date():
     return datetime.now(timezone.utc).astimezone(ZoneInfo("America/New_York")).date().isoformat()
 
 
+def _on_missing_cancel_is_safe(auto_inst):
+    """Cancel-all-working-MNQ is SAFE only when A is the sole open lane (single-lane A-only machine).
+    Returns (safe:bool, reason:str). Called by the on_missing handler before sending cancel.
+    Exported at module level so test_fill_confirm_ttl can import it directly."""
+    b_open = bool(getattr(auto_inst, "b_tracker", None) and auto_inst.b_tracker.open)
+    b_risk = bool(getattr(auto_inst, "open_risk", {}).get("B"))
+    if b_open or b_risk:
+        return False, f"B lane open (b_tracker={b_open}, open_risk_B={b_risk})"
+    return True, "single-lane A-only (selected machine)"
+
+
 def build_readback(a, mode, journal):
     """Build the Stage B read-back sentinel + a READ-ONLY Tradovate broker view.
 
@@ -140,6 +151,60 @@ class LiveAuto:
         self.gate = DriftGate(enabled=(d1c_mode in ("ACTIVE_EVAL_FILTER", "SHADOW")),
                               stale_after_s=d1c_stale_after_s)
         self.sent = self.blocked = self.d1c_blocked = 0
+        # PROSPECTIVE risk gate state (audit R1): lane -> open bracket risk $ (cleared per ET day / on resolve)
+        self.open_risk = {}
+        self._risk_day = None
+
+    def _risk_gate(self, strategy, entry, stop, qty):
+        """Audit R1: act BEFORE the order. (1) A stop-cap ≤80pt (shadow overlay promoted to enforced);
+        (2) open + new bracket risk must fit inside the live cushion — the retrospective $550 stop
+        cannot stop concurrent A+B brackets from stacking past the trailing floor. NOTE: deliberately
+        NOT bound to the $550 headroom — a single certified A trade risks >$550 by design (the sims
+        let the tripping trade's full loss land); the binding, bust-terminal constraint is the cushion.
+        Only ever blocks (fail-closed on error). Returns (ok, why).
+
+        TODO(recert): TEMPORARY EVAL-SURVIVAL GATE, not a certified daily-stop gate (operator-confirmed
+        2026-07-02). Once Phase 2/3 re-certifies sizing under corrected 1m-truth fills, decide whether
+        the daily stop becomes prospective, dynamic, or stays retrospective — then re-derive this gate
+        from the re-certified stream instead of the cushion heuristic."""
+        try:
+            import config_defaults as CD
+            _ed = et_date()
+            if self._risk_day != _ed:                          # new ET day -> fresh book
+                self._risk_day = _ed
+                self.open_risk.clear()
+            stop_pts = abs(float(entry) - float(stop))
+            if stop_pts <= 0:
+                return False, "invalid stop distance", 0
+            cap = getattr(CD, "A_STOP_CAP_PTS", 0) or 0
+            if strategy == "A" and cap and stop_pts > cap:
+                return False, f"A stop {stop_pts:.0f}pt > cap {cap:.0f}pt", 0
+            risk1 = stop_pts * CD.POINT_VALUE_MNQ              # $ risk per contract
+            open_risk = sum(self.open_risk.values())
+            cushion = None
+            if self.cushion_fn is not None:
+                try:
+                    cushion, _dd = self.cushion_fn()
+                except Exception:                              # noqa: BLE001
+                    cushion = None
+            # dollar budget for THIS trade = min(certified size-to-risk budget [A only],
+            # cushion headroom net of already-open bracket risk). SIZE DOWN, don't reject —
+            # Phase-3 recert: keeping every trade at reduced qty beats capping (57.7% vs 45.2%).
+            budget = float("inf")
+            if strategy == "A" and getattr(CD, "A_RISK_BUDGET_USD", 0):
+                budget = float(CD.A_RISK_BUDGET_USD)
+            if cushion is not None:
+                frac = float(getattr(CD, "OPEN_RISK_CUSHION_FRAC", 0.9))
+                budget = min(budget, max(0.0, float(cushion)) * frac - open_risk)
+            q = int(qty) if budget == float("inf") else min(int(qty), int(budget // risk1))
+            if q < 1:
+                return False, (f"no size fits: risk ${risk1:,.0f}/ct vs budget ${max(0.0, budget):,.0f} "
+                               f"(open ${open_risk:,.0f}"
+                               + (f", cushion ${cushion:,.0f}" if cushion is not None else "") + ")"), 0
+            return True, (f"sized {qty}->{q} (risk ${risk1:,.0f}/ct, budget ${budget:,.0f})"
+                          if q < int(qty) else ""), q
+        except Exception as e:                                 # noqa: BLE001 — a broken gate must not trade
+            return False, f"risk gate error: {e!r}", 0
 
     def feed_gate(self, ts, o, c):
         """Call every completed bar (ET) so D1c has the 09:30 open + last close."""
@@ -231,6 +296,16 @@ class LiveAuto:
         # P3 cushion brake: near the floor, cut A to max(am//2,1) (and B to 0, handled in on_b_signal)
         braked = self._apply_p3()
         a_size, _ = self.p3.size(spec["am"], spec.get("bm", 0))
+        # PROSPECTIVE risk gate (audit R1 + Phase-3 size-to-risk): sizes DOWN to the $ budget, blocks at 0
+        _rok, _rwhy, _rq = self._risk_gate("A", sig["entry"], sig["stop"], a_size)
+        if not _rok:
+            self.blocked += 1
+            print(f"[auto-live] RISK GATE BLOCK (A): {_rwhy} — no webhook", flush=True)
+            self._dlog("blocked", "risk", bar_ts=ts, side=sig.get("side"), reason=_rwhy)
+            return
+        if _rq < a_size:
+            print(f"[auto-live] RISK GATE SIZE (A): {_rwhy}", flush=True)
+            a_size = _rq
         d1c_status = (self.gate.heimdall_status() if self.d1c_mode != "OFF" else "OFF")
         # CONFIGLOCK: resolve the official exit model fail-closed (never silently SINGLE_TARGET).
         from runtime_config import resolve_exit_model, ConfigLockError
@@ -278,6 +353,7 @@ class LiveAuto:
             return
         if ok or self.mode != "live":
             self.sent += 1
+            self.open_risk["A"] = abs(float(sig["entry"]) - float(sig["stop"])) * a_size * 2.0   # audit R1
             if self.overlap is not None:                   # feed the cross-strategy overlap gate (A open)
                 self.overlap.on_open("A", sig["side"])
             if self.readback is not None:                  # Stage B: tell the sentinel what we now expect to hold
@@ -335,6 +411,17 @@ class LiveAuto:
             self._dlog("blocked", "ares", bar_ts=ts, side=sig.get("side"),
                        reason="P3 brake (B=0)" if self.p3.braked else "no B size in tier", profile="B")
             return
+        # PROSPECTIVE risk gate (audit R1): cushion-fit BEFORE any payload is built. B keeps its tier
+        # qty when it fits (no A-style $ budget); sized down only by cushion headroom.
+        _rok, _rwhy, _rq = self._risk_gate("B", sig["entry"], sig["stop"], b_size)
+        if _rok and _rq < b_size:
+            print(f"[auto-live] RISK GATE SIZE (B): {_rwhy}", flush=True)
+            b_size = _rq
+        if not _rok:
+            self.b_blocked += 1
+            print(f"[auto-live] RISK GATE BLOCK (B): {_rwhy} — no webhook", flush=True)
+            self._dlog("blocked", "risk", bar_ts=ts, side=sig.get("side"), reason=_rwhy, profile="B")
+            return
         # B exit: PARTIAL_1R (50% @ +1R, 50% @ frozen 1.5R target, shared stop) when approved & qty>=2;
         # else the prior SINGLE bracket. Frozen B signal/stop/1.5R-target are UNCHANGED — exit split only.
         from config_defaults import resolve_b_exit
@@ -378,6 +465,7 @@ class LiveAuto:
             ok = res.get("sent")
         if ok or self.mode != "live":
             self.b_sent += 1
+            self.open_risk["B"] = abs(float(sig["entry"]) - float(sig["stop"])) * b_size * 2.0   # audit R1
             if self.overlap is not None:                 # feed the cross-strategy overlap gate (B open)
                 self.overlap.on_open("B", sig["side"])
             if self.readback is not None:                # Stage B: B adds to expected broker position too
@@ -566,6 +654,13 @@ def main(argv=None):
                           live_url=os.environ.get("TRADERSPOST_LIVE_URL"))
     # ARGUS decision logger — proves the engine ran (no-signal/candidate/block/send rows). Fail-safe.
     from decision_log import DecisionLogger
+    import decision_log as _DL
+    try:                                   # audit A10/J: the log must state the RESOLVED exit model,
+        from runtime_config import resolve_exit_model as _rx   # not a hardcoded constant
+        _DL.EXIT_MODEL = _rx(mode if mode in ("live", "paper") else "live",
+                             requested=getattr(a, "exit_model", None))
+    except Exception:                      # noqa: BLE001 — logging metadata must never block launch
+        pass
     _session_id = f"{a.account}-{a.tier}-{mode}-{et_date()}"
     _dlogger = DecisionLogger(a.account, mode, _session_id, profile="A", feed_source=a.feed,
                               engine_timeframe="5m")
@@ -688,10 +783,47 @@ def main(argv=None):
         def _rb_flatten(reason):
             print(f"[auto-live] ☠ READ-BACK CRITICAL: {reason} — FLATTEN + HALT", flush=True)
             try:
-                sender.flatten(a.account) if hasattr(sender, "flatten") else None
+                # fresh reason per firing: the flatten signalId derives from it — the static default
+                # ("emergency") was BURNED by the 2026-07-01 firing and dedup-blocks every retry (audit T0-2)
+                import time as _tt
+                if hasattr(sender, "flatten"):
+                    sender.flatten(a.account, reason=f"readback_{int(_tt.time())}")
             except Exception as e:                                # noqa: BLE001 — halt stands regardless
                 print(f"[auto-live] read-back flatten error: {e!r} (entries already halted)", flush=True)
         readback.on_critical = _rb_flatten
+
+        # Order TTL: the A entry-limit fill window is owned by the model; the cancel fired here
+        # IS the live order TTL (~2 min after the model gives up expecting the filled position).
+        def _rb_on_missing(expected_qty):
+            """MISSING_POSITION persisted for missing_confirm polls — likely an unfilled limit.
+            Cancel all working MNQ orders and reset the sentinel to flat. SAFE only because the
+            selected machine is single-lane A-only; guard skips cancel if another lane is open."""
+            import time as _ttt
+            safe, why = _on_missing_cancel_is_safe(auto)
+            if not safe:
+                print(f"[auto-live] on_missing: guard — {why}; cancel NOT sent. Manual review needed.",
+                      flush=True)
+                if tg.enabled:
+                    tg.send(f"⚠ entry unfilled (expected {expected_qty} MNQ) — cancel SKIPPED "
+                            f"({why}). Manual review needed.")
+                return
+            try:
+                cancel_p, _ = BP.build_cancel(account=a.account, strategy="A",
+                                              signal_ts=int(_ttt.time()), root="MNQ")
+                sender.send(cancel_p)
+                print(f"[auto-live] on_missing: expected={expected_qty} unfilled — "
+                      f"working orders CANCELLED", flush=True)
+            except Exception as _e:                               # noqa: BLE001 — on_flat still runs
+                print(f"[auto-live] on_missing: cancel send failed: {_e!r}", flush=True)
+            readback.on_flat()
+            if tg.enabled:
+                tg.send(f"⚠ entry unfilled at broker → working orders cancelled; "
+                        f"modeled tracker may diverge (phantom-trade guard). "
+                        f"Expected {expected_qty} MNQ.")
+        readback.on_missing = _rb_on_missing
+
+        if tg.enabled:
+            readback.on_alert = tg.send                           # operator hears every BLACK/read-fail (audit A1)
         print(f"  read-back sentinel armed (Tradovate position+balance every {a.readback_poll}s, "
               f"floor=${readback.floor:,.0f}) — fail-closed", flush=True)
 
@@ -714,6 +846,22 @@ def main(argv=None):
     runner._orig = runner._on_decision
     # P3 reads the live cushion from the account state machine (distance to the trailing floor)
     auto.cushion_fn = lambda: (runner.bot.mffu.distance_to_floor, runner.bot.mffu.cfg.trail_dd)
+    # SEED modeled equity from broker reality (audit R2/N): a fresh state machine starts at $50k with a
+    # full $2k cushion — the real account may already be down. Gates (P3, too_close_to_floor, risk gate)
+    # must see the REAL cushion, else they permit trades the floor can't absorb. Read-only; best-effort.
+    if _rb_broker is not None:
+        try:
+            _real_eq = _rb_broker.balance(readback.account)
+            if _real_eq is not None and 0 < float(_real_eq) < runner.bot.mffu.cfg.start_balance * 2:
+                runner.bot.mffu.balance = float(_real_eq)
+                runner.bot.mffu.eod_hwm = max(runner.bot.mffu.eod_hwm, float(_real_eq))
+                print(f"  modeled equity SEEDED from broker: ${float(_real_eq):,.2f} "
+                      f"(cushion ${runner.bot.mffu.distance_to_floor:,.0f})", flush=True)
+            else:
+                print(f"  ⚠ equity seed skipped (broker balance unreadable) — modeled state starts at "
+                      f"${runner.bot.mffu.balance:,.0f}; gates run on MODELED cushion", flush=True)
+        except Exception as _se:                                # noqa: BLE001 — seeding must not block launch
+            print(f"  ⚠ equity seed failed ({_se!r}) — gates run on MODELED cushion", flush=True)
     runner.bot.trade_from = pd.Timestamp.now("UTC").tz_convert(NY)
 
     if a.feed == "tradovate":
@@ -799,7 +947,8 @@ def main(argv=None):
             hb_meta=dict(mode=mode, account=a.account, tier=a.tier, d1c_mode=d1c_mode,
                          execution=a.execution, ares_tier=a.tier),
             build=lambda: (BridgeSender(store=Store(), journal=Journal(), mode=_gmode, live_url=_gurl),
-                           Store(), Journal()))
+                           Store(), Journal()),
+            on_flatten_ok=(readback.on_flat if readback is not None else None))
         guardian.start()
         print(f"  flatten guardian armed (wall-clock EOD {'15:30 (momentum lane)' if _mom_on else '14:30'} "
               f"+ kill, feed-independent, {_gmode})", flush=True)
@@ -830,6 +979,7 @@ def main(argv=None):
         _qty = spec["am"]                  # ARES A-tier size (e.g. 3 MNQ for A3)
         _bar = {"i": 0}                    # monotonic engine-bar index for the fill tracker
         _rec = {"n": 0}                    # tracker.rows already appended to the calendar ledger
+        _brec = {"n": 0, "open_snap": []} # B closed-count + pre-on_bar open snapshot (sentinel exit accounting)
 
         def _record_resolved():
             """Append any newly-RESOLVED trades to the dashboard P&L calendar ledger.
@@ -838,7 +988,25 @@ def main(argv=None):
             old = _rec["n"]
             _rec["n"] = trade_results.record_resolved(
                 runner.tracker.rows, old, mode, a.account, _qty)
+            if _rec["n"] > old:                                # A resolved -> release its open-risk slot (R1)
+                auto.open_risk.pop("A", None)
+            if not auto.b_tracker.open:                        # B flat -> release B's slot (R1)
+                auto.open_risk.pop("B", None)
             for r in runner.tracker.rows[old:_rec["n"]]:   # Telegram outcome + learning journal (modeled)
+                # sentinel: decrement expected as each A position resolves (audit R4/A5).
+                # Rejected/blocked rows never called on_entry (gate stopped the send) -> skip,
+                # or a healthy broker position would be phantom-decremented (false ORPHAN BLACK).
+                # Tracker rows carry a `notes` LIST (paper_live) -> join like record_resolved does.
+                _rn = r.get("notes")
+                _rn = ",".join(_rn) if isinstance(_rn, (list, tuple)) else (_rn or "")
+                if readback is not None and not trade_results.is_rejected(_rn):
+                    _rdir = r.get("direction")
+                    if _rdir in ("long", "short"):
+                        _rdelta = -_qty if _rdir == "long" else _qty
+                        if abs(readback.expected) >= _qty:
+                            readback.on_partial_or_exit(_rdelta)
+                        else:
+                            readback.on_flat()   # clamp: never leave phantom opposite sign
                 rr = r.get("result_R")
                 if rr is None:
                     continue
@@ -852,6 +1020,23 @@ def main(argv=None):
                     journal.on_resolved("A", direc, _qty, r["entry"], r["stop"], r.get("tp2"),
                                         None, reason, rr, pnl, r.get("fill_time") or r.get("date"),
                                         reached_1r=r1, reached_2r=r2, hold_bars=None)
+            # sentinel: B exit accounting (paper-tracker closed count drives expected decrement).
+            # No rejected-guard needed: b_tracker.on_signal and readback.on_entry sit in the SAME
+            # post-send block in on_b_signal (blocked B signals return before either fires).
+            if readback is not None:
+                _b_old = _brec["n"]
+                _b_new = auto.b_tracker.closed
+                if _b_new > _b_old:
+                    _cur_keys = {auto.b_tracker._key(w) for w in auto.b_tracker.open}
+                    for _bw in _brec["open_snap"]:
+                        if auto.b_tracker._key(_bw) not in _cur_keys:
+                            _bqty = int(_bw["qty"])
+                            _bdelta = -_bqty if _bw["side"] == "long" else _bqty
+                            if abs(readback.expected) >= _bqty:
+                                readback.on_partial_or_exit(_bdelta)
+                            else:
+                                readback.on_flat()   # clamp: never leave phantom opposite sign
+                _brec["n"] = _b_new
 
         def _engine_bar(bts, bo, bh, bl, bc):
             runner.tracker.on_bar(_bar["i"], bts, bo, bh, bl, bc)   # advance open watches -> resolve exits
@@ -866,6 +1051,7 @@ def main(argv=None):
                 _bsig = auto.b_engine.latest_signal()
                 if _bsig is not None:
                     auto.on_b_signal(_bsig, bts, _bar["i"])
+                _brec["open_snap"] = list(auto.b_tracker.open)   # snapshot before exits resolve
                 auto.b_tracker.on_bar(_bar["i"], bts, bo, bh, bl, bc)   # fills/exits -> calendar
             except Exception as _be:                               # noqa: BLE001 — B never breaks A
                 print(f"[auto-live] B engine error (ignored): {_be!r}", flush=True)
@@ -1072,6 +1258,9 @@ def main(argv=None):
 
             def _h_resume(_a):
                 store.set_state(auto_live_halt="", auto_live_kill="")
+                if readback is not None and readback.halted:      # sentinel halt was sticky for life (audit A1)
+                    readback.reset()
+                    return "🟢 RESUMED — halt + read-back sentinel cleared, watching for entries again."
                 return "🟢 RESUMED — halt cleared, watching for entries again."
 
             def _h_shadow(_a):

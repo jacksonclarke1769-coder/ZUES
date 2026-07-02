@@ -24,6 +24,8 @@ EVENT_TYPES = (
     # A0 extension (B1 Review Board + V-day amendments)
     "CANCEL_SENT", "CANCEL_CONFIRMED", "MODIFY_SENT", "MODIFY_CONFIRMED",
     "EMERGENCY_FLATTEN",
+    # Q: positive fill confirmation audit trail (ticket Q-fill-confirm-ttl)
+    "FILL_CONFIRMED",
 )
 MAX_SENDS = 3   # hard ceiling on transmission attempts per lifecycle (rate-limit retries)
 

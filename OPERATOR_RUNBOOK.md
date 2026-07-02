@@ -1,3 +1,15 @@
+> ## 🔒 2026-07-02 — SELECTED MACHINE LOCKED + STALE-PROCESS WARNING
+> The certified live machine is **A10 · Exit#3 · D1c active · size-to-risk $1,600 · B OFF · momentum
+> OFF** (`reports/apex_validation.json`). Any auto_live process started before 2026-07-02 runs the OLD
+> de-certified config and must not be trusted — kill it, don't reason about it.
+> **Before ANY live restart:** 1) rotate the Tradovate password (old one exposed — audit T), 2) verify
+> the Apex trailing DD on the live dashboard ($2,500 assumed; if $2,000 → update config.py
+> EVAL.trail_dd first), 3) confirm the Tradovate account-manager panel is READABLE in the :9222 Chrome
+> (read-back dies without it), 4) launch ONLY with `./go-live-recert.sh`.
+> **Session processes (all four):** `auto_live.py` (via go-live-recert.sh) · `feed_watch.py --heal` ·
+> `zeus_server.py` · `python3 deadman_watch.py --account APEX-50K-EVAL-1 --live`  ← NEW external
+> dead-man watchdog (alerts at 3min heartbeat silence, flattens at 7min during market hours).
+
 # OPERATOR RUNBOOK — nq-liq-bot (T-MINUS 24 edition)
 
 Written for a tired, distracted operator at 23:00 Perth. Every alert has an action.
@@ -87,6 +99,22 @@ locks itself out. Morning pre-flight catches the rest.
 4  file the firm's account confirmation email -> evidence/approvals/.
 5  DO NOT TRADE the funded account until Gates 1-5 are green. A funded account
    sitting idle loses nothing (check firm inactivity rule: note the date!).
+```
+
+## ROLL WEEK (quarterly contract expiry — Mar/Jun/Sep/Dec)
+
+Around the 3rd Friday of each quarter (next: ~2026-09-09 → 2026-09-18), TradingView's NQ1!
+continuous feed and TradersPost/Tradovate can resolve DIFFERENT front-month contracts, causing
+bracket prices to be off by the calendar spread (75-150 pts). The preflight will BLOCK if
+`TP_SYMBOL_MNQ` is not set during this window.
+
+```
+1  Identify the active front-month ticker (e.g. MNQU2026 for Sep expiry).
+2  Verify TradingView chart contract matches the active month (check bottom-left symbol label).
+3  In .env, set:  TP_SYMBOL_MNQ=MNQU2026   (replace with the actual contract code)
+4  Restart the bot.  preflight will pass; all MNQ orders will use the pinned symbol.
+5  After expiry Friday rolls to the next month, update TP_SYMBOL_MNQ (or remove to restore
+   bare MNQ default) and restart.
 ```
 
 ## SECRETS RULES

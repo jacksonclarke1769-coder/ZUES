@@ -8,12 +8,14 @@ import runtime_config as RC
 import bridge_traderspost as BP
 
 
-def test_default_exit_model_is_single1r(monkeypatch):
-    # SINGLE_1R promoted to the default 2026-07-01 (eval pass 63.1 vs 59.3%, funded E[payout] +23.7%)
-    assert CD.EXIT_MODEL == "SINGLE_1R"
-    assert RC.resolve_exit_model("paper") == "SINGLE_1R"            # paper routes the default
+def test_default_exit_model_is_exit3(monkeypatch):
+    # EXIT3 restored as default 2026-07-02: the SINGLE_1R promotion was certified on the 5m fill-bar
+    # look-ahead (audit F1/F2) — on 1m-truth fills A Exit#3 wins (PF 1.237 vs 1.135).
+    assert CD.EXIT_MODEL == "EXIT3_FIXED_PARTIAL"
+    assert RC.resolve_exit_model("paper") == "EXIT3_FIXED_PARTIAL"  # paper routes the default
+    assert RC.resolve_exit_model("paper", requested="SINGLE_1R") == "SINGLE_1R"  # still selectable
     monkeypatch.setattr(CD, "single1r_live_ok", lambda mode, approval_dir=None: False)
-    assert RC.resolve_exit_model("live") == "EXIT3_FIXED_PARTIAL"   # live w/o flag -> fail-safe (EXIT3 retained)
+    assert RC.resolve_exit_model("live", requested="SINGLE_1R") == "EXIT3_FIXED_PARTIAL"  # fail-safe
     assert CD.SAFE_FALLBACK_EXIT_MODEL == "EXIT3_FIXED_PARTIAL"     # the decoupled safe fallback
 
 

@@ -11,7 +11,7 @@ from fanout_book import SecondaryBook
 from trade_journal import TradeJournal
 from auto_safety import EVAL_TIERS
 
-A_SIG = dict(side="short", entry=30654.83, stop=30771.50, target=30421.49,
+A_SIG = dict(side="short", entry=30654.83, stop=30719.83, target=30421.49,   # 65pt stop (<=80pt audit cap)
              ts_signal="2026-06-30T13:46:00+00:00", liq="pdh")
 B_SIG = dict(side="long", entry=30000.0, stop=29950.0, target=30075.0,
              ts_signal="2026-06-30T13:50:00+00:00", liq="orb", profile="B")

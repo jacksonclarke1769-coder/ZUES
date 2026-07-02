@@ -35,8 +35,9 @@ MAX_HEALS = 3            # attempts before giving up (reload, reload, relaunch) 
 
 # ----------------------------- pure decision helpers (testable) -----------------------------
 def market_likely_open(now_et):
-    """NQ trades Globex Sun 18:00 ET -> Fri 17:00 ET, minus the daily 17:00-18:00 maintenance break.
-    Returns False when bars legitimately should NOT be flowing (so we don't thrash heals)."""
+    """NQ trades Globex Sun 18:00 ET -> Fri 17:00 ET, minus the daily 17:00-18:00 maintenance break,
+    CME holidays and early-close afternoons. Returns False when bars legitimately should NOT be
+    flowing (so we don't thrash heals — audit A8: holiday stalls used to pkill the logged-in Chrome)."""
     wd = now_et.weekday()              # Mon=0 .. Sun=6
     t = now_et.time()
     from datetime import time as _t
@@ -48,6 +49,18 @@ def market_likely_open(now_et):
         return False
     if _t(17, 0) <= t < _t(18, 0):     # daily maintenance break
         return False
+    try:                               # calendar fail-safe: an import error must never kill the watchdog
+        # weekday DAYTIME only: is_trading_day() is False on Sundays too, and Globex evening
+        # sessions around holidays are irregular — the heal-thrash we're preventing is daytime.
+        if wd < 5 and t < _t(17, 0):
+            from market_calendar import is_trading_day
+            if not is_trading_day(now_et.date()):
+                return False
+            from scheduler import HALF_DAYS_2026
+            if now_et.date() in HALF_DAYS_2026 and t >= _t(13, 0):   # early close 13:00 ET
+                return False
+    except Exception:                  # noqa: BLE001 — fall back to weekend/break logic only
+        pass
     return True
 
 

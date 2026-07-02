@@ -12,6 +12,7 @@ NOTE: TradersPost field names marked CONFIRM are pending the docs review
 keys can be adjusted in one place once confirmed — the safety logic above it is final.
 """
 import hashlib
+import os
 
 TICK = {"MNQ": 0.25, "NQ": 0.25}
 PT_VALUE = {"MNQ": 2.0, "NQ": 20.0}
@@ -62,7 +63,10 @@ def _wire(root, action, qty=0, order_type="market", limit_price=None, stop_price
     Exit/cancel: minimal {ticker, action} — quantity OMITTED = full close (per docs).
     Bracket keys VERIFIED: takeProfit.limitPrice + stopLoss{type:stop,stopPrice}.
     `price` MANDATORY on Tradovate (no market data) or it becomes a market order."""
-    p = {"ticker": TP_SYMBOL[root], "action": action}
+    # TP_SYMBOL_MNQ: env override to pin to a specific contract month during quarterly roll.
+    # Read at call time (not import time) so tests can monkeypatch os.environ.
+    ticker = (os.environ.get("TP_SYMBOL_MNQ") if root == "MNQ" else None) or TP_SYMBOL[root]
+    p = {"ticker": ticker, "action": action}
     if action in ("buy", "sell", "add"):
         p["quantity"] = int(qty)
         p["orderType"] = order_type

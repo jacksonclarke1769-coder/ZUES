@@ -47,7 +47,9 @@ def _poll_n(sent, broker, n):
 
 # --------------------------------------------------------------------------
 def test_coherent_world_stays_silent():
-    """Bot flat + broker flat, then bot long 3 + broker long 3 — no alerts ever."""
+    """Bot flat + broker flat, then bot long 3 + broker long 3 — no critical alerts ever.
+    Updated Q-fill-confirm-ttl: FILL_CONFIRMED is now journaled on the first matching poll
+    (positive audit trail — not a discrepancy). Only RECON_ALERT indicates a problem."""
     j = FakeJournal()
     s = ReadbackSentinel(ACCT, floor=48_000.0, journal=j)
     b = FakeBrokerView(net={}, bal=100_000.0)
@@ -57,7 +59,10 @@ def test_coherent_world_stays_silent():
     assert _poll_n(s, b, 5) == []
     s.on_flat(); b._net = {}                    # both flat
     assert _poll_n(s, b, 5) == []
-    assert not s.halted and j.events == []
+    assert not s.halted
+    # FILL_CONFIRMED is expected — it is the positive fill-confirmation audit trail, not an error.
+    crit = [e for e in j.events if e[0] == "RECON_ALERT"]
+    assert crit == [], f"no critical alerts expected in a coherent world; got {crit}"
 
 
 def test_orphan_position_confirmed_black_and_halts():

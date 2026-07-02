@@ -98,8 +98,9 @@ def b_events_partial(df5, n1, n2):
                     open_ct = open1 + open2
                     low_exc = (Ll[x] - entry) * d
                     high_exc = (Hh[x] - entry) * d
-                    mae_w = min(mae_w, low_exc * open_ct)
-                    mfe_w = max(mfe_w, high_exc * open_ct)
+                    # F3 fix (2026-07-02): for shorts the ADVERSE excursion is the HIGH side
+                    mae_w = min(mae_w, (low_exc if d > 0 else high_exc) * open_ct)
+                    mfe_w = max(mfe_w, (high_exc if d > 0 else low_exc) * open_ct)
                     # stop first (intrabar priority): close everything open at stop
                     stop_hit = (Ll[x] <= stop) if d > 0 else (Hh[x] >= stop)
                     if stop_hit:

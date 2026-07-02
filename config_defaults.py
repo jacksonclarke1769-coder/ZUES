@@ -7,19 +7,17 @@ silent SINGLE_TARGET fallback (the exact mismatch EXITLOCK caught).
 NO secrets, NO credentials, NO URLs in this file — defaults only.
 """
 
-# SINGLE_1R (1RR) is the official live/eval model as of 2026-07-01: full position to a single +1R
-# target, shared -1R stop (no partial, no +2R core). PROMOTED from EXIT3 after a definitive 5y real-
-# Databento gate (tools_exit_final_compare.py): eval pass 63.1% vs 59.3%, bust 34.4% vs 37.2%, funded
-# reach-lock 84.4% vs 79.5%, funded E[payout] $22.1k vs $17.8k (+23.7%) — 1RR wins every business axis.
-# Certified causally-clean + IS/OOS/MC-validated. EXIT3_FIXED_PARTIAL (1 MNQ @ +1R, 2 MNQ @ +2R, shared
-# stop) is RETAINED as the flag-gated fail-safe fallback. LIVE routing of SINGLE_1R still requires
-# single-1r-approved.flag (else fail-safe to EXIT3) AND the live read-back guard — deliberate live-arms.
-EXIT_MODEL = "SINGLE_1R"
+# EXIT3_FIXED_PARTIAL is the official live/eval model as of 2026-07-02 (Phase-3 re-certification on
+# 1m-TRUTH fills, tools_phase3_config_sweep.py). The 2026-07-01 SINGLE_1R promotion was an artifact of
+# the 5m fill-bar target look-ahead (audit F1/F2): its gate numbers (63.1% etc.) are INVALID. On 1m
+# truth, A Exit#3 PF 1.237/+75R beats A single@1R 1.135/+46R, and the selected machine
+# (A10 Exit#3 + D1c, size-to-risk $1600, B off, mm0) re-certifies at pass 57.7% / bust 17.7%.
+EXIT_MODEL = "EXIT3_FIXED_PARTIAL"
 
 # Only these may be used for live/paper/controlled execution.
 EXIT_MODEL_ALLOWED = {
     "EXIT3_FIXED_PARTIAL",
-    "SINGLE_1R",          # now the DEFAULT (see top); still flag-gated for live routing
+    "SINGLE_1R",          # demoted 2026-07-02 (F1 artifact); still flag-gated if selected
 }
 
 # The always-safe fail-safe target — DECOUPLED from EXIT_MODEL on purpose. It needs no approval flag
@@ -95,6 +93,18 @@ APEX_APPROVAL_FLAG = "apex-approved.flag"                # required to ROUTE a f
 POINT_VALUE_MNQ = 2.0                # $/index-point/MNQ contract (fixed contract spec; full NQ = 20.0)
 DAILY_STOP_POINTS = 275              # the point budget
 DAILY_STOP_CONTRACTS = 1             # reference contracts
+
+# --- PROSPECTIVE risk gate (2026-07-02 audit R1) ------------------------------------------------
+# The $550 daily stop is retrospective (books on exits) — it cannot stop concurrent A+B brackets
+# from stacking more open risk than the account's remaining trailing-DD cushion. These gates act
+# BEFORE an order is sent. They only ever BLOCK/reduce risk (fail-closed; never add exposure).
+A_STOP_CAP_PTS = 0           # DISABLED 2026-07-02: on 1m-truth fills the 80pt hard cap costs ~14pp
+                             # of eval pass (59.5->45.2%) — the "zero expectancy cost" finding was an
+                             # artifact of the biased 5m fills. Superseded by A_RISK_BUDGET_USD sizing.
+A_RISK_BUDGET_USD = 1600     # size-to-risk (Phase-3 selected): A qty = min(tier_am, budget // $risk-per-
+                             # contract). Keeps every certified trade, halves the worst-day tail vs
+                             # uncapped (-$1.6k vs -$3.1k) at -1.8pp pass. Certified 57.7%/17.7% at $1600.
+OPEN_RISK_CUSHION_FRAC = 0.9  # open+new bracket risk must fit inside this fraction of the live cushion
 
 
 def daily_stop_dollars(points=None, contracts=None, point_value=POINT_VALUE_MNQ):

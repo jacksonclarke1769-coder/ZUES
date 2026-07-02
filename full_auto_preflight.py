@@ -5,10 +5,13 @@ Read-only — it never arms anything. Exit 0 = GO, 1 = BLOCKED.
   python3 full_auto_preflight.py --account MFFU-50K-1 [--feed tradingview-1m] [--d1c-mode active-eval-filter]
 """
 import argparse
+import datetime
 import json
+import os
 
 import auto_safety
 import zeus_server
+from market_calendar import roll_window
 from store import Store
 from heimdall_monitor import apply_freshness
 
@@ -34,6 +37,18 @@ def main(argv=None):
         a.account, a.feed, a.d1c.upper().replace("-", "_"),
         dict(ds, daily_stop=700), store=Store(), dashboard_green=dgreen,
         controlled_test=a.controlled)
+
+    # Roll-window check: block unless TP_SYMBOL_MNQ is pinned to the active contract.
+    # Runs AFTER auto_safety so the roll block appears alongside other blockers.
+    _today = datetime.date.today()
+    if roll_window(_today) and not os.environ.get("TP_SYMBOL_MNQ"):
+        fails.append(
+            "ROLL WINDOW: quarterly contract roll in progress (~%s). TradingView NQ1! and "
+            "TradersPost/Tradovate may resolve DIFFERENT contracts, shifting bracket prices "
+            "by 75-150 pts. Pin the order ticker: set TP_SYMBOL_MNQ=MNQ<Z><YYYY> in .env "
+            "(e.g. MNQU2026) then restart." % _today
+        )
+        ok = False
 
     mode = "CONTROLLED TV LIVE TEST" if a.controlled else "SUPERVISED LIVE AUTO"
     print("================ %s PREFLIGHT ================" % mode)
