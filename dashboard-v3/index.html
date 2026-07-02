@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZEUS MISSION DECK</title>
+<style>
+/* ── DESIGN TOKENS ──────────────────────────────────────────────────── */
+:root {
+  --bg:       #0A0B0D;
+  --panel:    #14161A;
+  --border:   #222428;
+  --gold:     #D4A947;
+  --gold-dim: #7A6228;
+  --blue:     #2E6FEF;
+  --green:    #39C07E;
+  --amber:    #E0A93E;
+  --red:      #E5484D;
+  --text:     #C8CDD8;
+  --dim:      #606570;
+  --mono:     "SF Mono", "Fira Code", "Cascadia Code", ui-monospace, monospace;
+  --sans:     -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --spine-h:  48px;
+  --deck-h:   72px;
+  --rail-w:   260px;
+  --bezel:    1px solid var(--gold-dim);
+  --bezel-armed: 1px solid var(--gold);
+  --radius:   6px;
+  --shadow:   0 4px 24px rgba(0,0,0,.6);
+}
+
+/* ── RESET ──────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 13px; }
+
+/* ── BOOT OVERLAY ───────────────────────────────────────────────────── */
+#boot {
+  position: fixed; inset: 0; background: #000; z-index: 9999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 20px;
+}
+#boot-bolt {
+  width: 60px; height: 60px; opacity: 0;
+  transition: opacity .4s;
+}
+#boot-bolt path { stroke: var(--gold); stroke-width: 3; fill: none; stroke-dasharray: 200; stroke-dashoffset: 200; }
+#boot-log {
+  font-family: var(--mono); font-size: 11px; color: var(--dim); text-align: left;
+  width: 340px; line-height: 1.7;
+}
+#boot-log .ok  { color: var(--green); }
+#boot-log .err { color: var(--red); }
+#boot-log .warn{ color: var(--amber); }
+#boot-certified {
+  font-family: var(--mono); font-size: 14px; color: var(--gold); letter-spacing: .15em;
+  opacity: 0; text-align: center;
+}
+#boot-skip {
+  font-size: 10px; color: var(--dim); margin-top: 12px; cursor: pointer;
+  border: 1px solid var(--dim); padding: 2px 10px; border-radius: 3px;
+}
+#boot-skip:hover { color: var(--text); border-color: var(--text); }
+
+/* ── MAIN LAYOUT ────────────────────────────────────────────────────── */
+#app { display: none; height: 100vh; display: grid;
+  grid-template-rows: var(--spine-h) 1fr var(--deck-h);
+  grid-template-columns: var(--rail-w) 1fr var(--rail-w);
+  grid-template-areas:
+    "spine  spine  spine"
+    "left   center right"
+    "deck   deck   deck";
+}
+
+/* ── STATUS SPINE ───────────────────────────────────────────────────── */
+#spine {
+  grid-area: spine; display: flex; align-items: center; gap: 16px;
+  padding: 0 20px; background: var(--panel); border-bottom: var(--bezel);
+  font-family: var(--mono); font-size: 11px;
+  position: relative; z-index: 100;
+}
+.spine-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); cursor: pointer; flex-shrink: 0; }
+.spine-dot.active { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+#spine-brand { color: var(--gold); font-size: 13px; font-weight: 700; letter-spacing: .12em; margin-right: 8px; }
+.spine-sep { width: 1px; height: 20px; background: var(--border); }
+#spine-mode { padding: 2px 8px; border-radius: 3px; background: #1a1a1a; }
+#spine-mode.live { color: var(--green); border: 1px solid var(--green); }
+#spine-mode.paper { color: var(--amber); border: 1px solid var(--amber); }
+#spine-mode.sim { color: var(--dim); border: 1px solid var(--border); }
+#spine-clock { margin-left: auto; color: var(--text); }
+#spine-heartbeat { font-size: 10px; }
+#spine-heartbeat.fresh { color: var(--green); }
+#spine-heartbeat.stale { color: var(--amber); }
+#spine-heartbeat.dead  { color: var(--red); }
+#spine-feed { font-size: 10px; }
+#spine-feed.green { color: var(--green); }
+#spine-feed.red   { color: var(--red); }
+#spine-account { color: var(--text); }
+#spine-runner { color: var(--blue); }
+
+/* ── RAILS ──────────────────────────────────────────────────────────── */
+#left-rail  { grid-area: left;  overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid var(--border); }
+#right-rail { grid-area: right; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; border-left: 1px solid var(--border); }
+
+/* ── CENTER ─────────────────────────────────────────────────────────── */
+#center { grid-area: center; position: relative; overflow: hidden; }
+#canvas-3d { position: absolute; inset: 0; width: 100%; height: 100%; }
+#webgl-fallback { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; background: var(--bg); flex-direction: column; gap: 12px; }
+#webgl-fallback.visible { display: flex; }
+
+/* ── FLIGHT DECK ────────────────────────────────────────────────────── */
+#deck { grid-area: deck; border-top: var(--bezel); background: var(--panel); padding: 0 20px; display: flex; align-items: center; gap: 16px; overflow-x: auto; }
+.deck-event { display: flex; flex-direction: column; gap: 2px; min-width: 120px; flex-shrink: 0; }
+.deck-event .de-time { font-family: var(--mono); font-size: 10px; color: var(--dim); }
+.deck-event .de-text { font-family: var(--mono); font-size: 11px; color: var(--text); }
+.deck-event .de-text.fill  { color: var(--green); }
+.deck-event .de-text.exit  { color: var(--blue); }
+.deck-event .de-text.alert { color: var(--amber); }
+.deck-event .de-text.black { color: var(--red); font-weight: 700; }
+#deck-empty { color: var(--dim); font-family: var(--mono); font-size: 11px; }
+
+/* ── PANELS ─────────────────────────────────────────────────────────── */
+.panel {
+  background: var(--panel); border: var(--bezel); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden;
+  transition: box-shadow .2s;
+}
+.panel.armed { border: var(--bezel-armed); }
+.panel:hover { box-shadow: 0 4px 32px rgba(212,169,71,.08); }
+.panel-head {
+  padding: 6px 10px; font-size: 10px; letter-spacing: .08em; color: var(--dim);
+  border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px;
+  text-transform: uppercase; position: relative;
+}
+.panel-head .ph-title { flex: 1; }
+.panel-head .ph-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dim); flex-shrink: 0; }
+.panel-head .ph-dot.g { background: var(--green); }
+.panel-head .ph-dot.a { background: var(--amber); }
+.panel-head .ph-dot.r { background: var(--red); }
+.panel-head .ph-dot.b { background: var(--blue); }
+.panel-body { padding: 8px 10px; }
+.prov-glyph { font-size: 9px; color: var(--gold-dim); cursor: help; position: relative; }
+.prov-glyph[data-tip]:hover::after {
+  content: attr(data-tip); position: absolute; right: 0; top: 100%; z-index: 200;
+  background: #0f1014; border: 1px solid var(--gold-dim); padding: 4px 8px;
+  font-size: 10px; color: var(--text); white-space: pre; min-width: 200px;
+  font-family: var(--mono); border-radius: 3px; pointer-events: none;
+}
+
+/* ── KV ROWS ────────────────────────────────────────────────────────── */
+.kv { display: flex; justify-content: space-between; align-items: baseline; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,.03); }
+.kv:last-child { border-bottom: none; }
+.kv-k { color: var(--dim); font-size: 11px; }
+.kv-v { font-family: var(--mono); font-size: 12px; color: var(--text); }
+.kv-v.gold { color: var(--gold); }
+.kv-v.green { color: var(--green); }
+.kv-v.amber { color: var(--amber); }
+.kv-v.red   { color: var(--red); }
+.kv-v.blue  { color: var(--blue); }
+
+/* ── ODOMETER ───────────────────────────────────────────────────────── */
+.odo { display: inline-block; font-family: var(--mono); transition: none; }
+.odo.roll { animation: odo-roll .18s ease-out; }
+@keyframes odo-roll { 0% { transform: translateY(-4px); opacity: .4; } 100% { transform: translateY(0); opacity: 1; } }
+
+/* ── RISK THERMOMETER ───────────────────────────────────────────────── */
+#thermo-wrap { padding: 8px 10px; }
+.thermo-bar {
+  height: 10px; border-radius: 5px; background: var(--border); position: relative; overflow: visible;
+  margin-bottom: 12px;
+}
+.thermo-fill { height: 100%; border-radius: 5px; transition: width .5s, background .5s; }
+.thermo-tick { position: absolute; top: -4px; width: 2px; height: 18px; background: var(--red); border-radius: 1px; }
+.thermo-tick.soft { background: var(--amber); }
+.thermo-label { position: absolute; top: 16px; font-family: var(--mono); font-size: 9px; color: var(--dim); transform: translateX(-50%); white-space: nowrap; }
+#thermo-pnl { font-family: var(--mono); font-size: 18px; color: var(--text); margin: 4px 0 2px; }
+#thermo-pnl.pos { color: var(--green); }
+#thermo-pnl.neg { color: var(--red); }
+
+/* ── POSITIONS TABLE ────────────────────────────────────────────────── */
+.pos-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 4px 8px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.03); font-family: var(--mono); font-size: 11px; }
+.pos-row:last-child { border-bottom: none; }
+.pos-row .pr-side { font-size: 9px; padding: 1px 4px; border-radius: 2px; }
+.pos-row .pr-side.long  { background: rgba(57,192,126,.15); color: var(--green); }
+.pos-row .pr-side.short { background: rgba(229,72,77,.15);  color: var(--red); }
+
+/* ── FLEET BAYS ─────────────────────────────────────────────────────── */
+.bay { padding: 6px 10px; }
+.bay-title { font-size: 10px; color: var(--gold); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px; }
+.bay-prog-outer { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin: 2px 0; }
+.bay-prog-inner { height: 100%; border-radius: 2px; background: var(--gold); transition: width .4s; }
+.bay-prog-inner.eval { background: var(--blue); }
+
+/* ── ALERT TRAY ─────────────────────────────────────────────────────── */
+#alert-tray {
+  position: fixed; right: 0; top: var(--spine-h); width: 280px; z-index: 500;
+  display: flex; flex-direction: column; gap: 4px; padding: 8px;
+  pointer-events: none;
+}
+.alert-pill {
+  padding: 6px 10px; border-radius: 4px; font-family: var(--mono); font-size: 11px;
+  pointer-events: auto; cursor: pointer; border-left: 3px solid;
+  background: rgba(20,22,26,.95); backdrop-filter: blur(4px);
+  animation: tray-in .2s ease-out;
+}
+@keyframes tray-in { from { transform: translateX(100%); opacity: 0; } }
+.alert-pill.amber { border-color: var(--amber); color: var(--amber); }
+.alert-pill.red   { border-color: var(--red);   color: var(--red); }
+
+/* ── RED DIM OVERLAY ────────────────────────────────────────────────── */
+#room-dim { position: fixed; inset: 0; background: rgba(0,0,0,0); pointer-events: none; z-index: 490; transition: background .4s; }
+#room-dim.active { background: rgba(0,0,0,.3); }
+#red-banner {
+  position: fixed; bottom: var(--deck-h); left: 50%; transform: translateX(-50%);
+  background: rgba(229,72,77,.15); border: 1px solid var(--red); border-radius: 4px;
+  padding: 8px 20px; font-family: var(--mono); font-size: 12px; color: var(--red);
+  z-index: 500; display: none; text-align: center;
+}
+#red-banner.active { display: block; }
+
+/* ── MODE TABS ──────────────────────────────────────────────────────── */
+#mode-bar { position: fixed; bottom: var(--deck-h); left: 50%; transform: translateX(-50%); z-index: 300; display: flex; gap: 1px; background: var(--border); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+.mode-btn { padding: 4px 12px; font-family: var(--mono); font-size: 10px; letter-spacing: .1em; color: var(--dim); cursor: pointer; border: none; background: var(--panel); transition: background .15s, color .15s; }
+.mode-btn.active { background: var(--gold-dim); color: var(--gold); }
+.mode-btn:hover:not(.active) { background: #1e2024; color: var(--text); }
+
+/* ── MODE PANELS ────────────────────────────────────────────────────── */
+.mode-view { display: none; }
+.mode-view.active { display: contents; }
+
+/* ── ENGINEER / ARCHIVE specific ────────────────────────────────────── */
+.latency-bar { height: 6px; border-radius: 3px; background: var(--blue); }
+.strike { text-decoration: line-through; color: var(--dim); }
+.invalid-badge { font-size: 9px; padding: 1px 4px; background: rgba(229,72,77,.2); color: var(--red); border-radius: 2px; }
+
+/* ── SCROLLBARS ─────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── UTILITY ────────────────────────────────────────────────────────── */
+.mono { font-family: var(--mono); }
+.small { font-size: 10px; }
+.dimmed { color: var(--dim); }
+.mt4 { margin-top: 4px; }
+.gap8 { display: flex; flex-direction: column; gap: 8px; }
+</style>
+</head>
+<body>
+
+<!-- ── BOOT OVERLAY ──────────────────────────────────────────────────── -->
+<div id="boot">
+  <svg id="boot-bolt" viewBox="0 0 60 60">
+    <path id="bolt-path" d="M36 4 L18 32 L30 32 L24 56 L42 28 L30 28 Z"/>
+  </svg>
+  <div id="boot-log"></div>
+  <div id="boot-certified"></div>
+  <div id="boot-skip">PRESS ANY KEY TO SKIP</div>
+</div>
+
+<!-- ── ALERT TRAY ────────────────────────────────────────────────────── -->
+<div id="alert-tray"></div>
+
+<!-- ── ROOM DIM ──────────────────────────────────────────────────────── -->
+<div id="room-dim"></div>
+<div id="red-banner"></div>
+
+<!-- ── MODE BAR ─────────────────────────────────────────────────────── -->
+<div id="mode-bar">
+  <div class="mode-btn active" data-mode="0">1 OPERATE</div>
+  <div class="mode-btn" data-mode="1">2 FLEET</div>
+  <div class="mode-btn" data-mode="2">3 ENGINEER</div>
+  <div class="mode-btn" data-mode="3">4 ARCHIVE</div>
+</div>
+
+<!-- ── APP SHELL (hidden until boot completes) ───────────────────────── -->
+<div id="app" style="display:none">
+
+  <!-- STATUS SPINE -->
+  <div id="spine">
+    <span id="spine-brand">ZEUS</span>
+    <div class="spine-dot active" data-mode="0" title="OPERATE"></div>
+    <div class="spine-dot" data-mode="1" title="FLEET"></div>
+    <div class="spine-dot" data-mode="2" title="ENGINEER"></div>
+    <div class="spine-dot" data-mode="3" title="ARCHIVE"></div>
+    <div class="spine-sep"></div>
+    <span id="spine-ver" class="dimmed small">v—</span>
+    <div class="spine-sep"></div>
+    <span id="spine-mode" class="sim">SIM</span>
+    <div class="spine-sep"></div>
+    <span class="dimmed small">RUNNER</span>
+    <span id="spine-runner">—</span>
+    <div class="spine-sep"></div>
+    <span class="dimmed small">FEED</span>
+    <span id="spine-feed" class="red">—</span>
+    <div class="spine-sep"></div>
+    <span class="dimmed small">HB</span>
+    <span id="spine-heartbeat" class="dead">—</span>
+    <div class="spine-sep"></div>
+    <span class="dimmed small">ACCT</span>
+    <span id="spine-account">—</span>
+    <div class="spine-sep"></div>
+    <span id="spine-clock" class="mono">—</span>
+  </div>
+
+  <!-- LEFT RAIL -->
+  <div id="left-rail">
+    <!-- OPERATE mode content -->
+    <div class="mode-view active" data-mode-view="0">
+      <div class="panel armed" id="panel-accounts">
+        <div class="panel-head">
+          <div class="ph-dot" id="dot-accounts"></div>
+          <span class="ph-title">Fleet Bays</span>
+          <span class="prov-glyph" data-tip="/api/state → accounts">⊙</span>
+        </div>
+        <div class="panel-body" id="fleet-body">
+          <div class="dimmed small mono">No accounts registered</div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-eval">
+        <div class="panel-head">
+          <div class="ph-dot b" id="dot-eval"></div>
+          <span class="ph-title">Eval Pipeline</span>
+          <span class="prov-glyph" data-tip="/api/state → playbook.eval">⊙</span>
+        </div>
+        <div class="panel-body gap8" id="eval-body">
+          <div class="dimmed small mono">Loading…</div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-edge">
+        <div class="panel-head">
+          <div class="ph-dot" id="dot-edge"></div>
+          <span class="ph-title">Edge Health</span>
+          <span class="prov-glyph" data-tip="/api/state → strategies">⊙</span>
+        </div>
+        <div class="panel-body gap8" id="edge-body">
+          <div class="dimmed small mono">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLEET mode content -->
+    <div class="mode-view" data-mode-view="1">
+      <div class="panel" id="panel-economics">
+        <div class="panel-head">
+          <div class="ph-dot g"></div>
+          <span class="ph-title">Fleet Economics</span>
+          <span class="prov-glyph" data-tip="/api/state → playbook.economics">⊙</span>
+        </div>
+        <div class="panel-body gap8" id="economics-body">
+          <div class="dimmed small mono">Loading…</div>
+        </div>
+      </div>
+      <div class="panel" id="panel-weekly">
+        <div class="panel-head">
+          <div class="ph-dot b"></div>
+          <span class="ph-title">Weekly P&L</span>
+          <span class="prov-glyph" data-tip="/api/state → weekly">⊙</span>
+        </div>
+        <div class="panel-body" id="weekly-body">
+          <div class="dimmed small mono">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENGINEER mode content -->
+    <div class="mode-view" data-mode-view="2">
+      <div class="panel" id="panel-telemetry">
+        <div class="panel-head">
+          <div class="ph-dot b"></div>
+          <span class="ph-title">Exec Telemetry</span>
+          <span class="prov-glyph" data-tip="/api/exec_telemetry">⊙</span>
+        </div>
+        <div class="panel-body" id="telemetry-body">
+          <div class="dimmed small mono">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARCHIVE mode content -->
+    <div class="mode-view" data-mode-view="3">
+      <div class="panel" id="panel-archive">
+        <div class="panel-head">
+          <div class="ph-dot g"></div>
+          <span class="ph-title">Certification History</span>
+          <span class="prov-glyph" data-tip="/api/validation">⊙</span>
+        </div>
+        <div class="panel-body" id="archive-body">
+          <div class="dimmed small mono">Loading…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER: 3D REACTOR -->
+  <div id="center">
+    <canvas id="canvas-3d"></canvas>
+    <div id="webgl-fallback">
+      <div class="dimmed mono small">WebGL unavailable — instrument view only</div>
+      <div id="fallback-instruments" class="gap8" style="padding:20px"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT RAIL -->
+  <div id="right-rail">
+    <!-- OPERATE mode content -->
+    <div class="mode-view active" data-mode-view="0">
+
+      <div class="panel armed" id="panel-thermo">
+        <div class="panel-head">
+          <div class="ph-dot" id="dot-thermo"></div>
+          <span class="ph-title">Risk Thermometer</span>
+          <span class="prov-glyph" data-tip="/api/state → portfolio">⊙</span>
+        </div>
+        <div id="thermo-wrap">
+          <div id="thermo-pnl">$0.00</div>
+          <div class="dimmed small mono" id="thermo-label">Today P&amp;L</div>
+          <div class="thermo-bar mt4" id="thermo-bar">
+            <div class="thermo-fill" id="thermo-fill" style="width:0%;background:var(--green)"></div>
+            <div class="thermo-tick soft" id="tick-daily" style="left:55%" title="$550 daily stop">
+              <div class="thermo-label">$550</div>
+            </div>
+            <div class="thermo-tick" id="tick-dll" style="left:100%" title="$1,000 DLL">
+              <div class="thermo-label">$1k DLL</div>
+            </div>
+          </div>
+          <div class="kv mt4">
+            <span class="kv-k">Trailing floor distance</span>
+            <span class="kv-v" id="thermo-floor">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-positions">
+        <div class="panel-head">
+          <div class="ph-dot" id="dot-pos"></div>
+          <span class="ph-title">Positions</span>
+          <span class="prov-glyph" data-tip="/api/state → accounts">⊙</span>
+        </div>
+        <div class="panel-body" id="positions-body">
+          <div class="dimmed small mono">No open positions</div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-signals">
+        <div class="panel-head">
+          <div class="ph-dot b"></div>
+          <span class="ph-title">Recent Signals</span>
+          <span class="prov-glyph" data-tip="/api/state → trades (newest 5)">⊙</span>
+        </div>
+        <div class="panel-body gap8" id="signals-body">
+          <div class="dimmed small mono">No recent signals</div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-safety">
+        <div class="panel-head">
+          <div class="ph-dot" id="dot-safety"></div>
+          <span class="ph-title">Safety Systems</span>
+          <span class="prov-glyph" data-tip="/api/state → lights">⊙</span>
+        </div>
+        <div class="panel-body gap8" id="safety-body">
+          <div class="dimmed small mono">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLEET mode content -->
+    <div class="mode-view" data-mode-view="1">
+      <div class="panel" id="panel-payouts">
+        <div class="panel-head">
+          <div class="ph-dot g"></div>
+          <span class="ph-title">Lifetime Payouts</span>
+          <span class="prov-glyph" data-tip="/api/state → accounts">⊙</span>
+        </div>
+        <div class="panel-body" id="payouts-body">
+          <div class="dimmed small mono">No funded accounts</div>
+        </div>
+      </div>
+      <div class="panel" id="panel-recon">
+        <div class="panel-head">
+          <div class="ph-dot" id="dot-recon"></div>
+          <span class="ph-title">Reconciliation</span>
+          <span class="prov-glyph" data-tip="/api/state → recon">⊙</span>
+        </div>
+        <div class="panel-body" id="recon-body">
+          <div class="dimmed small mono">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENGINEER mode content -->
+    <div class="mode-view" data-mode-view="2">
+      <div class="panel" id="panel-d1c">
+        <div class="panel-head">
+          <div class="ph-dot b"></div>
+          <span class="ph-title">D1c Keep-Rate</span>
+          <span class="prov-glyph" data-tip="/api/state → regime_monitor.d1c_candidate">⊙</span>
+        </div>
+        <div class="panel-body gap8" id="d1c-body">
+          <div class="dimmed small mono">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARCHIVE mode content -->
+    <div class="mode-view" data-mode-view="3">
+      <div class="panel" id="panel-caveats">
+        <div class="panel-head">
+          <div class="ph-dot"></div>
+          <span class="ph-title">Invalidated Entries</span>
+          <span class="prov-glyph" data-tip="/api/validation → retired_fabrications + _INVALIDATED">⊙</span>
+        </div>
+        <div class="panel-body" id="caveats-body">
+          <div class="dimmed small mono">Loading…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLIGHT DECK -->
+  <div id="deck">
+    <span id="deck-empty" class="dimmed small mono">No recent activity</span>
+  </div>
+
+</div><!-- /#app -->
+
+<!-- ABSOLUTE path required: /v3 (no trailing slash) resolves relative "app.js" against "/",
+     which serves the OLD dashboard/app.js via the catch-all static route — that bug blanked
+     the whole deck. Never use relative asset paths here. -->
+<script type="module" src="/v3/app.js"></script>
+</body>
+</html>

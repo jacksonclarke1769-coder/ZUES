@@ -773,6 +773,58 @@ def api_ack():
     return jsonify(ok=True)
 
 
+@APP.route("/api/validation")
+def api_validation():
+    """Read-only: serves reports/apex_validation.json (certified numbers + provenance)."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "reports", "apex_validation.json")
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        return jsonify(data)
+    except (OSError, ValueError) as e:
+        return jsonify(error=str(e), path=path), 503
+
+
+@APP.route("/api/heartbeat")
+def api_heartbeat():
+    """Read-only: serves out/heimdall/heartbeat.json with freshness_s computed server-side."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "out", "heimdall", "heartbeat.json")
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        ts = data.get("ts")
+        freshness_s = None
+        if ts:
+            try:
+                hb_dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                freshness_s = round((datetime.now(timezone.utc) - hb_dt).total_seconds(), 1)
+            except (ValueError, TypeError):
+                pass
+        data["freshness_s"] = freshness_s
+        data["stale"] = (freshness_s is None or freshness_s > 180)
+        return jsonify(data)
+    except (OSError, ValueError) as e:
+        return jsonify(error=str(e), path=path, freshness_s=None, stale=True), 503
+
+
+@APP.route("/api/exec_telemetry")
+def api_exec_telemetry():
+    """Read-only: exec telemetry rows from out/exec/exec_telemetry.csv as JSON (newest 200)."""
+    import csv as _csv
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "out", "exec", "exec_telemetry.csv")
+    try:
+        with open(path, newline="") as f:
+            rows = list(_csv.DictReader(f))
+        return jsonify(rows=rows[-200:], count=len(rows), path=path)
+    except FileNotFoundError:
+        return jsonify(rows=[], count=0, path=path, note="no telemetry yet")
+    except Exception as e:                                       # noqa: BLE001
+        return jsonify(rows=[], count=0, error=str(e))
+
+
 @APP.route("/")
 def index():
     return send_from_directory("dashboard", "apex.html")     # APEX // BLACKBOX (new)
@@ -781,6 +833,18 @@ def index():
 @APP.route("/legacy")
 def legacy():
     return send_from_directory("dashboard", "zeus.html")     # old ZEUS God Terminal
+
+
+@APP.route("/v3")
+@APP.route("/v3/")
+def v3_index():
+    """ZEUS MISSION DECK — dashboard v3 (display-layer only; zero trading logic)."""
+    return send_from_directory("dashboard-v3", "index.html")
+
+
+@APP.route("/v3/<path:p>")
+def v3_static(p):
+    return send_from_directory("dashboard-v3", p)
 
 
 @APP.route("/<path:p>")
