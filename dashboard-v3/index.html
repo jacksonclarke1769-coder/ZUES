@@ -270,6 +270,26 @@ body::after {
 .mono { font-family: var(--mono); }
 .small { font-size: 10px; }
 .dimmed { color: var(--dim); }
+/* ── ACTIVE EVAL MISSION ─────────────────────────────────────────────── */
+#panel-mission { box-shadow: var(--shadow), inset 0 1px 0 rgba(212,169,71,.12), 0 0 26px rgba(212,169,71,.06); }
+.msn-status { font-family: var(--mono); font-size: 10px; letter-spacing: .04em; color: var(--gold);
+  background: rgba(212,169,71,.08); border: 1px solid var(--gold-dim); border-radius: 4px;
+  padding: 4px 7px; margin-bottom: 9px; line-height: 1.35; }
+.msn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin-bottom: 9px; }
+.msn-cell { display: flex; flex-direction: column; gap: 1px; }
+.msn-cell .l { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: .06em; }
+.msn-cell .v { font-family: var(--mono); font-size: 14px; color: var(--text); }
+.msn-cell .v.gold { color: var(--gold); } .msn-cell .v.green { color: var(--green); } .msn-cell .v.amber { color: var(--amber); }
+/* progress bar: balance from start toward +$3k target */
+.msn-bar { height: 5px; background: #0d0f13; border-radius: 3px; overflow: hidden; margin: 2px 0 10px; position: relative;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.6); }
+.msn-bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); }
+.msn-src { font-size: 9px; color: var(--dim); margin-bottom: 8px; }
+.msn-src b { color: var(--amber); font-weight: 600; }
+.msn-check { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+.msn-check li { font-family: var(--mono); font-size: 10.5px; color: var(--dim); display: flex; gap: 7px; align-items: baseline; }
+.msn-check li .box { color: var(--gold-dim); }
+.msn-check li.done { color: var(--green); } .msn-check li.done .box { color: var(--green); }
 .mt4 { margin-top: 4px; }
 .gap8 { display: flex; flex-direction: column; gap: 8px; }
 </style>
@@ -335,6 +355,16 @@ body::after {
   <div id="left-rail">
     <!-- OPERATE mode content -->
     <div class="mode-view active" data-mode-view="0">
+      <div class="panel armed" id="panel-mission">
+        <div class="panel-head">
+          <div class="ph-dot g" id="dot-mission"></div>
+          <span class="ph-title">Active Eval Mission</span>
+          <span class="prov-glyph" data-tip="/api/campaign → evidence/eval_campaign.json">⊙</span>
+        </div>
+        <div class="panel-body" id="mission-body">
+          <div class="dimmed small mono">loading campaign…</div>
+        </div>
+      </div>
       <div class="panel armed" id="panel-accounts">
         <div class="panel-head">
           <div class="ph-dot" id="dot-accounts"></div>

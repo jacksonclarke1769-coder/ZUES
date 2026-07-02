@@ -1,3 +1,7 @@
+> **OBSOLETE — 2026-07-02:** This checklist describes the ARES manual-trading mode which ran on
+> an older machine configuration. The current system is ZEUS Rev B (Profile A · Exit#3 · D1c ·
+> automated via `./go-live-recert.sh`). See `AGENTS.md` and `README.md` for the current spec.
+
 # ARES — Daily Operating Checklist
 
 One account, one session (NY-AM, 09:30–11:30 ET). Manual/supervised execution.

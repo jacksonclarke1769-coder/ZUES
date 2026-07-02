@@ -827,6 +827,46 @@ def api_exec_telemetry():
         return jsonify(rows=[], count=0, error=str(e))
 
 
+@APP.route("/api/campaign")
+def api_campaign():
+    """Read-only: the ACTIVE EVAL CAMPAIGN (evidence/eval_campaign.json) + computed fields.
+    Balance is operator-confirmed until live read-back is available; then it auto-flips to live.
+    Pure display — never places orders, never modifies the campaign file."""
+    import datetime as _dt
+    base = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(base, "evidence", "eval_campaign.json")
+    try:
+        c = json.load(open(path))
+    except Exception as e:                                       # noqa: BLE001
+        return jsonify(active=False, error=str(e))
+    # prefer LIVE read-back balance if the sentinel has a real one (flips source to 'live')
+    try:
+        hb = json.load(open(os.path.join(base, "out", "heimdall", "heartbeat.json")))
+        rb = hb.get("readback_balance")
+        if rb and float(rb) > 0:
+            c["current_balance"] = float(rb); c["balance_source"] = "live"; c["balance_asof"] = hb.get("ts", "")
+    except Exception:                                            # noqa: BLE001
+        pass
+    bal = float(c.get("current_balance", 0.0))
+    start = float(c.get("start_balance", 50000.0))
+    trail = float(c.get("trail_dd", 2500.0))
+    tgt = float(c.get("target_balance", 53000.0))
+    # floor = start - trail while no new EOD highs (conservative; live sim ratchets it up)
+    floor = start - trail if bal <= start else bal - trail
+    c["cushion"] = round(bal - floor, 2)
+    c["to_pass"] = round(max(0.0, tgt - bal), 2)
+    c["floor"] = round(floor, 2)
+    c["dll"] = 1000.0
+    try:
+        d0 = _dt.date.fromisoformat(c.get("clock_start"))
+        elapsed = (_dt.date.today() - d0).days
+        c["days_elapsed"] = elapsed
+        c["days_left"] = max(0, int(c.get("clock_days", 30)) - elapsed)
+    except Exception:                                            # noqa: BLE001
+        c["days_left"] = None
+    return jsonify(c)
+
+
 @APP.route("/")
 def index():
     return send_from_directory("dashboard", "apex.html")     # APEX // BLACKBOX (new)

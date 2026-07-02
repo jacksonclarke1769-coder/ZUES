@@ -1,0 +1,27 @@
+{
+  "_comment": "ACTIVE EVAL CAMPAIGN — operator-maintained ground truth for the live 50K eval. The dashboard's MISSION panel + the 3D reactor launch rail both read this. balance_source='operator' means eye-confirmed off the Apex dashboard at balance_asof; auto-flips to live read-back once the :9222 panel is readable. EVERY EVAL RENDERS A LAUNCH-RAIL VEHICLE automatically from two sources, deduped by account label: (1) any EVAL-phase account the bot registers in /api/state, and (2) this file. To show ANOTHER concurrent eval, add an object to the optional 'evals' array below with {account_label,start_balance,current_balance,target_balance,clock_start,clock_days} — it appears on the next poll, no code change.",
+  "evals": [],
+  "active": true,
+  "firm": "Apex",
+  "account_label": "APEX-50K-EVAL-1",
+  "account_id": "APEX6046970000002",
+  "phase": "EVAL",
+  "machine": "ZEUS Rev B (v2026.07.02b)",
+  "start_balance": 50000.0,
+  "current_balance": 49404.80,
+  "balance_source": "operator",
+  "balance_asof": "2026-07-02",
+  "trail_dd": 2500.0,
+  "target_balance": 53000.0,
+  "clock_start": "2026-06-25",
+  "clock_days": 30,
+  "status": "ARMED — GO LIVE MONDAY 2026-07-06 via ./go-live-recert.sh",
+  "checklist": [
+    "kill stale bot PID (old machine)",
+    "rotate Tradovate password",
+    "verify $2,500 trail on Apex dashboard",
+    "open + pin Tradovate panel in :9222 Chrome (readable)",
+    "./go-live-recert.sh  (confirm equity SEEDED $49,404.80 + read-back GREEN)",
+    "start deadman_watch --live + feed_watch --heal"
+  ]
+}

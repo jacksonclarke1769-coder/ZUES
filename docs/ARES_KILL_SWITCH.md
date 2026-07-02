@@ -1,3 +1,7 @@
+> **OBSOLETE — 2026-07-02:** This kill-switch document describes the ARES manual-trading mode
+> which ran on an older machine configuration. The current system is ZEUS Rev B (Profile A ·
+> Exit#3 · D1c · automated via `./go-live-recert.sh`). See `AGENTS.md` and `README.md` for truth.
+
 # ARES — Kill Switch Rules
 
 Two levels: stop the DAY, and end ARES MODE. When in doubt, the answer is always stop.

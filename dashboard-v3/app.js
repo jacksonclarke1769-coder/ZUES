@@ -248,6 +248,42 @@ function updateSpine(st, hb) {
 }
 
 // ─── FLEET BAYS (left rail, operate mode) ────────────────────────────────────
+// ─── ACTIVE EVAL MISSION ─────────────────────────────────────────────────────
+function updateMission(c) {
+  const el = document.getElementById('mission-body');
+  const dot = document.getElementById('dot-mission');
+  if (!el) return;
+  if (!c || c.active === false) {
+    el.innerHTML = '<div class="dimmed small mono">No active campaign</div>';
+    if (dot) dot.className = 'ph-dot';
+    return;
+  }
+  const money = n => '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const bal = c.current_balance, start = c.start_balance || 50000;
+  const prog = Math.max(0, Math.min(100, ((bal - start) / ((c.target_balance || 53000) - start)) * 100));
+  const cushion = c.cushion ?? 0;
+  const cushClass = cushion > 1500 ? 'green' : cushion > 800 ? 'amber' : 'green';
+  const live = c.balance_source === 'live';
+  const days = c.days_left;
+  const daysClass = days == null ? '' : days > 10 ? '' : days > 4 ? 'amber' : 'amber';
+  if (dot) dot.className = 'ph-dot g';
+  const check = (c.checklist || []).map(item => {
+    const done = /done|✓/i.test(item);
+    return `<li class="${done ? 'done' : ''}"><span class="box">${done ? '☑' : '☐'}</span><span>${item.replace(/\s*\(done\)/i, '')}</span></li>`;
+  }).join('');
+  el.innerHTML = `
+    <div class="msn-status">${c.status || ''}</div>
+    <div class="msn-grid">
+      <div class="msn-cell"><span class="l">Balance</span><span class="v gold">${money(bal)}</span></div>
+      <div class="msn-cell"><span class="l">To pass (+)</span><span class="v">${money(c.to_pass)}</span></div>
+      <div class="msn-cell"><span class="l">Cushion → floor</span><span class="v ${cushClass}">${money(cushion)}</span></div>
+      <div class="msn-cell"><span class="l">Days left</span><span class="v ${daysClass}">${days == null ? '—' : days + 'd'}</span></div>
+    </div>
+    <div class="msn-bar"><i style="width:${prog.toFixed(0)}%"></i></div>
+    <div class="msn-src">${c.firm || 'Apex'} 50K · ${c.machine || ''} · balance <b>${live ? 'LIVE read-back' : 'operator-confirmed ' + (c.balance_asof || '')}</b></div>
+    <ul class="msn-check">${check}</ul>`;
+}
+
 function updateFleet(st) {
   const accts = st?.accounts || [];
   const fleetEl = document.getElementById('fleet-body');
@@ -753,6 +789,7 @@ function updateAll() {
   if (!st) return;
   const painters = [
     () => updateSpine(st, S.heartbeat),
+    () => updateMission(S.campaign),
     () => updateFleet(st),
     () => updateEval(st),
     () => updateEdge(st),
@@ -774,20 +811,22 @@ function updateAll() {
     try { p(); } catch (e) { console.warn('panel paint failed:', e); }
   }
   if (S.webglOk && S.reactor) {
-    try { S.reactor.onDataUpdate(st, S.heartbeat); } catch (e) { console.warn('3D update failed:', e); }
+    try { S.reactor.onDataUpdate(st, S.heartbeat, S.campaign); } catch (e) { console.warn('3D update failed:', e); }
   }
 }
 
 // ─── DATA FETCHING (guarded; a bad source degrades, never throws) ────────────
 async function fetchAll() {
-  const [sr, hr, tr] = await Promise.all([
+  const [sr, hr, tr, cr] = await Promise.all([
     safeJson('/api/state', 4000),
     safeJson('/api/heartbeat', 3000),
     safeJson('/api/exec_telemetry', 3000),
+    safeJson('/api/campaign', 3000),
   ]);
   if (markSource('state', sr)) S.state = sr.data;
   if (markSource('heartbeat', hr)) S.heartbeat = hr.data;
   if (markSource('telemetry', tr)) S.telemetry = tr.data;
+  if (markSource('campaign', cr)) S.campaign = cr.data;
   if (!S.validation) {
     const vr = await safeJson('/api/validation', 3000);
     if (markSource('validation', vr)) S.validation = vr.data;
@@ -825,7 +864,8 @@ async function initThreeJS() {
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-  camera.position.set(0, 0, 5);
+  camera.position.set(0, -0.35, 6.0);   // pulled back + slightly up so the launch rail sits fully in frame
+  camera.lookAt(0, -0.2, 0);
 
   // ── Dodecahedron reactor core ──
   const dodeGeo = new THREE.DodecahedronGeometry(1, 0);
@@ -880,17 +920,45 @@ async function initThreeJS() {
     satellites.push({ pivot, mesh, speed, angle: Math.random() * Math.PI * 2 });
   }
 
-  // ── Eval vehicles (launch rail beneath) ──
+  // ── Launch rail (static): the track evals climb toward the +target ignition line ──
+  const RAIL_Y = -1.85, RAIL_X0 = -1.45, RAIL_X1 = 1.55;
+  const railLine = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(RAIL_X0, RAIL_Y, 0), new THREE.Vector3(RAIL_X1, RAIL_Y, 0)]),
+    new THREE.LineBasicMaterial({ color: 0xD4A947, transparent: true, opacity: 0.22 }));
+  scene.add(railLine);
+  // ignition line at the target end (+$3k)
+  const tgtMark = new THREE.Mesh(new THREE.PlaneGeometry(0.02, 0.16),
+    new THREE.MeshBasicMaterial({ color: 0x39C07E, transparent: true, opacity: 0.6 }));
+  tgtMark.position.set(RAIL_X1, RAIL_Y, 0); scene.add(tgtMark);
+
+  // ── Eval vehicles (climb the launch rail) ──
   const evalVehicles = [];
-  function addEvalVehicle(progress, color = 0x2E6FEF) {
-    const geo = new THREE.ConeGeometry(0.05, 0.14, 6);
-    const mat = new THREE.MeshStandardMaterial({ color, metalness: 0.6, roughness: 0.3 });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.y = -2.0 + (Math.random() - 0.5) * 0.3;
-    mesh.position.x = -1.5 + progress * 3.0;
-    mesh.rotation.z = Math.PI / 2;
-    scene.add(mesh);
-    evalVehicles.push(mesh);
+  function addEvalVehicle(progress, lane = 0, fuel = 1) {
+    // launch vehicle climbs the rail with progress-to-target; a gold flame whose length encodes
+    // remaining 30-day fuel; colour warms blue->gold as it nears ignition. Sized to read clearly.
+    const grp = new THREE.Group();
+    const bodyCol = new THREE.Color(0x2E6FEF).lerp(new THREE.Color(0xF2CB63), progress);
+    const body = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.24, 10),
+      new THREE.MeshStandardMaterial({ color: bodyCol, metalness: 0.7, roughness: 0.25,
+        emissive: bodyCol, emissiveIntensity: 0.6 }));
+    body.rotation.z = -Math.PI / 2;                    // nose points along +x (toward target)
+    grp.add(body);
+    const flame = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.22 * Math.max(0.2, fuel), 7),
+      new THREE.MeshBasicMaterial({ color: 0xF2CB63, transparent: true, opacity: 0.7,
+        blending: THREE.AdditiveBlending, depthWrite: false }));
+    flame.rotation.z = Math.PI / 2; flame.position.x = -0.2; grp.add(flame);
+    // glow sprite so it reads against the dark stage
+    const gc = document.createElement('canvas'); gc.width = gc.height = 64;
+    const gg = gc.getContext('2d').createRadialGradient(32, 32, 2, 32, 32, 32);
+    gg.addColorStop(0, 'rgba(242,203,99,0.6)'); gg.addColorStop(1, 'rgba(242,203,99,0)');
+    const gx = gc.getContext('2d'); gx.fillStyle = gg; gx.fillRect(0, 0, 64, 64);
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(gc),
+      transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+    glow.scale.set(0.7, 0.7, 1); grp.add(glow);
+    grp.position.set(RAIL_X0 + progress * (RAIL_X1 - RAIL_X0), RAIL_Y + 0.06 - lane * 0.26, 0);
+    scene.add(grp);
+    evalVehicles.push(grp);
   }
 
   // ── Particles (payout streams; well under the 2k budget) ──
@@ -933,7 +1001,7 @@ async function initThreeJS() {
   let _payoutEvent = 0;
   let _t = 0;
 
-  function onDataUpdate(st, hb) {
+  function onDataUpdate(st, hb, campaign) {
     _hbFreshness = hb?.freshness_s ?? 999;
 
     satellites.forEach(s => s.pivot.removeFromParent());
@@ -942,22 +1010,37 @@ async function initThreeJS() {
     orbitRings.length = 0;
 
     const accts = st?.accounts || [];
-    accts.forEach((a, i) => {
+    // FUNDED accounts orbit as satellites (altitude = cushion)
+    accts.filter(a => a.phase === 'FUNDED').forEach((a, i) => {
       const r = 1.6 + i * 0.35;
       const cushion = (a.balance ?? 0) - (a.floor ?? 0);
-      const cushMax = a.dd ?? 2500;
-      const height = 0.2 + (cushion / cushMax) * 0.8;
-      const color = a.phase === 'FUNDED' ? 0xD4A947 : 0x2E6FEF;
-      orbitRings.push(addOrbitRing(r * height, color));
-      addSatellite(r * height, color, 0.2 + i * 0.07);
+      const height = 0.2 + (cushion / (a.dd ?? 2500)) * 0.8;
+      orbitRings.push(addOrbitRing(r * height, 0xD4A947));
+      addSatellite(r * height, 0xD4A947, 0.2 + i * 0.07);
     });
 
+    // EVAL vehicles on the launch rail — merged from LIVE STATE accounts + the active
+    // campaign, deduped by label, so EVERY started eval renders automatically (state path =
+    // bot-registered; campaign path = operator-declared in evidence/eval_campaign.json).
     evalVehicles.forEach(v => v.removeFromParent());
     evalVehicles.length = 0;
-    accts.filter(a => a.phase === 'EVAL').forEach(a => {
-      const prog = Math.max(0, Math.min(1, ((a.balance ?? 50000) - 50000) / 3000));
-      addEvalVehicle(prog);
-    });
+    const evalList = [];
+    const seen = new Set();
+    const push = (label, bal, start, tgt, days, clock) => {
+      const key = String(label || '').trim() || `eval${evalList.length}`;
+      if (seen.has(key)) return; seen.add(key);
+      const prog = Math.max(0, Math.min(1, ((bal ?? start) - start) / (tgt - start)));
+      const fuel = (days != null && clock) ? Math.max(0, days / clock) : 1;
+      evalList.push({ prog, fuel });
+    };
+    accts.filter(a => a.phase === 'EVAL').forEach(a =>
+      push(a.account || a.label, a.balance, 50000, 53000, a.days_left, 30));
+    (campaign && campaign.active !== false ? [campaign, ...(campaign.evals || [])] : [])
+      .filter(e => e && (e.current_balance != null || e.start_balance != null))
+      .forEach(e => push(e.account_label || e.account_id, e.current_balance,
+                         e.start_balance || 50000, e.target_balance || 53000,
+                         e.days_left, e.clock_days || 30));
+    evalList.forEach((e, i) => addEvalVehicle(e.prog, i, e.fuel));
 
     if (accts.some(a => a.phase === 'FUNDED' && (a.paid || 0) > 0)) {
       _payoutEvent = 80;
