@@ -152,3 +152,11 @@ def resolve_b_exit(mode="paper", approval_dir=None):
         if not os.path.exists(os.path.join(d, B_PARTIAL_APPROVAL_FLAG)):
             return "SINGLE"                                # not approved for live -> safe prior bracket
     return "PARTIAL_1R"
+
+
+# --- HTF alignment skip filter (shadow-only; default OFF until paper-forward gate) ---------------
+# When True: A entries with htf15+htf1h+htf4h (signed by trade direction) <= -2 are blocked
+# (logged to ARGUS as d1c_blocked with reason="htf_alignment ... <= -2").
+# ARMED ONLY after paper-forward gate passes (>= 20 A signals with live classification matching
+# backtest, 0-mismatch parity). DO NOT set True without operator approval + Fable re-lock.
+HTF_SKIP_ENABLED = False

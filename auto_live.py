@@ -122,8 +122,10 @@ class LiveAuto:
     def __init__(self, account, tier, mode, store, journal, sender, daily_stop,
                  d1c_mode="ACTIVE_EVAL_FILTER", basis_offset=0.0, d1c_stale_after_s=360,
                  entry_gate=None, logger=None, cushion_fn=None, p3_enabled=True,
-                 profile_b=True, readback=None, notify=None, tjournal=None, exit_override=None):
+                 profile_b=True, readback=None, notify=None, tjournal=None, exit_override=None,
+                 buf_fn=None):
         self.exit_override = exit_override   # explicit --exit-model launch override (still gated by resolve_exit_model)
+        self.buf_fn = buf_fn        # () -> current 5m bar DataFrame (for HTF alignment); None = no compute
         self.logger = logger           # ARGUS decision logger (auditability; fail-safe, optional)
         self.entry_gate = entry_gate   # infrastructure readiness gate (data GREEN + dead-man alive)
         self.readback = readback       # Stage B: live broker read-back sentinel (closes-the-loop). Optional.
@@ -292,6 +294,23 @@ class LiveAuto:
                            reason=f"drift disagrees (drift={drift})", d1c_mode=self.d1c_mode,
                            d1c_checked=True, d1c_allowed=False)
                 return
+        # --- HTF alignment filter (shadow-logged; live gate via HTF_SKIP_ENABLED in config_defaults) ---
+        import config_defaults as _CD_htf
+        _htf_align = None
+        if self.buf_fn is not None:
+            try:
+                from htf_alignment import compute_htf_alignment
+                _, _, _, _htf_align = compute_htf_alignment(
+                    self.buf_fn(), ts, sig.get("side", "long"))
+            except Exception as _htf_e:  # noqa: BLE001 — shadow metric; a gate error never adds risk
+                print(f"[auto-live] ⚠ HTF align error: {_htf_e!r} — allowed (shadow gate)", flush=True)
+                _htf_align = None
+        if getattr(_CD_htf, "HTF_SKIP_ENABLED", False) and _htf_align is not None and _htf_align <= -2:
+            self.blocked += 1
+            print(f"[auto-live] HTF SKIP (align={_htf_align:.0f} <= -2) — no webhook", flush=True)
+            self._dlog("blocked", "d1c", bar_ts=ts, side=sig.get("side"),
+                       reason=f"htf_alignment {_htf_align:.0f} <= -2", htf_align=_htf_align)
+            return
         spec = _tier_spec(self.tier)
         # P3 cushion brake: near the floor, cut A to max(am//2,1) (and B to 0, handled in on_b_signal)
         braked = self._apply_p3()
@@ -301,7 +320,8 @@ class LiveAuto:
         if not _rok:
             self.blocked += 1
             print(f"[auto-live] RISK GATE BLOCK (A): {_rwhy} — no webhook", flush=True)
-            self._dlog("blocked", "risk", bar_ts=ts, side=sig.get("side"), reason=_rwhy)
+            self._dlog("blocked", "risk", bar_ts=ts, side=sig.get("side"), reason=_rwhy,
+                       htf_align=_htf_align)
             return
         if _rq < a_size:
             print(f"[auto-live] RISK GATE SIZE (A): {_rwhy}", flush=True)
@@ -314,7 +334,8 @@ class LiveAuto:
                                              requested=self.exit_override)
         except ConfigLockError as e:
             print(f"[auto-live] CONFIGLOCK: unsafe exit model blocked — {e}", flush=True)
-            self._dlog("blocked", "exitlock", bar_ts=ts, side=sig.get("side"), reason=str(e))
+            self._dlog("blocked", "exitlock", bar_ts=ts, side=sig.get("side"), reason=str(e),
+                       htf_align=_htf_align)
             return
         common = dict(
             account=self.account, strategy="A", setup=sig.get("liq", "sweep-OTE"),
@@ -349,7 +370,7 @@ class LiveAuto:
             print(f"[auto-live] FAIL CLOSED — unknown/unsafe exit model '{_exit_model}' — no order sent",
                   flush=True)
             self._dlog("blocked", "exitlock", bar_ts=ts, side=sig.get("side"),
-                       reason=f"unknown exit model {_exit_model}")
+                       reason=f"unknown exit model {_exit_model}", htf_align=_htf_align)
             return
         if ok or self.mode != "live":
             self.sent += 1
@@ -370,7 +391,8 @@ class LiveAuto:
         # ARGUS: record the resolved decision (exitlock-block vs paper/live signal) with Exit #3 fields
         _reason = res.get("reason", "")
         if not ok and "exit model" in _reason.lower():
-            self._dlog("blocked", "exitlock", bar_ts=ts, side=sig["side"], reason=_reason)
+            self._dlog("blocked", "exitlock", bar_ts=ts, side=sig["side"], reason=_reason,
+                       htf_align=_htf_align)
         else:
             _lf = {}
             if _exit_model == "EXIT3_FIXED_PARTIAL":
@@ -384,7 +406,8 @@ class LiveAuto:
                        tp1_qty=_lf.get("tp1_qty"), tp1_target=_lf.get("tp1_target"),
                        tp2_qty=_lf.get("tp2_qty"), tp2_target=_lf.get("tp2_target"),
                        signal_id_base=sig["ts_signal"], webhook_sent=bool(ok),
-                       traderspost_status=_reason, live=(self.mode == "live"))
+                       traderspost_status=_reason, live=(self.mode == "live"),
+                       htf_align=_htf_align)
 
     def on_b_signal(self, sig, ts, bar_i=None):
         """Profile B (ORB) entry. NEVER consults D1c. Single bracket (its own ATR stop/target,
@@ -846,6 +869,8 @@ def main(argv=None):
     runner._orig = runner._on_decision
     # P3 reads the live cushion from the account state machine (distance to the trailing floor)
     auto.cushion_fn = lambda: (runner.bot.mffu.distance_to_floor, runner.bot.mffu.cfg.trail_dd)
+    # HTF alignment: live 5m bar buffer (ProfileAEngine) at signal time
+    auto.buf_fn = lambda: runner.bot.engine.buf
     # SEED modeled equity from broker reality (audit R2/N): a fresh state machine starts at $50k with a
     # full $2k cushion — the real account may already be down. Gates (P3, too_close_to_floor, risk gate)
     # must see the REAL cushion, else they permit trades the floor can't absorb. Read-only; best-effort.
