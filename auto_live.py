@@ -131,6 +131,7 @@ class LiveAuto:
         self.readback = readback       # Stage B: live broker read-back sentinel (closes-the-loop). Optional.
         self.notify = notify           # Telegram notifier (signals + modeled outcomes). Optional, fail-safe.
         self.tjournal = tjournal       # learning journal (why won/lost). Optional, fail-safe.
+        self.telemetry = None          # ExecTelemetry instance (wired by main()); observational only.
         # P3 cushion brake + Profile B (research-validated; gated like everything else, paper-first)
         self.p3 = P3Brake()
         self.p3_enabled = p3_enabled
@@ -346,6 +347,15 @@ class LiveAuto:
             root="MNQ", order_type="limit",
             mode_meta=dict(mode="ARES", tier=self.tier),
             d1c_meta=dict(mode=self.d1c_mode, status=d1c_status))
+        # TELEMETRY: record decision wall time before any send (observational; fail-safe)
+        _telem_decision_wall = datetime.now(timezone.utc)
+        try:
+            if self.telemetry is not None:
+                self.telemetry.on_decision(
+                    str(sig["ts_signal"]), ts, _telem_decision_wall,
+                    common["entry"], common["stop"], common["target"], a_size, sig["side"], "A")
+        except Exception as _te:  # noqa: BLE001
+            print(f"[exec-telem] ⚠ on_decision hook error: {_te!r}", flush=True)
         # EXITFORGE: official model is EXIT3_FIXED_PARTIAL -> two split bracket legs, fail-closed
         if _exit_model == "EXIT3_FIXED_PARTIAL":
             legs, err = BP.build_entry_exit3(**common)
@@ -372,6 +382,21 @@ class LiveAuto:
             self._dlog("blocked", "exitlock", bar_ts=ts, side=sig.get("side"),
                        reason=f"unknown exit model {_exit_model}", htf_align=_htf_align)
             return
+        # TELEMETRY: capture webhook send result (observational; fail-safe)
+        try:
+            if self.telemetry is not None:
+                _telem_http = None
+                if _exit_model == "EXIT3_FIXED_PARTIAL":
+                    # use the HTTP status of the first sent leg (entry-establishing)
+                    for _tl in res.get("legs", []):
+                        if _tl.get("status"):
+                            _telem_http = _tl["status"]; break
+                else:
+                    _telem_http = res.get("status")
+                self.telemetry.on_webhook_result(
+                    str(sig["ts_signal"]), _telem_http, datetime.now(timezone.utc))
+        except Exception as _te:  # noqa: BLE001
+            print(f"[exec-telem] ⚠ on_webhook_result hook error: {_te!r}", flush=True)
         if ok or self.mode != "live":
             self.sent += 1
             self.open_risk["A"] = abs(float(sig["entry"]) - float(sig["stop"])) * a_size * 2.0   # audit R1
@@ -736,6 +761,15 @@ def main(argv=None):
                     p3_enabled=not getattr(a, "no_p3", False), readback=readback, notify=tg, tjournal=journal,
                     exit_override=getattr(a, "exit_model", None))
 
+    # --- Execution telemetry (observational, fail-safe; never touches the order path) ---
+    try:
+        from exec_telemetry import ExecTelemetry
+        auto.telemetry = ExecTelemetry()
+        print("  exec telemetry ON -> out/exec/exec_telemetry.csv", flush=True)
+    except Exception as _et_e:  # noqa: BLE001
+        print(f"  ⚠ exec telemetry DISABLED ({_et_e!r})", flush=True)
+        auto.telemetry = None
+
     # --- Profile MOMENTUM lane (default OFF; --profile-momentum routes it via the same bridge) ---
     # PHASE/FIRM gate: momentum trades variance for income, so it auto-enables ONLY where the ruleset rewards
     # that (Apex eval / MFFU funded) and stays off where variance is punished (MFFU eval trailing-DD, Apex
@@ -839,6 +873,14 @@ def main(argv=None):
             except Exception as _e:                               # noqa: BLE001 — on_flat still runs
                 print(f"[auto-live] on_missing: cancel send failed: {_e!r}", flush=True)
             readback.on_flat()
+            # TELEMETRY: mark the pending A signal as MISSED (observational; fail-safe)
+            try:
+                if auto.telemetry is not None:
+                    _pts = auto.telemetry.pending_signal_ts()
+                    if _pts is not None:
+                        auto.telemetry.on_missed(_pts)
+            except Exception as _te:  # noqa: BLE001
+                print(f"[exec-telem] ⚠ on_missed hook error: {_te!r}", flush=True)
             if tg.enabled:
                 tg.send(f"⚠ entry unfilled at broker → working orders cancelled; "
                         f"modeled tracker may diverge (phantom-trade guard). "
@@ -1146,9 +1188,29 @@ def main(argv=None):
                 _now = _t_mod.time()
                 if _now - _rb["t"] >= a.readback_poll:
                     _rb["t"] = _now
+                    # TELEMETRY: track fill confirmation state before poll (observational; fail-safe)
+                    _telem_was_fc = getattr(readback, "_fill_confirmed", False)
+                    _telem_pts = auto.telemetry.pending_signal_ts() if auto.telemetry is not None else None
+                    if _telem_pts is not None and auto.telemetry is not None:
+                        try:
+                            auto.telemetry.poll_increment(_telem_pts)
+                        except Exception as _te:  # noqa: BLE001
+                            print(f"[exec-telem] ⚠ poll_increment error: {_te!r}", flush=True)
                     conf = readback.poll(_rb_broker)
                     if conf:
                         print(f"[auto-live] read-back: {[(c,d) for c,_,d in conf]}", flush=True)
+                    # TELEMETRY: if fill just confirmed, record actual fill price (observational; fail-safe)
+                    if (_telem_pts is not None and auto.telemetry is not None
+                            and not _telem_was_fc and getattr(readback, "_fill_confirmed", False)):
+                        try:
+                            _fp, _pr = None, False
+                            if hasattr(_rb_broker, "avg_price_by_account"):
+                                _fp = _rb_broker.avg_price_by_account(readback.account)
+                                _pr = _fp is not None
+                            auto.telemetry.on_fill_confirmed(
+                                _telem_pts, _fp, _pr, datetime.now(timezone.utc))
+                        except Exception as _te:  # noqa: BLE001
+                            print(f"[exec-telem] ⚠ on_fill_confirmed error: {_te!r}", flush=True)
             # --- Pre-open feed-readiness guard: if the feed isn't GREEN before the 09:30 ET open, alert the
             #     operator EARLY to fix Chrome — a late feed silently kills the ORB + Momentum opening range.
             #     Advisory only: never changes sizing/entries (the fail-closed data gate already blocks trades). ---

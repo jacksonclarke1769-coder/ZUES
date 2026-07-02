@@ -59,7 +59,8 @@ _PANEL_JS = r"""
     const sym = cell(r,'symbol-column'); const q = num(cell(r,'qty-column'));
     if (!sym || !q) continue;
     const side = cell(r,'side-column');
-    positions.push({ account, symbol: sym, qty: Math.abs(q), side: (/sell|short/i.test(side)||q<0) ? 'short' : 'long' });
+    const avgPx = num(cell(r,'avg-price-column'));   // READ-ONLY: average fill price for this position
+    positions.push({ account, symbol: sym, qty: Math.abs(q), side: (/sell|short/i.test(side)||q<0) ? 'short' : 'long', avg_price: avgPx });
   }
   const orders = [];
   for (const r of rowsOf('TRADOVATE.orders-table')) {
@@ -111,6 +112,22 @@ class TradingViewBrokerView:
         for b in self._panel().get("balances", []):
             if b.get("account"):
                 return str(b["account"])
+        return None
+
+    def avg_price_by_account(self, account_id):
+        """READ-ONLY: return the average fill price for the account's open position,
+        or None if no position / panel not readable / avg-price cell missing.
+
+        Sourced from the avg-price-column of TRADOVATE.positions-table (same JS scrape
+        as net_by_account).  Used by exec_telemetry to compute actual_fill_px and
+        slippage.  Never raises — returns None on any error."""
+        try:
+            for p in self._panel().get("positions", []):
+                if str(p.get("account")) == str(account_id):
+                    v = p.get("avg_price")
+                    return float(v) if v is not None else None
+        except Exception:   # noqa: BLE001 — telemetry is observational; silently return None
+            pass
         return None
 
     def order_filled(self, signal_id):
