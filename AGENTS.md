@@ -74,6 +74,12 @@ account-manager panel is readable in the :9222 Chrome, (4) start only with `./go
 
 - Fills: 1m-truth conventions (`tools_1m_truth_recert.py`) — no same-bar target on the fill bar,
   adverse-first (stop before target) on every bar, real Databento data only.
+- **LOOK-AHEAD CANARY (mandatory since 2026-07-02):** every NEW research feature ships with an
+  `assert_causal()` test (`lookahead_canary.py`) — poison all data after ts, the value must not
+  change — BEFORE its results are believed, certified, or ticketed. Named bug classes it catches:
+  F1 (fill-bar target/entry sequencing) and Z (indexing a full-frame resample at "the bucket
+  containing ts" — that bucket holds its FINAL close = future data; use `completed_bucket_slope()`
+  or completed buckets only). Both classes produced era-consistent, profitable-looking fake edges.
 - Comparisons must be paired (same data, same harness, same costs) and ranked on the business axes:
   pass rate, bust rate, expectancy, worst-day/threshold proximity, trade count, era-split robustness —
   never raw PF alone.
