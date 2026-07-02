@@ -74,8 +74,8 @@ T2 (decay), I1 (feed)** — the dashboard and tripwires below are built around e
 
 **D. Portfolio Health** (from `mffu_state` per account)
 - Per-account: phase, balance, cushion $, cushion % of dd, payouts to date, next-payout ETA.
-- Funded count vs plan (3 MFFU + 2 TS + 1 standby), evals in flight, cash reserve vs $6k target.
-- Cumulative payout vs MFFU $100k/user cap; live-transition trigger countdown (3 consecutive payouts).
+- Funded count vs plan (Apex funded + standby eval), evals in flight, cash reserve vs $6k target.
+- Cumulative payout vs Apex PA ladder (~$12.6-12.8k lifetime cap per account, 6 payouts — see funded_40_recert).
 - Capital growth vs VALHALLA conservative corridor (the honest baseline per RAGNAROK).
 
 **E. Risk Health**
@@ -124,7 +124,7 @@ and the verified track record's integrity.
 - **Feeds**: Tradovate primary, Dukascopy secondary (both already in `paper_live.py`),
   cross-checked each session open; divergence >0.25% = yellow. TradingView MCP as tertiary
   manual sanity check.
-- **Broker paths**: Tradovate API primary (MFFU), TopstepX (Topstep) — two independent
+- **Broker paths**: Tradovate API primary (Apex), TopstepX (Topstep) — two independent
   stacks by construction. Last-resort manual path: broker mobile app flatten procedure
   printed in the runbook (target: flat in <5 min from page).
 - **Copier**: Tradesyncer primary; fallback = bot places orders per-account directly
@@ -144,7 +144,7 @@ and the verified track record's integrity.
    (RAGNAROK already priced this); not fixable by software.
 2. **The watchman needs watching**: dashboard/VPS self-reporting is circular → external
    dead-man's-switch (independent service) is the non-negotiable fix, included above.
-3. **Tradovate is both MFFU broker AND copier substrate** — vendor concentration.
+3. **Tradovate is both Apex broker AND copier substrate** — vendor concentration.
    Fix: direct per-account order placement fallback (no copier), plus Topstep on a
    disjoint stack.
 4. **Threshold gaming/alert fatigue**: L1/yellow will fire in normal variance.
@@ -170,14 +170,14 @@ confirm EOD flat on all accounts · reconcile bot fills vs broker statements (co
 cushion + P3 state per account · feed freshness + heartbeat log · acknowledge yellows.
 
 **Weekly (≈30 min)**: rolling-90 expectancy/PF review vs bands · slippage and fill-rate
-trend · copy-success summary · firm rule-page diff (MFFU + Topstep changelogs) · reserve
+trend · copy-success summary · firm rule-page diff (Apex + Topstep changelogs) · reserve
 balance vs $6k · snapshot restore-test (1-command dry run) · payout requests per retention
 policy.
 
 **Monthly audit (≈2h)**: decay-monitor formal reading (sign the level) · live-vs-validation
 distribution comparison appended to the verified-record file · DR drill in rotation
 (feed failover / VPS promotion / mobile flatten — one per month) · false-positive review
-of tripwires · account caps vs plan (MFFU $100k cumulative, transition countdowns) ·
+of tripwires · account caps vs Apex PA ladder (~$12.6-12.8k lifetime cap per account, 6 payouts) ·
 VALHALLA gate checkpoints (anchor-investor pipeline, platform time-stamps current) ·
 backup integrity verify · written 1-page state-of-the-business note.
 

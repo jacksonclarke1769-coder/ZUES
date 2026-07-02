@@ -220,24 +220,31 @@ def apex_playbook():
             # NUMBERS BELOW = output of the COMMITTED harnesses (EOD rule + real Databento), verified
             # 2026-06-27. DO NOT hand-edit: re-run apex_eval_eod_databento.py / apex_funded_eod_databento.py.
             # (The old 86%/87% came from deleted /tmp scripts that modeled the wrong drawdown rule.)
-            eval=dict(tier="Apex-50K-eval", size="A10 Exit#3 + D1c · size-to-risk $1.6k · B off · mm0",
-                      stop=ev["daily_stop"], pass_pct=57.7, bust_pct=17.7, expire_pct=25, median_days=14,
-                      note="1m-TRUTH recert 2026-07-02 (tools_phase3_config_sweep.py): 5m fill-bar "
-                           "look-ahead removed — old 57.5-63.1% figures INVALID (as was the 86%). "
-                           "Selected machine: A-only Exit#3 with D1c, $1,600 size-to-risk budget."),
+            eval=dict(tier="Apex-50K-eval", size="A10 Exit#3 + D1c · size-to-risk $1.2k · B off · mm0",
+                      stop=ev["daily_stop"], pass_pct=58.2, bust_pct=29.1, expire_pct=12.7, median_days=11,
+                      note="DLL re-lock 2026-07-02b (tools_account_size_research.py): operator confirmed "
+                           "Apex 50K EOD DLL = $1,000; $1,200 budget DOMINATES $1,600 (pass 58.2% vs "
+                           "51.9%, bust 29.1% vs 40.5%). Old $1,600/57.7%/17.7% (tools_phase3_config_sweep.py) "
+                           "SUPERSEDED — DLL unmodeled. 1m-TRUTH recert still valid; fill-bar look-ahead removed."),
             funded=dict(phase1=f"A{f1['am']}/B{f1['bm']}/mm{f1['mm']}", phase2=f"A{f2['am']}/B{f2['bm']}/mm{f2['mm']}",
-                        stop=f1["daily_stop"], lock="+$2.6k floor-lock at $50.1k", lock_days=51, lock_pct=80,
-                        income_mo=2412,
-                        busts="APPLIED 2026-06-27: momentum ON funded (+54% value) + P3 cushion brake (live) → "
-                              "~80% reach-lock (mm) → ~90-98% with the brake (paper-validate before real money)"),
+                        stop=f1["daily_stop"],
+                        lock="Apex 4.0 PA ladder · 6 payouts · ~$12.6-12.8k lifetime cap (no floor-lock step)",
+                        lock_days=487,  # funded_40_recert: median ~16mo (A4=16.1mo, A5=15.9mo) to ladder-close
+                        lock_pct=80,    # retained for dashboard JS compat; see funded_40_recert note below
+                        income_mo=785,  # funded_40_recert (apex_funded_40.py): ~$12.7k / 16.1mo median (A4)
+                        busts="A4-A5 recommended · bust 0% observed · B/mm lanes NOT re-certified — "
+                              "funded sizing pending · provenance: apex_funded_40.py + "
+                              "reports/apex_validation.json §funded_40_recert"),
             rules=["$1k DLL = SOFT daily stop (pause-the-day, NOT a fail)",
                    "ONLY account-fail = $2k EOD trailing drawdown (set at the CLOSE, intraday liquidates)",
                    "floor LOCKS at $50.1k once +$2.6k banked → then near-unbustable",
                    "payouts: PARTIAL, down to the $52,100 safety net (never reset to $50k)",
                    "first 5 payouts capped $2k then uncapped · 100% of first $25k then 90/10"],
-            economics=dict(per_acct_mo=2412, fleet20_mo=18000, eval_to_mature_wk=8,  # ~1wk eval + ~7wk (51d) to lock
-                           momentum="PF 1.67 (Databento) · ON eval (+10pts) + funded (APPLIED 2026-06-27, +54% "
-                                    "value → $19.4k/acct). Fleet ~$15-20k/mo realistic (5yr MC gross ~$33k)"))
+            economics=dict(per_acct_mo=785,  # funded_40_recert: ~$12.7k lifetime / 16.1mo median
+                           fleet20_mo=15700,  # funded_40_recert: 20 × $785/mo (provisional; B/mm not re-certified)
+                           eval_to_mature_wk=70,  # funded_40_recert: ~16mo median (487d / 7)
+                           momentum="momentum OFF in current machine (A10·Exit#3·D1c·B OFF·mm0). "
+                                    "PF 1.67 was the funded-ON research figure; superseded 2026-07-02."))
     except Exception as e:                                  # never break the dashboard
         return dict(error=str(e))
 

@@ -83,7 +83,7 @@ def _mk_auto(cushion):
 def test_risk_gate_sizes_down_wide_stops():
     a = _mk_auto(2000.0)
     ok, why, q = a._risk_gate("A", 21000.0, 21000.0 - 137.0, 10)   # the real 06-29 137pt signal
-    assert ok and q == 5                                        # $1600 budget // $274/ct = 5, not rejected
+    assert ok and q == 4                                        # $1200 budget // $274/ct = 4 (DLL re-lock 2026-07-02b; was 5 at $1600)
     ok, why, q = a._risk_gate("A", 21000.0, 21000.0 - 40.0, 10)   # $80/ct -> full 10 fits
     assert ok and q == 10 and why == ""
 

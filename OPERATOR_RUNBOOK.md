@@ -1,11 +1,14 @@
-> ## 🔒 2026-07-02 — SELECTED MACHINE LOCKED + STALE-PROCESS WARNING
-> The certified live machine is **A10 · Exit#3 · D1c active · size-to-risk $1,600 · B OFF · momentum
-> OFF** (`reports/apex_validation.json`). Any auto_live process started before 2026-07-02 runs the OLD
-> de-certified config and must not be trusted — kill it, don't reason about it.
+> ## 🔒 2026-07-02b — SELECTED MACHINE LOCKED + DLL RE-LOCK + STALE-PROCESS WARNING
+> The certified live machine is **ZEUS Production Machine v2026.07.02b — A10 · Exit#3 · D1c active ·
+> size-to-risk $1,200 · B OFF · momentum OFF** (pass 58.2% / bust 29.1% / expire 12.7% / median 11d;
+> DLL $1,000 operator-verified 2026-07-02; `reports/apex_validation.json` §dll_recert_selected_machine).
+> Any auto_live process started before 2026-07-02 runs the OLD de-certified config and must not be
+> trusted — kill it, don't reason about it.
 > **Before ANY live restart:** 1) rotate the Tradovate password (old one exposed — audit T), 2) verify
 > the Apex trailing DD on the live dashboard ($2,500 assumed; if $2,000 → update config.py
-> EVAL.trail_dd first), 3) confirm the Tradovate account-manager panel is READABLE in the :9222 Chrome
-> (read-back dies without it), 4) launch ONLY with `./go-live-recert.sh`.
+> EVAL.trail_dd first) (DLL $1,000 verified 2026-07-02), 3) confirm the Tradovate account-manager
+> panel is READABLE in the :9222 Chrome (read-back dies without it), 4) launch ONLY with
+> `./go-live-recert.sh`.
 > **Session processes (all four):** `auto_live.py` (via go-live-recert.sh) · `feed_watch.py --heal` ·
 > `zeus_server.py` · `python3 deadman_watch.py --account APEX-50K-EVAL-1 --live`  ← NEW external
 > dead-man watchdog (alerts at 3min heartbeat silence, flattens at 7min during market hours).

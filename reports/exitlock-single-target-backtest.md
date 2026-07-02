@@ -1,3 +1,8 @@
+> ⛔ **OBSOLETE (pre-2026-07-02 machine).** This document describes a configuration/certification
+> that was INVALIDATED by the 2026-07-02 audit (5m fill-bar look-ahead) and superseded by
+> **ZEUS Production Machine v2026.07.02** — see `AGENTS.md` §"THE SELECTED MACHINE" and
+> `reports/apex_validation.json`. Kept for historical reference only.
+
 # EXITLOCK — Single-Target (LIVE) Backtest & Exit #3 Comparison
 _2026-06-21 · research only · 12 months · 3 MNQ · D1c active · −$700 daily stop · ~$6/trade cost_
 _Engine: `backtests/ict-nq-framework/_exitlock_single_target.py` (both models bar-walked from the same 5m data, same fills)_

@@ -11,7 +11,8 @@ NO secrets, NO credentials, NO URLs in this file — defaults only.
 # 1m-TRUTH fills, tools_phase3_config_sweep.py). The 2026-07-01 SINGLE_1R promotion was an artifact of
 # the 5m fill-bar target look-ahead (audit F1/F2): its gate numbers (63.1% etc.) are INVALID. On 1m
 # truth, A Exit#3 PF 1.237/+75R beats A single@1R 1.135/+46R, and the selected machine
-# (A10 Exit#3 + D1c, size-to-risk $1600, B off, mm0) re-certifies at pass 57.7% / bust 17.7%.
+# (A10 Exit#3 + D1c, size-to-risk $1200 [DLL re-lock 2026-07-02b], B off, mm0) re-certifies
+# at pass 58.2% / bust 29.1% (DLL-honest; old $1600/57.7%/17.7% superseded — DLL unmodeled).
 EXIT_MODEL = "EXIT3_FIXED_PARTIAL"
 
 # Only these may be used for live/paper/controlled execution.
@@ -101,9 +102,13 @@ DAILY_STOP_CONTRACTS = 1             # reference contracts
 A_STOP_CAP_PTS = 0           # DISABLED 2026-07-02: on 1m-truth fills the 80pt hard cap costs ~14pp
                              # of eval pass (59.5->45.2%) — the "zero expectancy cost" finding was an
                              # artifact of the biased 5m fills. Superseded by A_RISK_BUDGET_USD sizing.
-A_RISK_BUDGET_USD = 1600     # size-to-risk (Phase-3 selected): A qty = min(tier_am, budget // $risk-per-
-                             # contract). Keeps every certified trade, halves the worst-day tail vs
-                             # uncapped (-$1.6k vs -$3.1k) at -1.8pp pass. Certified 57.7%/17.7% at $1600.
+A_RISK_BUDGET_USD = 1200     # size-to-risk (DLL-recert 2026-07-02): operator confirmed Apex 50K EOD
+                             # eval enforces a $1,000 Daily Loss Limit; $1,600 allowed a single A-trade
+                             # excursion to cross the DLL. $1,200 DOMINATES $1,600: pass 58.2% vs 51.9%,
+                             # bust 29.1% vs 40.5%, E[$/attempt] $7,040 vs $5,341.
+                             # Source: reports/account_size_research_2026-07-02.json row "50K@1200";
+                             # harness tools_account_size_research.py. OLD value $1,600 (phase3_selected,
+                             # tools_phase3_config_sweep.py, 57.7%/17.7%) SUPERSEDED — DLL unmodeled.
 OPEN_RISK_CUSHION_FRAC = 0.9  # open+new bracket risk must fit inside this fraction of the live cushion
 
 

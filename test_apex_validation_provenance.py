@@ -46,6 +46,15 @@ def test_dashboard_matches_source_of_truth():
         pytest.skip(f"zeus_server not importable here: {e}")
     assert abs(pb["eval"]["pass_pct"] - V["eval_deployed"]["pass_pct"]) <= 3, \
         "dashboard eval pass_pct drifted from reports/apex_validation.json — re-run the harness, sync both"
+    # W-knowledge-reconciliation 2026-07-02: funded_40_recert model uses PA ladder (no lock step).
+    # lock_pct is retained at 80 for dashboard JS compat (apex.js uses f.lock_pct||68 fallback);
+    # will be removed when funded sizing finalised. Assertion kept — value still traces to
+    # funded_deployed.reach_lock_pct (79.8) in apex_validation.json until funded_40_recert supersedes it.
     assert abs(pb["funded"]["lock_pct"] - V["funded_deployed"]["reach_lock_pct"]) <= 3, \
         "dashboard funded lock_pct drifted from reports/apex_validation.json — re-run the harness, sync both"
+    # Also verify the new recert fields are present and reference the right provenance
+    assert "funded_40_recert" in pb["funded"]["busts"], \
+        "W-knowledge-reconciliation: funded dict must cite funded_40_recert provenance"
+    assert pb["funded"]["income_mo"] < 1000, \
+        "W-knowledge-reconciliation: income_mo must reflect funded_40_recert (~$785/mo), not old $2,412"
     assert pb["eval"]["pass_pct"] != 86 and pb["funded"]["lock_pct"] != 87

@@ -1,7 +1,7 @@
 # 📕 ZEUS Rule Book
 
 The single canonical reference for how the bot trades and how you run it.
-Operative account: **MFFU-50K-1** (ARES eval, tier `50K-conservative`).
+Operative account: **Apex 50K eval** (v2026.07.02 machine — see `AGENTS.md` §"THE SELECTED MACHINE").
 When this file and code disagree, **code wins** — sources are noted per section.
 
 > **Golden rule:** Built ≠ proven, and `http 200` ≠ filled. The bot only knows that
@@ -47,7 +47,7 @@ The runner will **not fire** unless ALL are true:
 - ✅ Live fully armed — needs **both flags** (`traderspost-approved` + `bracket-verified`)
   **AND** `--live` **AND** `--confirm` **AND** `TRADERSPOST_LIVE_URL`. Miss any → **PAPER**.
 - ✅ Daily stop not hit, kill-switch not set.
-- ✅ Account is not funded — **ARES refuses to arm a funded account** (MFFU-50K-1 is an eval).
+- ✅ Account is not funded — **ARES refuses to arm a funded account** (active account is an Apex eval).
 
 Any unmet gate = no webhook. Fail-closed is the default everywhere.
 
@@ -55,7 +55,7 @@ Any unmet gate = no webhook. Fail-closed is the default everywhere.
 _Source: `auto_live.py` → `bridge_sender` → `bridge_traderspost`; Stage 2 proven 2026-06-15._
 
 ```
-TradingView live data → bot fires signal → TradersPost webhook → Tradovate/MFFU → order
+TradingView live data → bot fires signal → TradersPost webhook → Tradovate (Apex) → order
 ```
 - TradersPost IS the broker connection (no direct Tradovate API on this path).
 - Bracket attaches at Tradovate (Stage 2 operator-verified: stop+target WORKING).
@@ -78,18 +78,15 @@ _Source: `MONDAY_SESSION.md`, `go_live_test.sh`._
 
 ## 6. Launch sequence (Monday)
 ```
-# ~09:10 ET — preflight (every line ✓ except the URL you supply at launch)
-python3 monday_preflight.py --account MFFU-50K-1 --tier 50K-conservative
-
-# launch — supervised live auto on the TradingView feed
-bash go_live_test.sh        # type GO LIVE → paste TradersPost URL (hidden) → supervise
+# launch ONLY via the certified script (rotates creds, verifies config, fails closed)
+bash ./go-live-recert.sh
 ```
 
 ## 7. Posture & escalation
 - **Default posture (idle):** `env=demo` · `paper=True` · `SAFETY.enabled=False` (master kill-switch off).
   The supervised-live launcher arms it for the session and it returns to off after.
-- **Eval → funded:** on pass, `python3 ares_mode.py switch-funded MFFU-50K-1` ends ARES (attack
-  mode) and begins ZEUS funded survival (A2/B1 + P3). Sizing drops; survival rules tighten.
+- **Eval → funded:** on pass, follow the Apex funded transition procedure (see `OPERATOR_RUNBOOK.md`);
+  sizing shifts to funded_40_recert recommendation (A4-A5). Survival rules tighten.
 - **Roadmap (closes the golden-rule gap):** the B1 direct-Tradovate runner (built, tested offline,
   `b1_runner.py`) adds journaled INTENT → recon-against-broker-truth → auto naked-position detect,
   enabling unsupervised/VPS operation. Blocked on Tradovate demo API creds (A3 spike). Not on the

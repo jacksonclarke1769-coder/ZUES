@@ -165,6 +165,7 @@
   }
  },
  "phase3_selected_machine": {
+  "_SUPERSEDED_2026-07-02b": "DLL UNMODELED \u2014 the $1,000 Daily Loss Limit was not applied in this harness. Budget $1,600 allowed single A-trade excursions to cross the DLL. Superseded by dll_recert_selected_machine block (tools_account_size_research.py, budget $1,200, operator DLL verification 2026-07-02).",
   "verified": "2026-07-02",
   "harness": [
    "tools_phase3_config_sweep.py"
@@ -214,6 +215,26 @@
    "momentum stays OFF until warmup engineering + re-certification (audit D1/H)",
    "SINGLE_1R demoted: certified-on-artifact (F2); EXIT3 restored as default"
   ]
+ },
+ "dll_recert_selected_machine": {
+  "verified": "2026-07-02",
+  "harness": [
+   "tools_account_size_research.py"
+  ],
+  "source_row": "reports/account_size_research_2026-07-02.json §50K@1200",
+  "operator_verification": "Apex 50K EOD eval enforces $1,000 Daily Loss Limit (official table: $500/$1,000/$1,500/$2,000 for 25K/50K/100K/150K EOD evaluations) — operator confirmed 2026-07-02",
+  "config": "A10 Exit#3 + D1c ACTIVE_EVAL_FILTER · size-to-risk $1,200/contract-budget (max 10 MNQ) · B OFF · momentum OFF",
+  "eval": {
+   "pass_pct": 58.2,
+   "bust_pct": 29.1,
+   "expire_pct": 12.7,
+   "median_days": 11,
+   "e_funded": 12207,
+   "e_per_attempt": 7040,
+   "worst_day": -1000
+  },
+  "dominates_1600": "$1,200 DOMINATES $1,600: pass 58.2% vs 51.9%, bust 29.1% vs 40.5%, E[$/attempt] $7,040 vs $5,341",
+  "note": "This is the CURRENT LOCKED machine budget as of v2026.07.02b. The prior DLL-free row (phase3_selected_machine, $1,600, pass 57.7%/bust 17.7%) is SUPERSEDED — DLL was unmodeled."
  },
  "funded_40_recert": {
   "verified": "2026-07-02",

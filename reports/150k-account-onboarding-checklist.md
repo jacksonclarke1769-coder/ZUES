@@ -1,3 +1,8 @@
+> ⛔ **OBSOLETE (pre-2026-07-02 machine).** This document describes a configuration/certification
+> that was INVALIDATED by the 2026-07-02 audit (5m fill-bar look-ahead) and superseded by
+> **ZEUS Production Machine v2026.07.02** — see `AGENTS.md` §"THE SELECTED MACHINE" and
+> `reports/apex_validation.json`. Kept for historical reference only.
+
 # 150K Account Onboarding Checklist (repeat ×8 → ZEUS-MAX)
 _run this once per new 150K account · ~30–45 min of operator setup + the 1-MNQ bracket proof_
 

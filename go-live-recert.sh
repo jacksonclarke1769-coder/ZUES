@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # ┌──────────────────────────────────────────────────────────────────────────────────────────┐
-# │  GO LIVE — Phase-3 RECERTIFIED machine (2026-07-02) on the Apex 50K eval.                 │
+# │  GO LIVE — v2026.07.02b DLL-RE-LOCKED machine (2026-07-02) on the Apex 50K eval.          │
 # │                                                                                            │
 # │  Machine: Profile A ONLY · Exit#3 (0.5@+1R / 0.5@+2R) · D1c ACTIVE_EVAL_FILTER ·          │
-# │           size-to-risk $1,600/trade (max A10) · B OFF · momentum OFF · $550 daily stop.    │
-# │  Certified on 1m-TRUTH fills: pass 57.7% / bust 17.7% / expire 25% / median 14d            │
-# │  (tools_phase3_config_sweep.py; provenance reports/apex_validation.json).                  │
+# │           size-to-risk $1,200/trade (max A10) · B OFF · momentum OFF · $550 daily stop.    │
+# │  DLL-honest model: pass 58.2% / bust 29.1% / expire 12.7% / median 11d                    │
+# │  (tools_account_size_research.py; DLL $1,000 operator-verified 2026-07-02;                 │
+# │   provenance reports/apex_validation.json §dll_recert_selected_machine).                   │
 # │                                                                                            │
 # │  Requires the Tradovate broker panel OPEN in the :9222 TradingView (read-back).            │
 # └──────────────────────────────────────────────────────────────────────────────────────────┘
@@ -13,8 +14,8 @@ set -uo pipefail
 cd ~/trading-team/bot/nq-liq-bot
 
 ACCT="APEX-50K-EVAL-1"; TIER="Apex-50K-eval"
-echo "================  GO LIVE · RECERT (A-only Exit#3 + D1c)  ·  ${ACCT}  ================"
-echo "  pass 57.7% / bust 17.7% on 1m-truth · size-to-risk \$1,600 · B OFF · momentum OFF"
+echo "================  GO LIVE · v2026.07.02b (DLL re-lock)  ·  ${ACCT}  ================"
+echo "  pass 58.2% / bust 29.1% DLL-honest · size-to-risk \$1,200 · B OFF · momentum OFF"
 echo "  REAL orders. Read-back REQUIRED (panel open in the :9222 Chrome). Supervise."
 echo
 printf 'Type exactly  GO LIVE RECERT  to arm (anything else aborts): '

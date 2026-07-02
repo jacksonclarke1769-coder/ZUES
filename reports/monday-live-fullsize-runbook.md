@@ -1,3 +1,8 @@
+> ⛔ **OBSOLETE (pre-2026-07-02 machine).** This document describes a configuration/certification
+> that was INVALIDATED by the 2026-07-02 audit (5m fill-bar look-ahead) and superseded by
+> **ZEUS Production Machine v2026.07.02** — see `AGENTS.md` §"THE SELECTED MACHINE" and
+> `reports/apex_validation.json`. Kept for historical reference only.
+
 # MONDAY — LIVE at FULL EVAL SIZE (A3/B2 + B + P3 + Exit #3)
 _operator decision 2026-06-21: skip paper, go live Monday at full 50K-conservative size_
 

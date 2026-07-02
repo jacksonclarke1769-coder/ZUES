@@ -141,7 +141,7 @@ async function drawPaper() {
       <td class="${cls(R)}">${R == null ? "—" : (R > 0 ? "+" : "") + R.toFixed(3)}</td>
       <td class="mut">${x.fill_quality || ""}</td><td class="mut">${x.notes || ""}</td></tr>`;
   }).join("");
-  $("paperNote").textContent = `— realtime fill-assumption check (data-only) · ${fmt(m.late_signals || 0)} late · ${fmt(m.mffu_rejected || 0)} MFFU-rejected · ${fmt(m.touch_only_fills || 0)} touch-only`;
+  $("paperNote").textContent = `— realtime fill-assumption check (data-only) · ${fmt(m.late_signals || 0)} late · ${fmt(m.mffu_rejected || 0)} sim-rejected · ${fmt(m.touch_only_fills || 0)} touch-only`;
 }
 
 async function drawEquity() {

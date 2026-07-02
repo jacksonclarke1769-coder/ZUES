@@ -35,7 +35,7 @@ real signals, real safety machinery — only the orders are simulated.
 ```bash
 cd ~/trading-team/bot/nq-liq-bot
 python3 auto_live.py \
-  --account MFFU-50K-1 --tier 50K-conservative \
+  --account Apex-50K-eval \
   --feed tradingview-1m --d1c-mode active-eval-filter \
   --execution traderspost --mode eval \
   | tee -a logs/stageA1_$(date +%F).log
@@ -68,7 +68,7 @@ Now prove the read-back sentinel actually reconciles a **real broker**. Route or
       `YOUR_TOPSTEP_ACCOUNT` → auth fails by design; replace it.)
 - [ ] Verify read-only: the sentinel client is built with **no `safety`** → it can never place an order
       (every order method raises `_guard_live`). Confirm with: `python3 -c "import auto_live, config; from journal import Journal;
-      class A: account='MFFU-50K-1'; readback=True; readback_poll=20
+      class A: account='Apex-50K-eval'; readback=True; readback_poll=20
       s,b=auto_live.build_readback(A(),'live',Journal('/tmp/rb.db')); print('broker connected:', b is not None)"`
       → expect **broker connected: True** once demo creds are in.
 - [ ] TradersPost strategy → connected to the **demo** Tradovate (NOT the funded account). Double-check in the TradersPost UI.
@@ -76,7 +76,7 @@ Now prove the read-back sentinel actually reconciles a **real broker**. Route or
 ### A2 run (live mechanics, demo money)
 ```bash
 python3 auto_live.py \
-  --account MFFU-50K-1 --tier 50K-conservative \
+  --account Apex-50K-eval \
   --feed tradingview-1m --d1c-mode active-eval-filter \
   --execution traderspost --mode eval \
   --readback --readback-poll 20 \
@@ -108,7 +108,7 @@ Expect on boot: `read-back sentinel armed (… floor=$48,000) — fail-closed`.
 ## On full Stage-A PASS
 You have proven: the loop runs unattended (A1) **and** the bot can see + reconcile broker truth and
 fail-closed (A2) — the "confirm fills by eye" gap is closed. **Next: Stage C** — same A2 config but TradersPost
-→ the **funded MFFU account**, 1 MNQ, operator nearby but hands-off, a few sessions → then truly unattended.
+→ the **Apex funded account**, 1 MNQ, operator nearby but hands-off, a few sessions → then truly unattended.
 
 > Do NOT skip to funded money until BOTH A1 and A2 have passed ≥3 clean sessions each. The whole point of
 > Stage A is to make the first real-money unattended session boring.

@@ -8,19 +8,20 @@ Role split (who plans vs who implements): see `SUBAGENTS.md`. Workflow: see `doc
 A LIVE automated NQ futures trading bot on real prop-firm capital (Apex 50K eval, TradersPost →
 Tradovate). Mistakes here lose real money.
 
-## 🔒 THE SELECTED MACHINE (LOCKED 2026-07-02 — operator-approved)
+## 🔒 ZEUS Production Machine v2026.07.02 rev b (DLL re-lock) (LOCKED — operator-approved)
 
-**A10 · Exit#3 · D1c ACTIVE_EVAL_FILTER · size-to-risk $1,600 · B OFF · momentum OFF · $550 daily stop**
-(pass 57.7% / bust 17.7% on 1m-truth fills — provenance `reports/apex_validation.json`,
-harness `tools_phase3_config_sweep.py`). Launch ONLY via `./go-live-recert.sh`. No task may alter
+**A10 · Exit#3 · D1c ACTIVE_EVAL_FILTER · size-to-risk $1,200 · B OFF · momentum OFF · $550 daily stop**
+(pass 58.2% / bust 29.1% / expire 12.7% / median 11d — DLL-honest model; operator confirmed Apex 50K
+EOD DLL = $1,000 on 2026-07-02; provenance `reports/apex_validation.json` §dll_recert_selected_machine,
+harness `tools_account_size_research.py`). Launch ONLY via `./go-live-recert.sh`. No task may alter
 this configuration without a new certification run and explicit operator approval.
 
 ⚠ **STALE-PROCESS WARNING:** any `auto_live.py` process started BEFORE 2026-07-02 ~11:00 AWST runs the
 OLD machine (SINGLE_1R, B on, momentum flag, MFFU rules, read-back halted) and must NOT be trusted.
 Before any live restart the operator must: (1) rotate the Tradovate password (the old one was exposed),
 (2) verify the Apex trail on the live dashboard — config assumes $2,500; if it shows $2,000 update
-`config.py EVAL.trail_dd` first, (3) confirm the Tradovate account-manager panel is readable in the
-:9222 Chrome, (4) start only with `./go-live-recert.sh`.
+`config.py EVAL.trail_dd` first (DLL $1,000 verified 2026-07-02), (3) confirm the Tradovate
+account-manager panel is readable in the :9222 Chrome, (4) start only with `./go-live-recert.sh`.
 
 ## Engineering principles (non-negotiable)
 

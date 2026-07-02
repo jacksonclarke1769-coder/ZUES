@@ -1,0 +1,171 @@
+{
+ "rules": "Apex 4.0 EOD (help-center-derived; 100K/150K ladders ESTIMATED) \u2014 VERIFY vs contract",
+ "machine": "locked v2026.07.02 A-only stream",
+ "results": {
+  "50K@800": {
+   "pass_pct": 47.8,
+   "bust_pct": 17.7,
+   "exp_pct": 34.4,
+   "med_days": 17,
+   "pass_early": 52.0,
+   "pass_late": 43.5,
+   "worst_day": -1000,
+   "e_funded": 10143,
+   "e_per_attempt": 4786
+  },
+  "50K@950": {
+   "pass_pct": 55.7,
+   "bust_pct": 21.5,
+   "exp_pct": 22.8,
+   "med_days": 15,
+   "pass_early": 60.8,
+   "pass_late": 50.3,
+   "worst_day": -1000,
+   "e_funded": 11682,
+   "e_per_attempt": 6439
+  },
+  "50K@1200": {
+   "pass_pct": 58.2,
+   "bust_pct": 29.1,
+   "exp_pct": 12.7,
+   "med_days": 11,
+   "pass_early": 62.7,
+   "pass_late": 53.4,
+   "worst_day": -1000,
+   "e_funded": 12207,
+   "e_per_attempt": 7040
+  },
+  "50K@1600": {
+   "pass_pct": 51.9,
+   "bust_pct": 40.5,
+   "exp_pct": 7.6,
+   "med_days": 8,
+   "pass_early": 55.4,
+   "pass_late": 48.2,
+   "worst_day": -1000,
+   "e_funded": 10422,
+   "e_per_attempt": 5341
+  },
+  "50K@2000": {
+   "pass_pct": 46.1,
+   "bust_pct": 48.6,
+   "exp_pct": 5.3,
+   "med_days": 7,
+   "pass_early": 51.5,
+   "pass_late": 40.3,
+   "worst_day": -1000,
+   "e_funded": 6500,
+   "e_per_attempt": 2927
+  },
+  "100K@1200": {
+   "pass_pct": 25.6,
+   "bust_pct": 23.3,
+   "exp_pct": 51.1,
+   "med_days": 19,
+   "pass_early": 25.0,
+   "pass_late": 26.2,
+   "worst_day": -1500,
+   "e_funded": 15291,
+   "e_per_attempt": 3775
+  },
+  "100K@1450": {
+   "pass_pct": 38.2,
+   "bust_pct": 30.1,
+   "exp_pct": 31.6,
+   "med_days": 16,
+   "pass_early": 40.2,
+   "pass_late": 36.1,
+   "worst_day": -1500,
+   "e_funded": 16070,
+   "e_per_attempt": 6008
+  },
+  "100K@1600": {
+   "pass_pct": 44.3,
+   "bust_pct": 34.4,
+   "exp_pct": 21.3,
+   "med_days": 16,
+   "pass_early": 46.6,
+   "pass_late": 41.9,
+   "worst_day": -1502,
+   "e_funded": 13907,
+   "e_per_attempt": 6026
+  },
+  "100K@2400": {
+   "pass_pct": 39.5,
+   "bust_pct": 50.4,
+   "exp_pct": 10.1,
+   "med_days": 10,
+   "pass_early": 42.6,
+   "pass_late": 36.1,
+   "worst_day": -1500,
+   "e_funded": 8456,
+   "e_per_attempt": 3205
+  },
+  "100K@3200": {
+   "pass_pct": 37.2,
+   "bust_pct": 57.7,
+   "exp_pct": 5.1,
+   "med_days": 8,
+   "pass_early": 37.7,
+   "pass_late": 36.6,
+   "worst_day": -1500,
+   "e_funded": 8500,
+   "e_per_attempt": 3028
+  },
+  "150K@1600": {
+   "pass_pct": 20.8,
+   "bust_pct": 21.0,
+   "exp_pct": 58.2,
+   "med_days": 20,
+   "pass_early": 18.1,
+   "pass_late": 23.6,
+   "worst_day": -2000,
+   "e_funded": 21122,
+   "e_per_attempt": 4190
+  },
+  "150K@1900": {
+   "pass_pct": 29.6,
+   "bust_pct": 25.1,
+   "exp_pct": 45.3,
+   "med_days": 18,
+   "pass_early": 28.4,
+   "pass_late": 30.9,
+   "worst_day": -2000,
+   "e_funded": 22156,
+   "e_per_attempt": 6368
+  },
+  "150K@2000": {
+   "pass_pct": 30.9,
+   "bust_pct": 28.9,
+   "exp_pct": 40.3,
+   "med_days": 18,
+   "pass_early": 29.9,
+   "pass_late": 31.9,
+   "worst_day": -2006,
+   "e_funded": 21954,
+   "e_per_attempt": 6586
+  },
+  "150K@3200": {
+   "pass_pct": 38.7,
+   "bust_pct": 45.1,
+   "exp_pct": 16.2,
+   "med_days": 14,
+   "pass_early": 37.3,
+   "pass_late": 40.3,
+   "worst_day": -2000,
+   "e_funded": 15318,
+   "e_per_attempt": 5738
+  },
+  "150K@4800": {
+   "pass_pct": 37.7,
+   "bust_pct": 51.1,
+   "exp_pct": 11.1,
+   "med_days": 12,
+   "pass_early": 31.9,
+   "pass_late": 44.0,
+   "worst_day": -2000,
+   "e_funded": 11250,
+   "e_per_attempt": 4049
+  }
+ }
+}

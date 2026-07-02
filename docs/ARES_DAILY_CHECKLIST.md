@@ -10,7 +10,7 @@ Print this. Tick every box. If any pre-session box fails → no trading today.
 - [ ] Account balance recorded → tracker
 - [ ] **Drawdown buffer** recorded (equity − trailing floor). Buffer ≥ 1.5× daily stop?
       If NO → trade ZEUS-normal size today, not ARES size.
-- [ ] Today's size set per Attack Plan (50K A3/B2 or 150K A8/B4) — confirm contract count
+- [ ] Today's size set per AGENTS.md machine: A10·Exit#3·D1c·$1,600 size-to-risk (eval, B OFF, mm OFF) — confirm contract count
 - [ ] Daily loss stop set (50K −$700 / 150K −$1,600) — known cold
 - [ ] Profit lock set (30% of target) — known cold
 - [ ] News check: any Tier-1 event in the window? (avoid the ±15 min spread spike)

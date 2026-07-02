@@ -227,7 +227,7 @@ function apexPlaybook(){
           ev.pass_pct+"%", "pass", `median ${ev.median_days}d · spray ~$45, rebuy on bust`)
     + arrow(.13)
     + phase(.26,"Phase II · The Ascent", "Funded — scale at the lock", `${f.phase1} → +$2k lock → ${f.phase2}`,
-          "$"+f.income_mo.toLocaleString(), "/mo", `~5wk to lock · ${f.lock_pct}% reach it · ${f.busts} busts`)
+          "$"+f.income_mo.toLocaleString(), "/mo", `PA ladder · 6 payouts · ~$12.6-12.8k lifetime (funded_40_recert)`)
     + arrow(.39)
     + phase(.52,"The Legion", "20 × 50K fleet", "scaled · near-unbustable",
           "$"+(ec.fleet20_mo/1000).toFixed(1)+"k", "/mo", `~${ec.eval_to_mature_wk}wk eval→mature · 5-yr avg`);
