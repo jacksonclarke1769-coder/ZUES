@@ -123,9 +123,9 @@ def test_command_centre_blocks(client):
     for key in ("brief", "actions", "activity", "lights", "week_panel"):
         assert key in s, key
     assert isinstance(s["brief"], str) and len(s["brief"]) > 20
-    assert set(s["lights"]) == {"Strategy A", "Strategy B", "Journal",
+    assert set(s["lights"]) == {"Strategy A", "Strategy B (off)", "Journal",
                                 "Reconciliation", "Broker", "Infrastructure"}
-    assert all(v in ("green", "yellow", "red") for v in s["lights"].values())
+    assert all(v in ("green", "yellow", "red", "off") for v in s["lights"].values())
     assert len(s["activity"]) <= 5
     assert "pnl_ytd" in s["portfolio"]
 

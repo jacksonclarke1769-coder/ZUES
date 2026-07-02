@@ -384,7 +384,9 @@ def assemble_state():
           "CRITICAL": "red", "HALTED": "red"}
     state["lights"] = {
         "Strategy A": ed.get(edge_a["health"], "yellow"),
-        "Strategy B": ed.get(edge_b["health"], "yellow"),
+        # v2026.07.02 machine: B is NOT a production lane — never imply an active edge.
+        # "off" renders dim and is excluded from health aggregation (no stale machine on the deck).
+        "Strategy B (off)": "off",
         "Journal": _light(state["journal"]["append_only"] and state["journal"]["locker_ok"]),
         "Reconciliation": _light(snap["unknown_positions"] + snap["unknown_fills"]
                                  + snap["naked_alerts"] == 0),

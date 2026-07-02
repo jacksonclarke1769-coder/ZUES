@@ -345,7 +345,9 @@ function updateEdge(st) {
     return;
   }
   const healthClass = h => ({ 'FULL STRENGTH': 'green', 'WATCHING': 'amber', 'DEGRADED': 'amber', 'CRITICAL': 'red', 'HALTED': 'red' }[h] || 'dim');
-  const hs = ['A', 'B'].map(k => strats[k]?.health || 'HALTED');
+  // v2026.07.02 machine: Profile A is the ONLY production lane. B's monitor may still report
+  // (research telemetry) but must never read as an active edge — render it OFF, exclude from health.
+  const hs = ['A'].map(k => strats[k]?.health || 'HALTED');
   const worst = hs.includes('HALTED') || hs.includes('CRITICAL') ? 'r'
               : hs.includes('DEGRADED') || hs.includes('WATCHING') ? 'a' : 'g';
   dotEl.className = 'ph-dot ' + worst;
@@ -353,6 +355,11 @@ function updateEdge(st) {
   el.innerHTML = ['A', 'B'].map(k => {
     const s = strats[k];
     if (!s) return '';
+    if (k === 'B') return `
+      <div class="kv">
+        <span class="kv-k">Profile B</span>
+        <span class="kv-v dimmed">OFF — not in machine</span>
+      </div>`;
     const tot = s.total;
     return `
       <div class="kv">
@@ -461,13 +468,15 @@ function updateSafety(st) {
   const lights = st?.lights || {};
   const el = document.getElementById('safety-body');
   const dotEl = document.getElementById('dot-safety');
-  const vals = Object.values(lights);
+  // 'off' = deliberately-inactive lane (Profile B under the v2026.07.02 machine): dim, and
+  // EXCLUDED from health aggregation — off is not a fault.
+  const vals = Object.values(lights).filter(v => v !== 'off');
   const allGreen = vals.length && vals.every(v => v === 'green');
   dotEl.className = 'ph-dot ' + (allGreen ? 'g' : vals.some(v => v === 'red') ? 'r' : 'a');
   el.innerHTML = Object.entries(lights).map(([k, v]) => `
     <div class="kv">
       <span class="kv-k">${k}</span>
-      <span class="kv-v ${v === 'green' ? 'green' : v === 'yellow' ? 'amber' : 'red'}">${v.toUpperCase()}</span>
+      <span class="kv-v ${v === 'off' ? 'dimmed' : v === 'green' ? 'green' : v === 'yellow' ? 'amber' : 'red'}">${v.toUpperCase()}</span>
     </div>`).join('') || '<div class="dimmed small mono">No lights data</div>';
 }
 
@@ -821,15 +830,25 @@ async function initThreeJS() {
   // ── Dodecahedron reactor core ──
   const dodeGeo = new THREE.DodecahedronGeometry(1, 0);
   const dodeMat = new THREE.MeshStandardMaterial({
-    color: 0x1a1a2e, metalness: 0.9, roughness: 0.15,
-    emissive: 0xD4A947, emissiveIntensity: 0.05,
+    color: 0x0d0f16, metalness: 0.95, roughness: 0.28,   // obsidian body, not flat gold
+    emissive: 0xD4A947, emissiveIntensity: 0.03,
   });
   const dodeMesh = new THREE.Mesh(dodeGeo, dodeMat);
   scene.add(dodeMesh);
 
   const edgesGeo = new THREE.EdgesGeometry(dodeGeo);
-  const edgesMat = new THREE.LineBasicMaterial({ color: 0xD4A947, transparent: true, opacity: 0.35 });
+  const edgesMat = new THREE.LineBasicMaterial({ color: 0xF2CB63, transparent: true, opacity: 0.85 });
   dodeMesh.add(new THREE.LineSegments(edgesGeo, edgesMat));
+
+  // soft molten-gold halo behind the core (fake bloom, GPU-cheap billboard)
+  const haloCanvas = document.createElement('canvas'); haloCanvas.width = haloCanvas.height = 128;
+  const hx = haloCanvas.getContext('2d');
+  const hg = hx.createRadialGradient(64, 64, 4, 64, 64, 64);
+  hg.addColorStop(0, 'rgba(212,169,71,0.55)'); hg.addColorStop(0.4, 'rgba(212,169,71,0.14)'); hg.addColorStop(1, 'rgba(212,169,71,0)');
+  hx.fillStyle = hg; hx.fillRect(0, 0, 128, 128);
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: new THREE.CanvasTexture(haloCanvas), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+  halo.scale.set(5.2, 5.2, 1); scene.add(halo);
 
   // ── Pulsing ring (heartbeat freshness indicator) ──
   const ringGeo = new THREE.TorusGeometry(1.3, 0.012, 8, 80);
@@ -950,13 +969,20 @@ async function initThreeJS() {
     if (!S.visible) return;          // paused while tab hidden
     _t += 0.01;
 
-    dodeMesh.rotation.y = _t * 0.12;
-    dodeMesh.rotation.x = _t * 0.07;
+    dodeMesh.rotation.y = _t * 0.07;   // slower, more deliberate spin
+    dodeMesh.rotation.x = _t * 0.04;
 
     const fresh = Math.max(0, 1 - _hbFreshness / 180);
+    const beat = 0.5 + 0.5 * Math.sin(_t * (fresh > 0.5 ? 6 : 3));
     const pulse = fresh * (0.05 + 0.05 * Math.sin(_t * (fresh > 0.5 ? 6 : 3)));
     const arrhythm = fresh < 0.3 ? Math.sin(_t * 13) * 0.03 * (1 - fresh * 3) : 0;
     ring.material.opacity = 0.2 + pulse + arrhythm;
+    // the core breathes: edges brighten and the halo swells on each heartbeat
+    edgesMat.opacity = 0.45 + 0.45 * beat * (0.4 + 0.6 * fresh);
+    const hs = 4.6 + 1.0 * beat * fresh;
+    halo.scale.set(hs, hs, 1);
+    halo.material.opacity = 0.35 + 0.5 * fresh;
+    halo.material.color.setHex(_hbFreshness > 180 ? 0xE5484D : _hbFreshness > 60 ? 0xE0A93E : 0xD4A947);
     ring.material.color.setHex(_hbFreshness > 180 ? 0xE5484D : _hbFreshness > 60 ? 0xE0A93E : 0xD4A947);
     ring.rotation.z = _t * 0.05;
 
