@@ -25,6 +25,7 @@ const S = {
   heartbeat: null,   // /api/heartbeat payload
   validation: null,  // /api/validation payload
   telemetry: null,   // /api/exec_telemetry payload
+  forecast: null,    // /api/forecast payload (conditional P(pass))
   degraded: {},      // source → error string (JSON guard / timeout marks these)
   alertAcked: new Set(),
   webglOk: false,
@@ -282,6 +283,39 @@ function updateMission(c) {
     <div class="msn-bar"><i style="width:${prog.toFixed(0)}%"></i></div>
     <div class="msn-src">${c.firm || 'Apex'} 50K · ${c.machine || ''} · balance <b>${live ? 'LIVE read-back' : 'operator-confirmed ' + (c.balance_asof || '')}</b></div>
     <ul class="msn-check">${check}</ul>`;
+}
+
+function updateForecast(f) {
+  const el = document.getElementById('forecast-body');
+  const dot = document.getElementById('dot-forecast');
+  if (!el) return;
+  if (!f || f.available === false) {
+    el.innerHTML = `<div class="dimmed small mono">${f && f.note ? f.note : 'forecast unavailable'}</div>`;
+    if (dot) dot.className = 'ph-dot';
+    return;
+  }
+  // colour the pass number by the dominant-failure-mode level
+  const lvlClass = { pass: 'green', tight: 'amber', bust: 'red', marginal: 'amber' }[f.level] || '';
+  if (dot) dot.className = 'ph-dot ' + (f.level === 'pass' ? 'g' : f.level === 'bust' ? 'r' : 'b');
+  const pct = v => (v == null ? '—' : v.toFixed(1) + '%');
+  // compact single-line slip warning (full table lives in tools_eval_forecast.py)
+  const s10 = (f.sensitivity || []).find(s => Math.abs(s.slip_r - 0.10) < 1e-6);
+  const slipLine = s10
+    ? `0.10R slip → ${pct(s10.pass_pct)} pass · ${pct(s10.bust_pct)} bust`
+    : '';
+  el.innerHTML = `
+    <div class="fc-head">
+      <div class="fc-big ${lvlClass}">${pct(f.pass_pct)}<span class="fc-lbl">P(pass)</span></div>
+      <div class="fc-vs">vs <b>${f.certified_pass}%</b> certified<br><span class="dimmed small">fresh-start</span></div>
+    </div>
+    <div class="fc-grid">
+      <div class="fc-cell"><span class="l">Bust</span><span class="v red">${pct(f.bust_pct)}</span></div>
+      <div class="fc-cell"><span class="l">Expire</span><span class="v amber">${pct(f.expire_pct)}</span></div>
+      <div class="fc-cell"><span class="l">Median→target</span><span class="v">${f.median_days_to_pass == null ? '—' : f.median_days_to_pass + 'd'}</span></div>
+      <div class="fc-cell"><span class="l">Days left</span><span class="v">${f.days_left == null ? '—' : f.days_left + 'd'}</span></div>
+    </div>
+    <div class="fc-verdict ${f.level}">${f.verdict || ''}</div>
+    <div class="fc-slip">⚠ ${slipLine}</div>`;
 }
 
 function updateFleet(st) {
@@ -790,6 +824,7 @@ function updateAll() {
   const painters = [
     () => updateSpine(st, S.heartbeat),
     () => updateMission(S.campaign),
+    () => updateForecast(S.forecast),
     () => updateFleet(st),
     () => updateEval(st),
     () => updateEdge(st),
@@ -817,16 +852,18 @@ function updateAll() {
 
 // ─── DATA FETCHING (guarded; a bad source degrades, never throws) ────────────
 async function fetchAll() {
-  const [sr, hr, tr, cr] = await Promise.all([
+  const [sr, hr, tr, cr, fr] = await Promise.all([
     safeJson('/api/state', 4000),
     safeJson('/api/heartbeat', 3000),
     safeJson('/api/exec_telemetry', 3000),
     safeJson('/api/campaign', 3000),
+    safeJson('/api/forecast', 4000),
   ]);
   if (markSource('state', sr)) S.state = sr.data;
   if (markSource('heartbeat', hr)) S.heartbeat = hr.data;
   if (markSource('telemetry', tr)) S.telemetry = tr.data;
   if (markSource('campaign', cr)) S.campaign = cr.data;
+  if (markSource('forecast', fr)) S.forecast = fr.data;
   if (!S.validation) {
     const vr = await safeJson('/api/validation', 3000);
     if (markSource('validation', vr)) S.validation = vr.data;

@@ -867,6 +867,58 @@ def api_campaign():
     return jsonify(c)
 
 
+@APP.route("/api/forecast")
+def api_forecast():
+    """Read-only: live CONDITIONAL P(pass) for the active eval — block-bootstrap replay of the
+    certified per-day P&L stream onto the current balance + remaining clock. Reproduces the locked
+    58.2/29.1/12.7 when seeded fresh; here it's conditioned on where the account actually is.
+    Pure display — never trades, never writes."""
+    import datetime as _dt
+    base = os.path.dirname(os.path.abspath(__file__))
+    try:
+        import eval_forecast as EF
+        days = EF.load_distribution(os.path.join(base, EF.CACHE_PATH))
+    except FileNotFoundError:
+        return jsonify(available=False, note="day cache absent — run tools_eval_forecast.py --rebuild")
+    except Exception as e:                                       # noqa: BLE001
+        return jsonify(available=False, error=str(e))
+    try:
+        c = json.load(open(os.path.join(base, "evidence", "eval_campaign.json")))
+    except Exception as e:                                       # noqa: BLE001
+        return jsonify(available=False, error=str(e))
+    # prefer LIVE read-back balance (same flip as /api/campaign) so the forecast tracks reality
+    try:
+        hb = json.load(open(os.path.join(base, "out", "heimdall", "heartbeat.json")))
+        rb = hb.get("readback_balance")
+        if rb and float(rb) > 0:
+            c["current_balance"] = float(rb)
+    except Exception:                                           # noqa: BLE001
+        pass
+    bal = float(c.get("current_balance", 50000.0))
+    start = float(c.get("start_balance", 50000.0))
+    trail = float(c.get("trail_dd", 2500.0))
+    tgt = float(c.get("target_balance", 53000.0))
+    floor = start - trail if bal <= start else bal - trail
+    try:
+        d0 = _dt.date.fromisoformat(c.get("clock_start"))
+        days_left = max(0, int(c.get("clock_days", 30)) - (_dt.date.today() - d0).days)
+    except Exception:                                           # noqa: BLE001
+        days_left = EF.EXPIRE_DAYS
+    spec = EF.Spec(start=start, trail=trail, target=tgt - start)
+    fc = EF.forecast(days, bal, floor, days_left, spec)
+    level, verdict = EF.pace_verdict(fc)
+    sens = []
+    for slip_r, tax in [(0.0, 0.0), (0.05, 60.0), (0.10, 120.0)]:
+        fh = EF.forecast([(d, r - tax, tr - tax) for d, r, tr in days], bal, floor, days_left, spec)
+        sens.append(dict(slip_r=slip_r, pass_pct=fh["pass_pct"], bust_pct=fh["bust_pct"]))
+    return jsonify(available=True, days_left=days_left, n=fc["n"],
+                   pass_pct=fc["pass_pct"], bust_pct=fc["bust_pct"], expire_pct=fc["expire_pct"],
+                   median_days_to_pass=fc["median_days_to_pass"],
+                   cushion=round(bal - floor, 2), to_target=round(tgt - bal, 2),
+                   certified_pass=58.2, level=level, verdict=verdict, sensitivity=sens,
+                   method="block-bootstrap replay of the certified day stream")
+
+
 @APP.route("/")
 def index():
     return send_from_directory("dashboard", "apex.html")     # APEX // BLACKBOX (new)

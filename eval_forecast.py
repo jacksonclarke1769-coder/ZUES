@@ -119,6 +119,25 @@ def valid_starts(days: list, days_left: int) -> list:
     return out
 
 
+def pace_verdict(fc: dict):
+    """Shared verdict (CLI + dashboard) ordered by the DOMINANT failure mode.
+    Returns (level, text) where level in {pass, tight, bust, marginal} for colouring."""
+    p, b, x = fc.get("pass_pct"), fc.get("bust_pct"), fc.get("expire_pct")
+    med = fc.get("median_days_to_pass")
+    if p is None:
+        return ("marginal", "insufficient history for this horizon")
+    if b >= 35:
+        return ("bust", f"BUST RISK LEADS ({b}%) — protect the cushion, don't force size to catch up")
+    if x >= p and x >= b:
+        return ("tight", f"TIME IS THE ENEMY — EXPIRE ({x}%) is the modal outcome"
+                         + (f", passes finish in ~{med}d" if med else "")
+                         + "; the lever is SIGNAL FLOW, not size")
+    if p >= b and p >= x:
+        return ("pass", f"PASS LEADS ({p}%)" + (f", median {med}d" if med else "")
+                        + " — take every A signal")
+    return ("marginal", f"MARGINAL — pass {p}% / bust {b}% / expire {x}%; supervise, favour survival")
+
+
 def forecast(days: list, balance: float, threshold: float, days_left: int,
              spec: Spec = Spec()) -> dict:
     """Run the block-bootstrap replay over every valid start.  Returns pass/bust/expire pct,

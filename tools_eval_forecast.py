@@ -128,22 +128,9 @@ def main():
     print(f"  P(EXPIRE)  {fc['expire_pct']:>5}%")
     print(f"  median days-to-target (of passes): {fc['median_days_to_pass']}")
 
-    # pace verdict — ordered by the DOMINANT failure mode (most-likely bad outcome wins the headline)
-    med = fc["median_days_to_pass"]
-    p, b, x = fc["pass_pct"], fc["bust_pct"], fc["expire_pct"]
-    if p is None:
-        verdict = "insufficient history for this horizon"
-    elif b >= 35:
-        verdict = (f"BUST RISK LEADS ({b}%) — cushion thin; protect it, don't force size to catch up")
-    elif x >= p and x >= b:
-        # running out of clock is the single most-likely outcome: time is the enemy, not blowups
-        verdict = (f"TIME IS THE ENEMY — EXPIRE ({x}%) is the modal outcome; passes finish in ~{med}d "
-                   f"so the lever is SIGNAL FLOW (don't sit out valid A setups), not size")
-    elif p >= b and p >= x and med is not None and med <= days_left:
-        verdict = f"ON PACE — PASS leads ({p}%), median in {med}d < {days_left}d left; take every A signal"
-    else:
-        verdict = (f"MARGINAL — pass {p}% / bust {b}% / expire {x}%: the path exists but isn't "
-                   f"comfortable; supervise, favour survival")
+    # pace verdict — shared with the dashboard (eval_forecast.pace_verdict), dominant-failure-mode order
+    _level, verdict = EF.pace_verdict(fc)
+    p = fc["pass_pct"]
     print(f"  VERDICT: {verdict}")
     # honesty line: the conditional number vs the certified headline, and WHY they differ
     print(f"  NOTE: {p}% conditional vs 58.2% certified — you start down ${start-balance:,.0f} "

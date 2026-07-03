@@ -292,6 +292,27 @@ body::after {
 .msn-check li.done { color: var(--green); } .msn-check li.done .box { color: var(--green); }
 .mt4 { margin-top: 4px; }
 .gap8 { display: flex; flex-direction: column; gap: 8px; }
+/* ── Pass Forecast panel ── */
+#panel-forecast { box-shadow: var(--shadow), inset 0 1px 0 rgba(212,169,71,.10), 0 0 22px rgba(57,192,126,.05); }
+.fc-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.fc-big { font-family: var(--mono); font-size: 27px; font-weight: 700; line-height: 1; color: var(--text);
+  display: flex; align-items: baseline; gap: 6px; }
+.fc-big.green { color: var(--green); } .fc-big.amber { color: var(--amber); } .fc-big.red { color: var(--red); }
+.fc-big .fc-lbl { font-size: 9px; font-weight: 400; color: var(--dim); letter-spacing: .08em; text-transform: uppercase; }
+.fc-vs { font-size: 10px; color: var(--dim); text-align: right; line-height: 1.35; }
+.fc-vs b { color: var(--amber); }
+.fc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; margin-bottom: 7px; }
+.fc-cell { display: flex; flex-direction: column; gap: 0; }
+.fc-cell .l { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: .06em; }
+.fc-cell .v { font-family: var(--mono); font-size: 13px; color: var(--text); }
+.fc-cell .v.red { color: var(--red); } .fc-cell .v.amber { color: var(--amber); }
+.fc-verdict { font-family: var(--mono); font-size: 10.5px; line-height: 1.35; padding: 5px 7px; border-radius: 4px;
+  margin-bottom: 6px; border: 1px solid var(--gold-dim); background: rgba(212,169,71,.06); color: var(--gold); }
+.fc-verdict.pass { border-color: var(--green); background: rgba(57,192,126,.08); color: var(--green); }
+.fc-verdict.tight { border-color: var(--amber); background: rgba(224,169,62,.08); color: var(--amber); }
+.fc-verdict.bust { border-color: var(--red); background: rgba(229,72,77,.08); color: var(--red); }
+.fc-slip { font-size: 9.5px; color: var(--dim); line-height: 1.3; }
+.fc-slip .mono { font-family: var(--mono); color: var(--gold-dim); }
 </style>
 </head>
 <body>
@@ -465,6 +486,17 @@ body::after {
   <div id="right-rail">
     <!-- OPERATE mode content -->
     <div class="mode-view active" data-mode-view="0">
+
+      <div class="panel armed" id="panel-forecast">
+        <div class="panel-head">
+          <div class="ph-dot b" id="dot-forecast"></div>
+          <span class="ph-title">Pass Forecast</span>
+          <span class="prov-glyph" data-tip="/api/forecast → block-bootstrap replay of the certified day stream, conditioned on current balance + days-left">⊙</span>
+        </div>
+        <div class="panel-body" id="forecast-body">
+          <div class="dimmed small mono">loading forecast…</div>
+        </div>
+      </div>
 
       <div class="panel armed" id="panel-thermo">
         <div class="panel-head">
