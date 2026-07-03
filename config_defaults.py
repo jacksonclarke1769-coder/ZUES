@@ -111,6 +111,36 @@ A_RISK_BUDGET_USD = 1200     # size-to-risk (DLL-recert 2026-07-02): operator co
                              # tools_phase3_config_sweep.py, 57.7%/17.7%) SUPERSEDED — DLL unmodeled.
 OPEN_RISK_CUSHION_FRAC = 0.9  # open+new bracket risk must fit inside this fraction of the live cushion
 
+# --- Execution slippage tripwire (SLIP-class halt) — spec docs/specs/slippage_tripwire_spec.md ---
+# The certified 58.2% pass rests on backtest fills assuming ~0 entry slippage. This watches REAL
+# fill quality off exec_telemetry and, when entries systematically fill worse than modeled (or aren't
+# filling at all), ALERTS and — in halt mode — latches the read-back sentinel HALT (entries frozen,
+# NEVER flatten; brackets stay). Default OFF; --slip-tripwire arms it, --slip-mode picks alert/halt.
+# 1R = A_RISK_BUDGET_USD ($1,200); slippage_R is signed +worse. Sensitivity anchor: tools_exec_report
+# models -0.05R/trade expectancy cost, so the 0.10R mean-halt cap is ~2x that band.
+SLIP_TRIPWIRE_ENABLED = False   # master default OFF (runner --slip-tripwire overrides)
+SLIP_TRIPWIRE_MODE   = "alert"  # "off" | "alert" (compute+alert, never halt) | "halt" (also latch sentinel)
+SLIP_WARMUP_MIN      = 5        # no action of any kind before this many resolved fills
+SLIP_WINDOW_N        = 10       # rolling window of most-recent FILLED entries for the mean test
+SLIP_MEAN_R_HALT     = 0.10     # mean entry slippage over window > this (R) -> HALT   (~$120/trade tax)
+SLIP_SINGLE_R_ALERT  = 0.25     # any single fill worse than this (R)        -> ALERT  (~$300 on entry)
+SLIP_SINGLE_R_HALT   = 0.50     # any single fill worse than this (R)        -> HALT   (half the risk)
+SLIP_MISS_WINDOW_N   = 10       # rolling window of resolved A signals for the miss-rate test
+SLIP_MISS_RATE_HALT  = 0.40     # MISSED / (FILLED+MISSED) over window > this -> HALT (edge never captured)
+
+
+def slip_tripwire_cfg():
+    """The tripwire thresholds as a plain dict (what slip_tripwire.evaluate() consumes)."""
+    return dict(
+        warmup_min=SLIP_WARMUP_MIN,
+        window_n=SLIP_WINDOW_N,
+        mean_r_halt=SLIP_MEAN_R_HALT,
+        single_r_alert=SLIP_SINGLE_R_ALERT,
+        single_r_halt=SLIP_SINGLE_R_HALT,
+        miss_window_n=SLIP_MISS_WINDOW_N,
+        miss_rate_halt=SLIP_MISS_RATE_HALT,
+    )
+
 
 def daily_stop_dollars(points=None, contracts=None, point_value=POINT_VALUE_MNQ):
     """The daily-stop dollar cap from the points × contracts authoring. Whole-dollar -> int for clean

@@ -41,10 +41,11 @@ pkill -f "auto_live.py" 2>/dev/null && sleep 3 || true
 nohup python3 auto_live.py --account "$ACCT" --tier "$TIER" --feed tradingview-1m \
   --d1c-mode active-eval-filter --execution traderspost --controlled-tv-full-live-test \
   --live --confirm --require-d1c-active --no-profile-b \
+  --slip-tripwire --slip-mode alert \
   > logs/live-recert.log 2>&1 &
 echo "  launched PID $! -> logs/live-recert.log"
 sleep 18
-grep -iE "ARMED, live webhooks active|exit model|EXIT3|read-back|SEEDED|FAIL CLOSED" logs/live-recert.log | tail -8
+grep -iE "ARMED, live webhooks active|exit model|EXIT3|read-back|SEEDED|FAIL CLOSED|slip tripwire" logs/live-recert.log | tail -9
 echo
 echo "LIVE on the recertified machine. Watch logs/live-recert.log + the dashboard."
 echo "Keep feed_watch running:  pgrep -fl feed_watch || nohup python3 feed_watch.py --heal > logs/feed-watch.log 2>&1 &"

@@ -164,11 +164,14 @@ class ExecTelemetry:
 
         actual_fill_px comes from readback_tradingview.avg_price_by_account() (None if
         the panel is not connected / not readable — set panel_readable=False in that case).
+
+        Returns the computed slippage_R (float, + == worse) or None — so the slip tripwire can
+        consume it directly without re-reading the flushed row.
         """
         try:
             row = self._pending.get(str(signal_ts))
             if row is None:
-                return
+                return None
             row["fill_confirm_wall_ts"] = wall_ts.isoformat()
             row["panel_readable"] = bool(panel_readable)
             row["actual_fill_px"] = float(actual_fill_px) if actual_fill_px is not None else None
@@ -184,10 +187,13 @@ class ExecTelemetry:
                 row["slippage_R"] = (
                     round(_slip_pts / _stop_dist, 4) if _stop_dist > 0 else None
                 )
+            _slip_r_out = row.get("slippage_R")
             self._flush(str(signal_ts))
+            return _slip_r_out
         except Exception as e:  # noqa: BLE001
             print(f"[exec-telem] ⚠ on_fill_confirmed error (signal_ts={signal_ts}): {e!r}",
                   flush=True)
+            return None
 
     def on_missed(self, signal_ts: str, notes: str = "") -> None:
         """Call when on_missing fires (TTL expired, position never filled).

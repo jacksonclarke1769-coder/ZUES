@@ -132,6 +132,7 @@ class LiveAuto:
         self.notify = notify           # Telegram notifier (signals + modeled outcomes). Optional, fail-safe.
         self.tjournal = tjournal       # learning journal (why won/lost). Optional, fail-safe.
         self.telemetry = None          # ExecTelemetry instance (wired by main()); observational only.
+        self.slip = None               # SlipTripwire instance (wired by main() if --slip-tripwire); observational.
         # P3 cushion brake + Profile B (research-validated; gated like everything else, paper-first)
         self.p3 = P3Brake()
         self.p3_enabled = p3_enabled
@@ -654,6 +655,14 @@ def main(argv=None):
                         "flattens fail-closed on a confirmed mismatch. Needs read-only Tradovate API creds.")
     p.add_argument("--readback-poll", type=int, default=20,
                    help="seconds between read-back polls (default 20)")
+    p.add_argument("--slip-tripwire", action="store_true",
+                   help="arm the execution slippage tripwire (observational; spec "
+                        "docs/specs/slippage_tripwire_spec.md). Watches real fill quality off exec_telemetry "
+                        "and, per --slip-mode, alerts / latches a SLIP-class read-back halt on breach. Default OFF.")
+    p.add_argument("--slip-mode", choices=["alert", "halt"], default="alert",
+                   help="slip-tripwire behaviour when armed: 'alert' computes + Telegrams breaches but NEVER "
+                        "halts (Monday rollout default); 'halt' also freezes entries via the read-back sentinel "
+                        "(no flatten). Ignored unless --slip-tripwire.")
     p.add_argument("--heartbeat-min", type=int, default=60,
                    help="minutes between Telegram heartbeat health pings while live (0 = off, default 60)")
     p.add_argument("--controlled-tv-full-live-test", "--controlled-tv-live-test",
@@ -770,6 +779,24 @@ def main(argv=None):
         print(f"  ⚠ exec telemetry DISABLED ({_et_e!r})", flush=True)
         auto.telemetry = None
 
+    # --- Slippage tripwire (observational; default OFF; fail-safe, never touches the order path) ---
+    auto.slip = None
+    if getattr(a, "slip_tripwire", False):
+        try:
+            from slip_tripwire import SlipTripwire
+            from config_defaults import slip_tripwire_cfg
+            _slip_alert = (lambda m: tg.send(m)) if getattr(tg, "enabled", False) else None
+            _slip_halt = (lambda why: auto.readback.slip_halt(why)) if readback is not None else None
+            auto.slip = SlipTripwire(slip_tripwire_cfg(), mode=a.slip_mode,
+                                     on_alert=_slip_alert, on_halt=_slip_halt)
+            _mode_note = ("HALT-capable (freezes entries via read-back sentinel on breach)"
+                          if a.slip_mode == "halt" else "ALERT-only (never halts — watches + Telegrams)")
+            print(f"  slip tripwire ON [{a.slip_mode}] -> {_mode_note}; events out/exec/slip_halt_events.csv",
+                  flush=True)
+        except Exception as _st_e:  # noqa: BLE001
+            print(f"  ⚠ slip tripwire DISABLED ({_st_e!r})", flush=True)
+            auto.slip = None
+
     # --- Profile MOMENTUM lane (default OFF; --profile-momentum routes it via the same bridge) ---
     # PHASE/FIRM gate: momentum trades variance for income, so it auto-enables ONLY where the ruleset rewards
     # that (Apex eval / MFFU funded) and stays off where variance is punished (MFFU eval trailing-DD, Apex
@@ -879,6 +906,9 @@ def main(argv=None):
                     _pts = auto.telemetry.pending_signal_ts()
                     if _pts is not None:
                         auto.telemetry.on_missed(_pts)
+                        # SLIP TRIPWIRE: an unfilled limit is a MISSED signal (observational; fail-safe).
+                        if auto.slip is not None:
+                            auto.slip.observe_miss()
             except Exception as _te:  # noqa: BLE001
                 print(f"[exec-telem] ⚠ on_missed hook error: {_te!r}", flush=True)
             if tg.enabled:
@@ -1207,8 +1237,11 @@ def main(argv=None):
                             if hasattr(_rb_broker, "avg_price_by_account"):
                                 _fp = _rb_broker.avg_price_by_account(readback.account)
                                 _pr = _fp is not None
-                            auto.telemetry.on_fill_confirmed(
+                            _slip_r = auto.telemetry.on_fill_confirmed(
                                 _telem_pts, _fp, _pr, datetime.now(timezone.utc))
+                            # SLIP TRIPWIRE: feed the just-computed entry slippage (observational; fail-safe).
+                            if auto.slip is not None:
+                                auto.slip.observe_fill(_slip_r)
                         except Exception as _te:  # noqa: BLE001
                             print(f"[exec-telem] ⚠ on_fill_confirmed error: {_te!r}", flush=True)
             # --- Pre-open feed-readiness guard: if the feed isn't GREEN before the 09:30 ET open, alert the

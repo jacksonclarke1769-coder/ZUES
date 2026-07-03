@@ -132,6 +132,21 @@ class ReadbackSentinel:
     def ready(self):
         return (not self.halted), ("readback HALT: " + (self.reason or "")) if self.halted else ""
 
+    def slip_halt(self, reason):
+        """SLIP-class halt: execution slippage / miss-rate breached tolerance (slip_tripwire).
+
+        Latches entries CLOSED via the SAME `halted` gate the entry path already checks
+        (auto_live `_entry_ready`), and alerts ONCE.  NEVER flattens — bad fills mean the ENTRY
+        assumption is leaking, not that the open position is wrong, so existing brackets stay on
+        the book (mirrors READ-class discipline, T0-3 audit).  Clears only via operator reset()
+        (/resume).  Idempotent: a second call while already halted is a no-op."""
+        if self.halted:
+            return
+        self.halted = True
+        self.reason = "SLIP-HALT: " + str(reason)
+        self._alert(f"⚠ SLIP-HALT — {self.account}\n{reason}\n"
+                    "Entries FROZEN (no flatten — brackets live, position untouched). /resume to clear.")
+
     # ----- one reconciliation pass -----
     def poll(self, broker):
         try:
