@@ -4,7 +4,7 @@
   "active": true,
   "firm": "Apex",
   "account_label": "APEX-50K-EVAL-1",
-  "account_id": "APEX6046970000002",
+  "account_id": "<runtime-from-readback>",
   "phase": "EVAL",
   "machine": "ZEUS Rev B (v2026.07.02b)",
   "start_balance": 50000.0,
