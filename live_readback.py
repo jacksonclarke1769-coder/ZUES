@@ -80,6 +80,7 @@ class ReadbackSentinel:
         self.journal = journal
         self.on_missing = on_missing        # callback(expected:int) fired ONCE per episode after missing_confirm polls
         self.missing_confirm = missing_confirm  # consecutive MISSING_POSITION polls before on_missing fires (~2 min at 20s)
+        self.fill_telem = None              # optional FillTelemetry (wired by auto_live); observation-only, fail-open
         self.expected = 0          # bot's belief: signed net qty (long>0, short<0, flat=0)
         self.halted = False
         self.reason = None
@@ -204,6 +205,13 @@ class ReadbackSentinel:
                     self.journal.append("FILL_CONFIRMED", self.account,
                                         payload=dict(expected=self.expected, broker=bpos))
                 except Exception:                             # noqa: BLE001 — logging never breaks safety
+                    pass
+            # FILL TELEMETRY: mirror the fill confirmation (observation-only; fail-open, guarded so
+            # live_readback works with no telemetry wired). Deregisters the resting-order registry.
+            if getattr(self, "fill_telem", None) is not None:
+                try:
+                    self.fill_telem.on_fill_confirmed(account=self.account, expected=self.expected, broker=bpos)
+                except Exception:                             # noqa: BLE001 — telemetry never breaks safety
                     pass
 
         # ---- missing escalation: count consecutive polls; fire on_missing ONCE per episode ----

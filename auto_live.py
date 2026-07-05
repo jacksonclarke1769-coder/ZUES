@@ -133,6 +133,7 @@ class LiveAuto:
         self.tjournal = tjournal       # learning journal (why won/lost). Optional, fail-safe.
         self.telemetry = None          # ExecTelemetry instance (wired by main()); observational only.
         self.slip = None               # SlipTripwire instance (wired by main() if --slip-tripwire); observational.
+        self.fill_telem = None         # FillTelemetry instance (wired by main(), default ON); observation-only, fail-open.
         # P3 cushion brake + Profile B (research-validated; gated like everything else, paper-first)
         self.p3 = P3Brake()
         self.p3_enabled = p3_enabled
@@ -357,6 +358,26 @@ class LiveAuto:
                     common["entry"], common["stop"], common["target"], a_size, sig["side"], "A")
         except Exception as _te:  # noqa: BLE001
             print(f"[exec-telem] ⚠ on_decision hook error: {_te!r}", flush=True)
+        # FILL TELEMETRY: record the committed decision (observation-only; fail-open, never blocks send)
+        try:
+            if self.fill_telem is not None:
+                # sizing forensics (observational only): qty_formula = uncapped size-to-risk ask;
+                # qty_cap = tier/P3-braked cap re-read from state (pure, no mutation, no gate re-entry).
+                import config_defaults as _CD_szf
+                _stop_pts_f = abs(float(sig["entry"]) - float(sig["stop"]))
+                _budget_f = float(getattr(_CD_szf, "A_RISK_BUDGET_USD", 0) or 0)
+                _risk1_f = _stop_pts_f * _CD_szf.POINT_VALUE_MNQ
+                _qty_formula = int(_budget_f // _risk1_f) if (_budget_f and _risk1_f > 0) else None
+                _qty_cap = self.p3.size(spec["am"], spec.get("bm", 0))[0]
+                self.fill_telem.on_decision(
+                    strategy="A", side=sig["side"], signal_ts=sig["ts_signal"], account=self.account,
+                    intended_price=float(sig["entry"]), submitted_price=BP.round_tick(common["entry"], "MNQ"),
+                    stop=BP.round_tick(common["stop"], "MNQ"), target=BP.round_tick(common["target"], "MNQ"),
+                    qty=a_size, qty_formula=_qty_formula, qty_cap=_qty_cap, qty_submitted=a_size,
+                    d1c=dict(mode=self.d1c_mode, status=d1c_status, allowed=True, drift=self.gate.drift()),
+                    decision_wall_ts=_telem_decision_wall.isoformat(), bar_ts=str(ts))
+        except Exception as _fe:  # noqa: BLE001
+            print(f"[fill-telem] ⚠ on_decision hook error: {_fe!r}", flush=True)
         # EXITFORGE: official model is EXIT3_FIXED_PARTIAL -> two split bracket legs, fail-closed
         if _exit_model == "EXIT3_FIXED_PARTIAL":
             legs, err = BP.build_entry_exit3(**common)
@@ -365,6 +386,13 @@ class LiveAuto:
                 return
             res = self.sender.send_exit3(legs, self.account, root="MNQ")
             ok = res.get("ok")
+            # FILL TELEMETRY: one ORDER_SENT per leg + register resting limits (observation-only; fail-open)
+            try:
+                if self.fill_telem is not None:
+                    self.fill_telem.on_order_sent(strategy="A", side=sig["side"], signal_ts=sig["ts_signal"],
+                                                  account=self.account, legs=legs, result=res, bar_ts=ts)
+            except Exception as _fe:  # noqa: BLE001
+                print(f"[fill-telem] ⚠ on_order_sent hook error: {_fe!r}", flush=True)
         elif _exit_model == "SINGLE_1R":
             # full-qty single +1R target (gated paper-test candidate). resolve_exit_model already
             # fail-safed to EXIT3 if SINGLE_1R wasn't approved for this live mode, so reaching here is intentional.
@@ -779,6 +807,17 @@ def main(argv=None):
         print(f"  ⚠ exec telemetry DISABLED ({_et_e!r})", flush=True)
         auto.telemetry = None
 
+    # --- Fill telemetry (observation-only, DEFAULT ON; async, fail-open — never blocks/delays order flow) ---
+    try:
+        from fill_telemetry import FillTelemetry
+        auto.fill_telem = FillTelemetry(telegram=(tg if getattr(tg, "enabled", False) else None))
+        if readback is not None:
+            readback.fill_telem = auto.fill_telem      # FILL_CONFIRMED mirror (guarded, fail-open in live_readback)
+        print("  fill telemetry ON -> out/fill_telemetry/<ET-date>.jsonl", flush=True)
+    except Exception as _ft_e:  # noqa: BLE001
+        print(f"  ⚠ fill telemetry DISABLED ({_ft_e!r})", flush=True)
+        auto.fill_telem = None
+
     # --- Slippage tripwire (observational; default OFF; fail-safe, never touches the order path) ---
     auto.slip = None
     if getattr(a, "slip_tripwire", False):
@@ -874,6 +913,12 @@ def main(argv=None):
                     sender.flatten(a.account, reason=f"readback_{int(_tt.time())}")
             except Exception as e:                                # noqa: BLE001 — halt stands regardless
                 print(f"[auto-live] read-back flatten error: {e!r} (entries already halted)", flush=True)
+            # FILL TELEMETRY: resting entries resolved by the critical flatten (observation-only; fail-open)
+            try:
+                if auto.fill_telem is not None:
+                    auto.fill_telem.on_order_resolved(account=a.account, reason="readback_critical_flatten")
+            except Exception as _fe:                              # noqa: BLE001
+                print(f"[fill-telem] ⚠ on_order_resolved hook error: {_fe!r}", flush=True)
         readback.on_critical = _rb_flatten
 
         # Order TTL: the A entry-limit fill window is owned by the model; the cancel fired here
@@ -911,6 +956,12 @@ def main(argv=None):
                             auto.slip.observe_miss()
             except Exception as _te:  # noqa: BLE001
                 print(f"[exec-telem] ⚠ on_missed hook error: {_te!r}", flush=True)
+            # FILL TELEMETRY: terminal state for the resting entry (TTL/cancel) (observation-only; fail-open)
+            try:
+                if auto.fill_telem is not None:
+                    auto.fill_telem.on_order_resolved(account=a.account, reason="on_missing_ttl_cancel")
+            except Exception as _fe:  # noqa: BLE001
+                print(f"[fill-telem] ⚠ on_order_resolved hook error: {_fe!r}", flush=True)
             if tg.enabled:
                 tg.send(f"⚠ entry unfilled at broker → working orders cancelled; "
                         f"modeled tracker may diverge (phantom-trade guard). "
@@ -1039,13 +1090,21 @@ def main(argv=None):
         from datetime import time as _dtime
         _mom_on = _momentum_armed                                          # only defer if momentum actually armed
         _g_sched = _Sched(flatten_at=_dtime(15, 30)) if _mom_on else None   # half-day flat (12:45) unchanged
+        def _on_flatten_ok():                                  # preserves readback.on_flat; ADDS fill-telem resolution
+            if readback is not None:
+                readback.on_flat()
+            try:                                              # FILL TELEMETRY: EOD/kill flatten resolves resting entries
+                if auto.fill_telem is not None:
+                    auto.fill_telem.on_order_resolved(account=a.account, reason="guardian_eod_or_kill_flatten")
+            except Exception as _fe:                          # noqa: BLE001 — observation-only, never breaks the guardian
+                print(f"[fill-telem] ⚠ on_order_resolved hook error: {_fe!r}", flush=True)
         guardian = FlattenGuardian(
             a.account, root="MNQ", scheduler=_g_sched,
             hb_meta=dict(mode=mode, account=a.account, tier=a.tier, d1c_mode=d1c_mode,
                          execution=a.execution, ares_tier=a.tier),
             build=lambda: (BridgeSender(store=Store(), journal=Journal(), mode=_gmode, live_url=_gurl),
                            Store(), Journal()),
-            on_flatten_ok=(readback.on_flat if readback is not None else None))
+            on_flatten_ok=_on_flatten_ok)
         guardian.start()
         print(f"  flatten guardian armed (wall-clock EOD {'15:30 (momentum lane)' if _mom_on else '14:30'} "
               f"+ kill, feed-independent, {_gmode})", flush=True)
@@ -1179,6 +1238,12 @@ def main(argv=None):
         def _process(ts, o, h, l, c):
             if auto.killed():
                 print(f"[auto-live] KILL: {auto.killed()} — halting new entries", flush=True)
+            # FILL TELEMETRY: scan resting entry limits for touches on this bar (observation-only; fail-open)
+            try:
+                if auto.fill_telem is not None:
+                    auto.fill_telem.on_bar(ts, o, h, l, c)
+            except Exception as _fe:                           # noqa: BLE001
+                print(f"[fill-telem] ⚠ on_bar hook error: {_fe!r}", flush=True)
             auto.feed_gate(ts, o, c)                           # D1c on every bar (+09:30 open)
             if dual_1m:
                 done = _agg.add(ts, o, h, l, c)                # native 1m -> D1c; aggregated 5m -> engine
@@ -1374,6 +1439,11 @@ def main(argv=None):
                         guardian._flatten("TELEGRAM")                # immediate, same bridge route as EOD/kill
                     except Exception as e:                           # noqa: BLE001
                         return f"⚠ flatten signal sent (kill flag set); immediate call failed: {e}"
+                try:                                                 # FILL TELEMETRY: manual flatten resolves resting entries
+                    if auto.fill_telem is not None:
+                        auto.fill_telem.on_order_resolved(account=a.account, reason="manual_flatten")
+                except Exception as _fe:                             # noqa: BLE001
+                    print(f"[fill-telem] ⚠ on_order_resolved hook error: {_fe!r}", flush=True)
                 return "🚨 FLATTEN sent + HALTED. Confirm flat in Tradovate. /resume to re-arm."
 
             def _h_resume(_a):
@@ -1418,6 +1488,11 @@ def main(argv=None):
                 print(f"[momentum] shutdown flat skipped: {_me!r}", flush=True)
         if guardian is not None:
             guardian.stop()
+        try:                                                  # FILL TELEMETRY: drain the writer queue on clean exit
+            if getattr(auto, "fill_telem", None) is not None:
+                auto.fill_telem.close()
+        except Exception as _fe:                              # noqa: BLE001 — shutdown flush never blocks exit
+            print(f"[fill-telem] ⚠ shutdown flush skipped: {_fe!r}", flush=True)
         lock.release()
     return 0
 
