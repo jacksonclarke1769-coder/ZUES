@@ -11,10 +11,14 @@ Tradovate). Mistakes here lose real money.
 ## 🔒 ZEUS Production Machine v2026.07.02 rev b (DLL re-lock) (LOCKED — operator-approved)
 
 **A10 · Exit#3 · D1c ACTIVE_EVAL_FILTER · size-to-risk $1,200 · B OFF · momentum OFF · $550 daily stop**
-(pass 58.2% / bust 29.1% / expire 12.7% / median 11d — DLL-honest model; operator confirmed Apex 50K
+(pass 47.8% / bust 15.9% / expire 36.2% / median 16d — DLL-honest model, cap-10 re-lock 2026-07-05;
+see reports/risk_arithmetic_reconciliation_2026-07-05.md; operator confirmed Apex 50K
 EOD DLL = $1,000 on 2026-07-02; provenance `reports/apex_validation.json` §dll_recert_selected_machine,
 harness `tools_account_size_research.py`). Launch ONLY via `./go-live-recert.sh`. No task may alter
 this configuration without a new certification run and explicit operator approval.
+The prior 58.2% / 29.1% / 12.7% / median 11d row was simmed at cap A40 (never deployed) and is
+retired per DEC-20260705-1102 / reports/risk_arithmetic_reconciliation_2026-07-05.md; pass 47.8% is
+an upper bound (P3 brake + cushion shrinkage unmodeled).
 
 ⚠ **STALE-PROCESS WARNING:** any `auto_live.py` process started BEFORE 2026-07-02 ~11:00 AWST runs the
 OLD machine (SINGLE_1R, B on, momentum flag, MFFU rules, read-back halted) and must NOT be trusted.

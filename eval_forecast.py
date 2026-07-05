@@ -4,12 +4,12 @@ Answers the live question the certified pass rate can't: "given I am at $49,404.
 cushion and 19 days left, what is P(pass) / P(bust) / P(expire) and how many days to target?"
 
 METHOD — block-bootstrap replay (NOT a new model):
-  The certified 58.2% pass rate is a walk-forward: run the SAME Apex-EOD state machine over the
+  The certified 47.8% (cap-10 re-lock 2026-07-05) pass rate is a walk-forward: run the SAME Apex-EOD state machine over the
   machine's real per-day P&L stream (day_rows: realized + marked-trough) from every historical
   start.  This replays that IDENTICAL forward stream onto the CURRENT bankroll and a SHORTENED
   clock instead of a fresh $50k / 30-day start.  step_eval() mirrors tools_account_size_research
   .eval_run() exactly (proven by test_eval_forecast.test_step_matches_harness), and seeding it
-  fresh reproduces 58.2/29.1/12.7 (test_calibration_reproduces_certified).
+  fresh reproduces 47.8/15.9/36.2 (test_calibration_reproduces_certified).
 
   It invents no distribution.  The only conditioned inputs are the seed balance/threshold (real,
   off the Apex panel) and days-left.  Positive= the day P&L stream is the certified one.

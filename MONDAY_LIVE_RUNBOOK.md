@@ -4,7 +4,8 @@
 size-to-risk **$1,200/trade** · B OFF · momentum OFF · $550 daily stop.
 **Account:** Apex **APEX-50K-EVAL-1** — real. Balance **$49,404.80**, cushion to floor **~$1,905**,
 need **+$3,595** to pass, ~23 days left. **Never traded by Rev B — this is its first live session.**
-**Certified:** pass 58.2% / bust 29.1% / expire 12.7% (1m-truth, DLL-honest).
+**Certified:** pass 47.8% / bust 15.9% / expire 36.2% (1m-truth, DLL-honest; cap-10 re-lock 2026-07-05,
+see reports/risk_arithmetic_reconciliation_2026-07-05.md).
 
 > Pre-staged 2026-07-03 (holiday, markets closed). Everything below runs **Monday**. Read top-to-
 > bottom once before you start. Do not improvise the order — the sequence exists for a reason.

@@ -70,28 +70,33 @@ produced by `tools_account_size_research.py` on real Databento 1m data (2026-07-
 
 | Metric | Value | Label |
 |---|---|---|
-| Pass rate | **58.2%** | CERTIFIED |
-| Bust rate | **29.1%** | CERTIFIED |
-| Expire rate | **12.7%** | CERTIFIED |
-| Median days to outcome | **~11 days** | CERTIFIED |
-| Expected value per attempt | ~$7,040 | CERTIFIED |
+| Pass rate | **47.8%** | CERTIFIED (upper bound) |
+| Bust rate | **15.9%** | CERTIFIED |
+| Expire rate | **36.2%** | CERTIFIED |
+| Median days to outcome | **~16 days** | CERTIFIED |
+| Expected value per attempt | ~$5,773 | CERTIFIED |
 | Worst single day | −$1,000 (DLL cap) | CERTIFIED |
+
+*Corrected cap-10 re-lock 2026-07-05 (DEC-20260705-1102): the prior 58.2% / 29.1% / 12.7% / ~11d /
+~$7,040 row was simmed at a 40-contract cap that was never deployed (deployed cap = 10); see
+`reports/risk_arithmetic_reconciliation_2026-07-05.md`. Pass 47.8% is an upper bound (P3 brake +
+cushion shrinkage unmodeled).
 
 The Apex 50K EOD evaluation enforces a **$1,000 Daily Loss Limit** (operator-confirmed
 2026-07-02). The $1,200 size-to-risk budget was chosen specifically to keep the worst
 single-trade excursion inside that cap.
 
-**Per-year pass rates** (same harness):
+**Per-year pass rates** (same harness, cap-10 re-lock 2026-07-05; grouped by eval start year):
 
-| Year | Pass % |
-|---|---|
-| 2021 | 53.2 |
-| 2022 | 48.3 |
-| 2023 | 60.2 |
-| 2024 | 55.8 |
-| 2025 | 63.2 |
-| 2026 | 68.0 |
-| **All** | **58.2** |
+| Year | Pass % | n starts |
+|---|---|---|
+| 2021 | 51.1 | 45 |
+| 2022 | 38.6 | 70 |
+| 2023 | 52.8 | 89 |
+| 2024 | 35.1 | 74 |
+| 2025 | 62.9 | 89 |
+| 2026 | 35.7 | 28 |
+| **All** | **47.8** | **395** |
 
 ---
 

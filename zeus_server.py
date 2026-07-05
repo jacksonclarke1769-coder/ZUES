@@ -221,11 +221,14 @@ def apex_playbook():
             # 2026-06-27. DO NOT hand-edit: re-run apex_eval_eod_databento.py / apex_funded_eod_databento.py.
             # (The old 86%/87% came from deleted /tmp scripts that modeled the wrong drawdown rule.)
             eval=dict(tier="Apex-50K-eval", size="A10 Exit#3 + D1c · size-to-risk $1.2k · B off · mm0",
-                      stop=ev["daily_stop"], pass_pct=58.2, bust_pct=29.1, expire_pct=12.7, median_days=11,
-                      note="DLL re-lock 2026-07-02b (tools_account_size_research.py): operator confirmed "
-                           "Apex 50K EOD DLL = $1,000; $1,200 budget DOMINATES $1,600 (pass 58.2% vs "
-                           "51.9%, bust 29.1% vs 40.5%). Old $1,600/57.7%/17.7% (tools_phase3_config_sweep.py) "
-                           "SUPERSEDED — DLL unmodeled. 1m-TRUTH recert still valid; fill-bar look-ahead removed."),
+                      stop=ev["daily_stop"], pass_pct=47.8, bust_pct=15.9, expire_pct=36.2, median_days=16,
+                      note="DLL re-lock 2026-07-02b (tools_account_size_research.py), corrected by the "
+                           "cap-10 re-lock 2026-07-05 (DEC-20260705-1102; pass=upper bound; see "
+                           "reports/risk_arithmetic_reconciliation_2026-07-05.md — the prior 58.2/29.1/12.7 "
+                           "row was simmed at cap A40, never deployed, deployed cap is 10). Operator confirmed "
+                           "Apex 50K EOD DLL = $1,000; $1,200 budget DOMINATES $1,600. Old $1,600/57.7%/17.7% "
+                           "(tools_phase3_config_sweep.py) SUPERSEDED — DLL unmodeled. 1m-TRUTH recert still "
+                           "valid; fill-bar look-ahead removed."),
             funded=dict(phase1=f"A{f1['am']}/B{f1['bm']}/mm{f1['mm']}", phase2=f"A{f2['am']}/B{f2['bm']}/mm{f2['mm']}",
                         stop=f1["daily_stop"],
                         lock="Apex 4.0 PA ladder · 6 payouts · ~$12.6-12.8k lifetime cap (no floor-lock step)",
@@ -871,7 +874,8 @@ def api_campaign():
 def api_forecast():
     """Read-only: live CONDITIONAL P(pass) for the active eval — block-bootstrap replay of the
     certified per-day P&L stream onto the current balance + remaining clock. Reproduces the locked
-    58.2/29.1/12.7 when seeded fresh; here it's conditioned on where the account actually is.
+    47.8/15.9/36.2 (cap-10 re-lock 2026-07-05) when seeded fresh; here it's conditioned on where the
+    account actually is.
     Pure display — never trades, never writes."""
     import datetime as _dt
     base = os.path.dirname(os.path.abspath(__file__))
@@ -915,7 +919,7 @@ def api_forecast():
                    pass_pct=fc["pass_pct"], bust_pct=fc["bust_pct"], expire_pct=fc["expire_pct"],
                    median_days_to_pass=fc["median_days_to_pass"],
                    cushion=round(bal - floor, 2), to_target=round(tgt - bal, 2),
-                   certified_pass=58.2, level=level, verdict=verdict, sensitivity=sens,
+                   certified_pass=47.8, level=level, verdict=verdict, sensitivity=sens,
                    method="block-bootstrap replay of the certified day stream")
 
 

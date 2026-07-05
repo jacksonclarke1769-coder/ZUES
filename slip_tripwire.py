@@ -1,8 +1,9 @@
 """Execution slippage tripwire — SLIP-class halt.  Spec: docs/specs/slippage_tripwire_spec.md
 
 Watches real fill quality (from exec_telemetry) and reacts when live entries fill systematically
-WORSE than the backtest-modeled level, or aren't filling at all.  The certified 58.2% eval pass rate
-assumes ~0 entry slippage; this is the part that checks that assumption against reality and, in halt
+WORSE than the backtest-modeled level, or aren't filling at all.  The certified 47.8% eval pass rate
+(cap-10 re-lock 2026-07-05) assumes ~0 entry slippage; this is the part that checks that assumption
+against reality and, in halt
 mode, freezes new entries before an unmodeled cost silently drains the ~$1,905 eval cushion.
 
 DESIGN CONTRACT (mirrors exec_telemetry.py):

@@ -1,6 +1,7 @@
 > ## 🔒 2026-07-02b — SELECTED MACHINE LOCKED + DLL RE-LOCK + STALE-PROCESS WARNING
 > The certified live machine is **ZEUS Production Machine v2026.07.02b — A10 · Exit#3 · D1c active ·
-> size-to-risk $1,200 · B OFF · momentum OFF** (pass 58.2% / bust 29.1% / expire 12.7% / median 11d;
+> size-to-risk $1,200 · B OFF · momentum OFF** (pass 47.8% / bust 15.9% / expire 36.2% / median 16d;
+> cap-10 re-lock 2026-07-05, DEC-20260705-1102; see reports/risk_arithmetic_reconciliation_2026-07-05.md;
 > DLL $1,000 operator-verified 2026-07-02; `reports/apex_validation.json` §dll_recert_selected_machine).
 > Any auto_live process started before 2026-07-02 runs the OLD de-certified config and must not be
 > trusted — kill it, don't reason about it.

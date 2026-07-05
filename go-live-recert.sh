@@ -4,7 +4,8 @@
 # │                                                                                            │
 # │  Machine: Profile A ONLY · Exit#3 (0.5@+1R / 0.5@+2R) · D1c ACTIVE_EVAL_FILTER ·          │
 # │           size-to-risk $1,200/trade (max A10) · B OFF · momentum OFF · $550 daily stop.    │
-# │  DLL-honest model: pass 58.2% / bust 29.1% / expire 12.7% / median 11d                    │
+# │  DLL-honest model: pass 47.8% / bust 15.9% / expire 36.2% / median 16d (cap-10 re-lock     │
+# │  2026-07-05; see reports/risk_arithmetic_reconciliation_2026-07-05.md)                     │
 # │  (tools_account_size_research.py; DLL $1,000 operator-verified 2026-07-02;                 │
 # │   provenance reports/apex_validation.json §dll_recert_selected_machine).                   │
 # │                                                                                            │
@@ -15,7 +16,7 @@ cd ~/trading-team/bot/nq-liq-bot
 
 ACCT="APEX-50K-EVAL-1"; TIER="Apex-50K-eval"
 echo "================  GO LIVE · v2026.07.02b (DLL re-lock)  ·  ${ACCT}  ================"
-echo "  pass 58.2% / bust 29.1% DLL-honest · size-to-risk \$1,200 · B OFF · momentum OFF"
+echo "  pass 47.8% / bust 15.9% DLL-honest (cap-10 re-lock 2026-07-05) · size-to-risk \$1,200 · B OFF · momentum OFF"
 echo "  REAL orders. Read-back REQUIRED (panel open in the :9222 Chrome). Supervise."
 echo
 printf 'Type exactly  GO LIVE RECERT  to arm (anything else aborts): '

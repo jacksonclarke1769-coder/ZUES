@@ -2,7 +2,7 @@
 
 The load-bearing test is test_step_matches_harness: my step_eval/replay must be byte-for-byte
 equivalent to tools_account_size_research.eval_run, because that is what makes the forecast a
-faithful conditional of the certified 58.2/29.1 — not a new, uncertified model.
+faithful conditional of the certified 47.8/15.9 (cap-10 re-lock 2026-07-05) — not a new, uncertified model.
 """
 import os
 import random
@@ -133,9 +133,10 @@ def test_forecast_is_deterministic():
 @pytest.mark.skipif(not HAS_CACHE, reason="certified day cache absent (run --rebuild)")
 def test_calibration_reproduces_certified():
     """Seeded FRESH (start balance, start-trail floor, 30 days), the forecast must reproduce the
-    locked 58.2/29.1/12.7 within rounding — proof it's the certified machine, conditioned."""
+    locked 47.8/15.9/36.2 (cap-10 re-lock 2026-07-05) within rounding — proof it's the certified
+    machine, conditioned."""
     days = EF.load_distribution()
     fc = EF.forecast(days, EF.START, EF.START - EF.TRAIL, EF.EXPIRE_DAYS)
-    assert fc["pass_pct"] == pytest.approx(58.2, abs=0.3)
-    assert fc["bust_pct"] == pytest.approx(29.1, abs=0.3)
-    assert fc["expire_pct"] == pytest.approx(12.7, abs=0.3)
+    assert fc["pass_pct"] == pytest.approx(47.8, abs=0.3)
+    assert fc["bust_pct"] == pytest.approx(15.9, abs=0.3)
+    assert fc["expire_pct"] == pytest.approx(36.2, abs=0.3)

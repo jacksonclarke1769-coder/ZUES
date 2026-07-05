@@ -43,11 +43,12 @@ def _rebuild_cache():
     eng = E.ProfileAEngine(config.STRAT); eng.buf = df5
     rows = a_streams_d1c(eng._features(), mp, d1_tz)["exit3"][0]
     spec = H.SPECS["50K"]
-    days = H.day_rows(H.build_events(rows, 1200, spec["max_qty"]), spec["stop"], spec["dll"])
+    # deployed tier qty cap (DEC-20260705-1102) — spec max_qty/MAX_A_QTY are research ceilings, not the machine
+    days = H.day_rows(H.build_events(rows, 1200, 10), spec["stop"], spec["dll"])
     cache = [{"date": str(d.date()), "real": round(float(r), 2), "trough": round(float(tr), 2)}
              for d, r, tr in days]
     os.makedirs("reports", exist_ok=True)
-    json.dump({"machine": "ZEUS v2026.07.02b 50K@1200", "n_days": len(cache),
+    json.dump({"machine": "ZEUS v2026.07.02b 50K@1200 cap10", "n_days": len(cache),
                "source": "tools_account_size_research day_rows (exit3+D1c 1m-truth)",
                "days": cache}, open(EF.CACHE_PATH, "w"), indent=0)
     print(f"[saved] {EF.CACHE_PATH} ({len(cache)} day rows)", flush=True)
@@ -133,7 +134,8 @@ def main():
     p = fc["pass_pct"]
     print(f"  VERDICT: {verdict}")
     # honesty line: the conditional number vs the certified headline, and WHY they differ
-    print(f"  NOTE: {p}% conditional vs 58.2% certified — you start down ${start-balance:,.0f} "
+    print(f"  NOTE: {p}% conditional vs 47.8% certified (cap-10 re-lock 2026-07-05; upper bound) — "
+          f"you start down ${start-balance:,.0f} "
           f"(cushion ${cushion:,.0f} vs $2,500), need ${target_bal-balance:,.0f} in {days_left}d not 30. "
           f"The edge is unchanged; the STARTING HANDICAP is the gap.")
 

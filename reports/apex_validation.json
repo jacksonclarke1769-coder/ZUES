@@ -1,5 +1,6 @@
 {
  "_comment": "SOURCE OF TRUTH for Apex pass/lock rates shown on the dashboard. Every % the operator sees must trace to here, and here must trace to a COMMITTED harness (never /tmp). Re-run the harness, update this file, then update any displayed constant. test_apex_validation_provenance.py enforces it.",
+ "current_machine": "cap10_relock_2026-07-05",
  "verified": "2026-06-27",
  "rule": "EOD drawdown (threshold set at daily close + ratchets on EOD-balance highs; intraday equity still liquidates on the downside)",
  "data": "real Databento CME NQ 1m resampled to 5m (run_d1c_real.load_1m)",
@@ -234,7 +235,19 @@
    "worst_day": -1000
   },
   "dominates_1600": "$1,200 DOMINATES $1,600: pass 58.2% vs 51.9%, bust 29.1% vs 40.5%, E[$/attempt] $7,040 vs $5,341",
-  "note": "This is the CURRENT LOCKED machine budget as of v2026.07.02b. The prior DLL-free row (phase3_selected_machine, $1,600, pass 57.7%/bust 17.7%) is SUPERSEDED — DLL was unmodeled."
+  "note": "This is the CURRENT LOCKED machine budget as of v2026.07.02b. The prior DLL-free row (phase3_selected_machine, $1,600, pass 57.7%/bust 17.7%) is SUPERSEDED — DLL was unmodeled.",
+  "_SUPERSEDED_BY": "cap10_relock_2026-07-05 (2026-07-05, DEC-20260705-1102)"
+ },
+ "cap10_relock_2026-07-05": {
+  "verified": "2026-07-05",
+  "decision": "DEC-20260705-1102 option (a): live qty cap stays tier A10 (10)",
+  "supersedes": "dll_recert_selected_machine.eval — simmed at MAX_A_QTY=40, a cap never deployed",
+  "harness": ["tools_account_size_research.py"],
+  "method": "identical harness, qty cap 10 (deployed tier); cap-40 baseline reproduced exactly (58.2/29.1/12.7/11d) before the flip",
+  "report": "reports/risk_arithmetic_reconciliation_2026-07-05.md",
+  "config": "A10 Exit#3 + D1c ACTIVE_EVAL_FILTER · size-to-risk $1,200 · qty cap 10 · B OFF · momentum OFF",
+  "eval": {"pass_pct": 47.8, "bust_pct": 15.9, "expire_pct": 36.2, "median_days": 16, "e_per_attempt": 5773, "worst_day": -1000, "note": "pass_pct is an UPPER BOUND — P3 brake + cushion-fraction shrinkage are live-only reducers not yet in the harness"},
+  "funded": "unchanged ~$12.6-12.8k lifetime/PA ($480 funded budget rarely touches the cap)"
  },
  "funded_40_recert": {
   "verified": "2026-07-02",

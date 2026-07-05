@@ -44,7 +44,10 @@ def test_dashboard_matches_source_of_truth():
     except Exception as e:                       # pragma: no cover - server deps optional in CI
         import pytest
         pytest.skip(f"zeus_server not importable here: {e}")
-    assert abs(pb["eval"]["pass_pct"] - V["eval_deployed"]["pass_pct"]) <= 3, \
+    # DEC-20260705-1102: compare against the current-machine pointer when present (cap-10 re-lock
+    # tracks a different eval config than eval_deployed), falling back to eval_deployed otherwise.
+    cur = V[V["current_machine"]]["eval"] if V.get("current_machine") else V["eval_deployed"]
+    assert abs(pb["eval"]["pass_pct"] - cur["pass_pct"]) <= 3, \
         "dashboard eval pass_pct drifted from reports/apex_validation.json — re-run the harness, sync both"
     # W-knowledge-reconciliation 2026-07-02: funded_40_recert model uses PA ladder (no lock step).
     # lock_pct is retained at 80 for dashboard JS compat (apex.js uses f.lock_pct||68 fallback);

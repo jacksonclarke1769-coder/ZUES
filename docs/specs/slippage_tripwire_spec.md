@@ -1,5 +1,7 @@
 # SPEC — Execution Slippage Tripwire (SLIP-class halt)
 
+> ⚠ 2026-07-05: certified numbers corrected to 47.8/15.9/36.2 (cap-10 re-lock, DEC-20260705-1102); 58.2/29.1 figures below are the pre-correction baseline.
+
 **Status:** BUILT 2026-07-03 — alert-only mode wired into `go-live-recert.sh` (cannot halt/flatten;
 observational). Default OFF everywhere else. Halt mode built + tested, opt-in via `--slip-mode halt`.
 **Author:** Trading CEO / ZEUS, 2026-07-03 (pre-Monday-live)
