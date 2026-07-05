@@ -1,0 +1,12 @@
+candidate,description,status,pf_at_1pt,pf_at_2pt,n,trades_per_wk,years_positive_of_last6,verdict
+L1,A-London upsizing (KRONOS K6),cited/WATCHED,1.691,n/a (gate=expR; +0.252R hostile < +0.30R gate),266,n/a,n/a,WATCHED - preregistered hostile-cost gate failed; re-test on 2027+ data
+L2,S1 Asian Range Mean-Reversion,cited/DEAD,0.98,n/a,1125,2.66,n/a,DEAD - never quote
+L3,S2 Asian Breakout Failure (<=3 candle reclaim),cited/DEAD,0.86,n/a,1325,3.13,n/a,DEAD - never quote
+L4,S3 London Sweep of Asian High/Low,cited/DEAD,1.11,n/a,1632,3.85,n/a,DEAD - never quote (family headline PF<=1.11)
+L5,S4 London Continuation Breakout,cited/DEAD,0.96,n/a,1434,3.39,2 of 6 (2020;2022;2024;2026 marginal),DEAD - never quote
+L6,London Opening-Drive Pullback,KILLED (1m-truth re-test),2.01 (5m artifact),0.29 (1m truth @1.25pt),1346,2.49,0 of 6 (1m truth: every yr PF<1.0),DEAD - 1m-truth kill test confirms fill-granularity artifact (5m stop-first-tie approx on ~6-10pt stops); PF collapses to 0.19-0.39 across winner+3 neighbors, both cost levels (1.25/0.75pt), all yrs; NOT integrated, do not re-test this stop construction
+L7,S5 London Trap -> NY Continuation,cited/DEAD,0.93,n/a,1310,3.1,3 of 6 (2020;2022;2025),DEAD - never quote
+L8,M11 London Sweep Trigger (ict-nq-models-2-12),cited/DEAD,1.04,n/a,124,0.34,n/a,DEAD - never quote
+L9,ICT Continuation London-Open Sweep,cited/DEAD,1.39 (OOS only; IS 0.89),n/a,37,n/a,n/a,DEAD - never quote (regime/bull-drift artifact + <100 trade floor)
+L10,Micro Trend Pullback + Time Stop,TESTED THIS SPRINT,0.91,0.76,3206,5.92,2 of 6 (2024;2025),REJECTED - PF<1.15 and one-regime gate both fire
+L11,London-Close / Pre-NY Positioning,TESTED THIS SPRINT,0.9,0.73,1330,2.46,2 of 6 (2020;2024),REJECTED - PF<1.15 and one-regime gate both fire

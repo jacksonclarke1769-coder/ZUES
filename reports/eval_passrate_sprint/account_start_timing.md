@@ -1,0 +1,39 @@
+# 1H — Account-Start Timing Policies
+
+**SIM CONDITIONAL — replay of one historical path**
+
+- window='last-24mo' is the primary comparison; window='full-history' is the corroboration check across the whole ~5yr dataset.
+- median_days_to_first_trade = dead-clock burn (calendar days from the eval's clock-start to its first actual A trade); n_never_traded = starts with no A signal before the 30-day clock (or dataset) ran out.
+- starts_per_year_observed is measured directly from the in-window start count (not assumed from the policy's nominal cadence), so it already reflects holiday gaps etc.
+- Two fee_col rows per policy: sticker $131 and LOW-CONF promo $30.
+
+| window | policy | fee_col | n | pass_pct | bust_pct | exp_pct | median_days_to_first_trade | n_never_traded | starts_per_year_observed | e_per_attempt | e_per_year |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| last-24mo | every Monday | sticker_131 | 96 | 47.9 | 18.8 | 33.3 | 1 | 0 | 48.0 | 5966.0 | 286550.0 |
+| last-24mo | every Monday | promo_30_LOWCONF | 96 | 47.9 | 18.8 | 33.3 | 1 | 0 | 48.0 | 6067.0 | 291402.0 |
+| last-24mo | every Tuesday | sticker_131 | 104 | 47.1 | 20.2 | 32.7 | 1 | 0 | 52.0 | 5864.0 | 305131.0 |
+| last-24mo | every Tuesday | promo_30_LOWCONF | 104 | 47.1 | 20.2 | 32.7 | 1 | 0 | 52.0 | 5965.0 | 310387.0 |
+| last-24mo | Monday+Thursday staggered pairs | sticker_131 | 194 | 46.4 | 19.6 | 34.0 | 1 | 0 | 97.1 | 5775.0 | 560538.0 |
+| last-24mo | Monday+Thursday staggered pairs | promo_30_LOWCONF | 194 | 46.4 | 19.6 | 34.0 | 1 | 0 | 97.1 | 5876.0 | 570342.0 |
+| last-24mo | every 5 trading days | sticker_131 | 100 | 46.0 | 19.0 | 35.0 | 2 | 0 | 50.0 | 5724.0 | 286390.0 |
+| last-24mo | every 5 trading days | promo_30_LOWCONF | 100 | 46.0 | 19.0 | 35.0 | 2 | 0 | 50.0 | 5825.0 | 291443.0 |
+| last-24mo | every 7 calendar days | sticker_131 | 105 | 42.9 | 20.0 | 37.1 | 3 | 0 | 52.5 | 5329.0 | 279981.0 |
+| last-24mo | every 7 calendar days | promo_30_LOWCONF | 105 | 42.9 | 20.0 | 37.1 | 3 | 0 | 52.5 | 5430.0 | 285287.0 |
+| last-24mo | skip holiday-shortened weeks | sticker_131 | 84 | 50.0 | 21.4 | 28.6 | 1 | 0 | 42.0 | 6233.0 | 261965.0 |
+| last-24mo | skip holiday-shortened weeks | promo_30_LOWCONF | 84 | 50.0 | 21.4 | 28.6 | 1 | 0 | 42.0 | 6334.0 | 266210.0 |
+| last-24mo | signal-triggered (day before week's first A signal) | sticker_131 | 91 | 49.5 | 22.0 | 28.6 | 1 | 0 | 45.5 | 6169.0 | 280898.0 |
+| last-24mo | signal-triggered (day before week's first A signal) | promo_30_LOWCONF | 91 | 49.5 | 22.0 | 28.6 | 1 | 0 | 45.5 | 6270.0 | 285497.0 |
+| full-history | every Monday | sticker_131 | 228 | 47.4 | 13.6 | 39.0 | 1 | 0 | 46.6 | 5902.0 | 274892.0 |
+| full-history | every Monday | promo_30_LOWCONF | 228 | 47.4 | 13.6 | 39.0 | 1 | 0 | 46.6 | 6003.0 | 279596.0 |
+| full-history | every Tuesday | sticker_131 | 254 | 47.2 | 14.6 | 38.2 | 1 | 0 | 51.9 | 5877.0 | 304918.0 |
+| full-history | every Tuesday | promo_30_LOWCONF | 254 | 47.2 | 14.6 | 38.2 | 1 | 0 | 51.9 | 5978.0 | 310159.0 |
+| full-history | Monday+Thursday staggered pairs | sticker_131 | 474 | 45.1 | 13.9 | 40.9 | 1 | 0 | 96.8 | 5609.0 | 543140.0 |
+| full-history | Monday+Thursday staggered pairs | promo_30_LOWCONF | 474 | 45.1 | 13.9 | 40.9 | 1 | 0 | 96.8 | 5710.0 | 552920.0 |
+| full-history | every 5 trading days | sticker_131 | 246 | 45.1 | 13.8 | 41.1 | 1 | 0 | 50.3 | 5609.0 | 281883.0 |
+| full-history | every 5 trading days | promo_30_LOWCONF | 246 | 45.1 | 13.8 | 41.1 | 1 | 0 | 50.3 | 5710.0 | 286958.0 |
+| full-history | every 7 calendar days | sticker_131 | 256 | 41.8 | 12.9 | 45.3 | 4 | 0 | 52.3 | 5189.0 | 271376.0 |
+| full-history | every 7 calendar days | promo_30_LOWCONF | 256 | 41.8 | 12.9 | 45.3 | 4 | 0 | 52.3 | 5290.0 | 276658.0 |
+| full-history | skip holiday-shortened weeks | sticker_131 | 207 | 47.3 | 15.0 | 37.7 | 1 | 0 | 42.3 | 5889.0 | 249035.0 |
+| full-history | skip holiday-shortened weeks | promo_30_LOWCONF | 207 | 47.3 | 15.0 | 37.7 | 1 | 0 | 42.3 | 5990.0 | 253306.0 |
+| full-history | signal-triggered (day before week's first A signal) | sticker_131 | 220 | 47.3 | 15.0 | 37.7 | 1 | 0 | 44.9 | 5889.0 | 264675.0 |
+| full-history | signal-triggered (day before week's first A signal) | promo_30_LOWCONF | 220 | 47.3 | 15.0 | 37.7 | 1 | 0 | 44.9 | 5990.0 | 269214.0 |

@@ -1,0 +1,34 @@
+{
+ "framing": "SIM CONDITIONAL \u2014 pending live fill evidence",
+ "generated": "2026-07-05",
+ "harness_path": "tools_sprint_cap_risk.py (1A: calls tools_eval_sizing_sweep.run_cell via the certified tools_sim_parity_check.load_rows() stream)",
+ "data_source": "Databento 5m (apex_eval_eod_databento.load_databento_5m) + 1m truth (run_d1c_real.load_1m, via tools_1m_truth_recert.M1Map) \u2014 loaded transitively inside tools_sim_parity_check.load_rows()",
+ "provenance_pointer": {
+  "file": "reports/apex_validation.json",
+  "current_machine": "cap10_relock_2026-07-05"
+ },
+ "repo_head_commit": "17c112b6caa6b48615344a51db66b93a723ff8da",
+ "reproduced_row": {
+  "n": 395,
+  "pass_pct": 47.8,
+  "bust_pct": 15.9,
+  "exp_pct": 36.2,
+  "med_days": 16,
+  "mean_days": 16.0,
+  "mean_risk_per_trade": 787.1,
+  "mean_contracts": 8.89,
+  "clipped_pct": 68.3,
+  "e_attempt": 5959.1,
+  "evals_per_funded": 2.09
+ },
+ "certified_row": {
+  "cap": 10,
+  "budget": 1200,
+  "pass_pct": 47.8,
+  "bust_pct": 15.9,
+  "exp_pct": 36.2,
+  "med_days": 16,
+  "n": 395
+ },
+ "verdict": "REPRODUCED"
+}
