@@ -15,3 +15,7 @@ out/ares/trade_results.csv
 
 # local secrets — webhook URLs etc. (never commit)
 .env
+
+# watchdog runtime state (heartbeat/belief/HALT/audit are per-session artifacts)
+out/watchdog/
+data/watchdog.lock

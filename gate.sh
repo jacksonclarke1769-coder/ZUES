@@ -19,4 +19,13 @@ if [ "$ACTUAL" != "$RECORDED" ]; then
     exit 1
 fi
 
+echo "== (d) eval config firewall (named) =="
+python3 -m pytest test_eval_config_firewall.py -q
+
+echo "== (e) config_eval_locked.py + live-file SHA256 check =="
+# The eval firewall records config_eval_locked.py (self) AND the live files it pins
+# (config_defaults.py, auto_safety.py) in evidence/eval_config.sha256 — the same recorded set the
+# watchdog CONFIG INTEGRITY invariant recomputes at runtime. shasum -c verifies all three.
+shasum -a 256 -c evidence/eval_config.sha256
+
 echo "== gate.sh: ALL CHECKS GREEN =="

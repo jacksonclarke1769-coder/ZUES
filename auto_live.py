@@ -228,6 +228,18 @@ class LiveAuto:
             return "exit3 incident — manual reset required"
         if self.guard.is_stopped(self.account, et_date()):
             return "daily loss stop hit"
+        # WATCHDOG ENTRY GATE — fail-closed BY DESIGN when enforcement is armed: a dead watchdog blocks
+        # new entries, never positions/exits. Requires a fresh watchdog heartbeat (<90s) AND no HALT.flag.
+        # Skipped entirely when WATCHDOG_ENFORCE is unset/0 (Monday-safe — no dependency until armed).
+        if os.environ.get("WATCHDOG_ENFORCE") == "1":
+            try:
+                import watchdog_belief
+                _wb = watchdog_belief.watchdog_entry_block()
+                if _wb:
+                    return "watchdog gate: " + _wb
+            except Exception as _we:  # noqa: BLE001 — a gate ERROR must fail CLOSED (block), never permit
+                print(f"[auto-live] ⚠ watchdog gate error — blocking (fail-closed): {_we!r}", flush=True)
+                return "watchdog gate error (fail-closed)"
         return None
 
     def _dlog(self, fn, *a, **k):
@@ -1233,6 +1245,14 @@ def main(argv=None):
             runner.bot._persist()
             runner.tracker.persist(store)
             _record_resolved()
+            # WATCHDOG BELIEF (observation-only; fail-open like the telemetry hooks — a broken publish
+            # never blocks the engine). Snapshots what the engine now believes (expected net, resting
+            # sids, day P&L) to out/watchdog/belief.json for the INDEPENDENT watchdog to reconcile.
+            try:
+                import watchdog_belief
+                watchdog_belief.publish_belief(auto)
+            except Exception as _wbe:  # noqa: BLE001 — belief publishing must NEVER raise into the order path
+                print(f"[watchdog-belief] ⚠ publish hook error: {_wbe!r}", flush=True)
             _bar["i"] += 1
 
         def _process(ts, o, h, l, c):
@@ -1387,6 +1407,28 @@ def main(argv=None):
                       f"trade the UN-filtered version. Fix the feed (logged-in Chrome :9222, NQ 1m, real-time) "
                       f"and relaunch.", flush=True)
                 return 2
+            # WATCHDOG ARM-TIME CHECK (additive, guarded). Fail-closed ONLY when enforcement is armed
+            # (WATCHDOG_ENFORCE=1): a config-hash drift vs evidence/eval_config.sha256, or an absent/stale
+            # watchdog, REFUSES to arm — so the enforcing watchdog must be up first. When enforcement is
+            # unset it is print-warn only (observing). A check error never permits when enforcing.
+            try:
+                import watchdog_belief as _wbchk
+                _wd_enf = os.environ.get("WATCHDOG_ENFORCE") == "1"
+                _cfg_ok, _cfg_miss = _wbchk.verify_eval_config_hashes()
+                _wd_gate = _wbchk.watchdog_entry_block()
+                if _wd_enf and (not _cfg_ok or _wd_gate):
+                    print(f"REFUSED {modlabel} — watchdog enforcement armed but "
+                          + (f"config drift {_cfg_miss}" if not _cfg_ok else "")
+                          + ("; " if (not _cfg_ok and _wd_gate) else "")
+                          + (_wd_gate or ""), flush=True)
+                    return 2
+                if not _cfg_ok or _wd_gate:
+                    print(f"  ⚠ watchdog preflight (observing): config_ok={_cfg_ok} gate={_wd_gate}", flush=True)
+            except Exception as _wce:  # noqa: BLE001
+                if os.environ.get("WATCHDOG_ENFORCE") == "1":
+                    print(f"REFUSED {modlabel} — watchdog arm-time check error (fail-closed): {_wce!r}", flush=True)
+                    return 2
+                print(f"  ⚠ watchdog arm-time check error (observing): {_wce!r}", flush=True)
             armed["v"] = True
             print(f"  {modlabel} preflight PASSED (D1c={eff_d1c}) — ARMED, live webhooks active.", flush=True)
             if a.controlled_tv_live_test:
