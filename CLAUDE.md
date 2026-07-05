@@ -26,3 +26,13 @@ This is a LIVE trading system on real prop-firm capital. Before doing anything h
 - Full suite green (`python3 -m pytest -q`, ~30s) before "done". Numbers trace to
   `reports/apex_validation.json`.
 - Never touch `evidence/approvals/`, `.env`, or live process control without explicit operator action.
+
+## Knowledge vault (single source of truth for knowledge — permanent, 2026-07-03)
+
+The Obsidian vault at `~/Documents/Zues` is the ZEUS knowledge base: architecture, research
+history, certifications, audits, decisions, runbooks, lessons learned. This repo stays the source
+of truth for CODE only. Bootstrap context from the vault (`Home.md` → `START HERE — New Claude
+Session.md`), and after any completed task update the vault per its `Vault Conventions.md`
+maintenance workflow (research → Research Register, decisions → `08 Decisions/DEC-*`, incidents →
+`07 Bugs & Incidents` + Lessons Learned, machine changes → new machine page + supersede). Numbers
+in the vault must trace to `reports/apex_validation.json` exactly like numbers here.
