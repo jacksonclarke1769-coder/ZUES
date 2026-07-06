@@ -1,0 +1,42 @@
+# A2 — D1c vs Unfiltered Funnel
+
+HONEST-RECERT DRAFT — pending auditor verdict
+
+Incident: INC-20260706-1141. Numbers only, no interpretation — the auditor writes the interpretation.
+Repo HEAD: `818cda8f924f031924aa6c6e6f677e4dbd251260`. LIVE HOLD ACTIVE.
+
+Five streams, each evaluated at three sizing points {(cap=10,$1200) legacy, (cap=4,$400), (cap=6,$600)}:
+
+1. Unfiltered A (705 signals, `tools_1m_truth_recert.a_streams(...)["exit3"]`, filled==True) — plain sizing.
+2. Honest D1c kept (583, `tools_sim_parity_check.load_rows()`) — plain sizing.
+3. D1c-engine-window-only: keep = d1c_keep OR entry in 10:00-10:29 ET (D1c gates only non-engine-window trades) — plain sizing.
+4. D1c-outside-window-only: keep = d1c_keep OR entry NOT in 10:00-10:29 ET — plain sizing.
+5. D1c-as-sizing-modifier: all 705 trades; kept==False trades sized at HALF budget
+   (q=min(cap,(budget/2)//risk_usd)), kept==True trades at full budget. Kept flag joined onto
+   the unfiltered 705-row stream by timestamp from `reports/emergency_recert_d1c_lookahead/honest_d1c_stream.csv`'s `kept` column.
+
+`trades_per_week` = n_trades_in_stream / 260.7 (data span 2021-06-22 20:00:00-04:00 .. 2026-06-22 19:59:00-04:00).
+PF/WR/expR/netR are stream-level (unsized, R units) trade stats of that filtered row-set, not eval outputs.
+`mean_days_per_attempt`/`funded_per_slot_year`/`dl_freq`/`tl_freq`/E_proxy formulas per
+`tools_salvage_track_a.run_cell` (identical semantics to `tools_account_size_research`
+`build_events`/`day_rows`/`eval_run`, verified by the A1 (10,$1200) canary).
+`pass_pct_<year>` = pass% restricted to eligible starts whose start day falls in that calendar year.
+
+| stream | n_trades_in_stream | trades_per_week | PF | WR_pct | expR | netR | budget | cap | mode | skipped | pass_pct | bust_pct | exp_pct | median_days_pass | mean_days_per_attempt | pass_count | eligible_starts | funded_per_slot_year | dl_freq | tl_freq | trades_per_eval | mean_risk_usd | mean_contracts | pass_pct_2021 | pass_pct_2022 | pass_pct_2023 | pass_pct_2024 | pass_pct_2025 | pass_pct_2026 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| (1) unfiltered A | 705 | 2.704 | 1.237 | 42.8 | 0.106 | 74.7 | 1200 | 10 | plain | False | 34.0 | 44.5 | 21.5 | 15.0 | 18.2 | 212 | 623 | 6.8289 | 78.8 | 52.0 | 7.85 | 97.15 | 9.045 | 29.6 | 16.8 | 35.6 | 30.3 | 50.4 | 44.7 |
+| (1) unfiltered A | 705 | 2.704 | 1.237 | 42.8 | 0.106 | 74.7 | 400 | 4 | plain | False | 0.3 | 0.0 | 99.7 | 27.0 | 29.99 | 2 | 619 | 0.0394 | 94.8 | 68.5 | 12.52 | 95.22 | 3.35 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 4.5 |
+| (1) unfiltered A | 705 | 2.704 | 1.237 | 42.8 | 0.106 | 74.7 | 600 | 6 | plain | False | 11.9 | 6.6 | 81.5 | 21.0 | 28.44 | 74 | 623 | 1.5253 | 89.9 | 65.5 | 11.89 | 97.15 | 5.092 | 5.6 | 5.0 | 3.0 | 6.6 | 29.5 | 29.8 |
+| (2) honest-D1c kept | 583 | 2.236 | 1.361 | 44.9 | 0.153 | 89.2 | 1200 | 10 | plain | False | 31.4 | 37.3 | 31.2 | 16.0 | 20.04 | 165 | 525 | 5.7287 | 75.8 | 46.9 | 7.3 | 102.85 | 8.926 | 22.6 | 17.3 | 23.6 | 28.4 | 56.4 | 43.2 |
+| (2) honest-D1c kept | 583 | 2.236 | 1.361 | 44.9 | 0.153 | 89.2 | 400 | 4 | plain | False | 0.4 | 0.0 | 99.6 | 27.0 | 29.99 | 2 | 521 | 0.0468 | 90.8 | 58.0 | 10.53 | 100.55 | 3.28 | 0.0 | 0.0 | 0.0 | 0.0 | 1.8 | 0.0 |
+| (2) honest-D1c kept | 583 | 2.236 | 1.361 | 44.9 | 0.153 | 89.2 | 600 | 6 | plain | False | 8.0 | 4.2 | 87.8 | 23.5 | 29.11 | 42 | 525 | 1.0036 | 88.6 | 56.2 | 10.26 | 102.85 | 4.988 | 0.0 | 2.9 | 0.9 | 6.9 | 18.2 | 29.7 |
+| (3) D1c-engine-window-only | 617 | 2.367 | 1.317 | 44.1 | 0.137 | 84.3 | 1200 | 10 | plain | False | 29.9 | 41.8 | 28.3 | 15.0 | 19.66 | 166 | 555 | 5.5574 | 75.9 | 48.8 | 7.57 | 100.55 | 8.966 | 24.2 | 13.2 | 21.7 | 26.1 | 55.1 | 43.6 |
+| (3) D1c-engine-window-only | 617 | 2.367 | 1.317 | 44.1 | 0.137 | 84.3 | 400 | 4 | plain | False | 0.5 | 0.0 | 99.5 | 29.0 | 29.99 | 3 | 551 | 0.0663 | 89.8 | 63.9 | 11.13 | 98.37 | 3.303 | 0.0 | 0.0 | 0.0 | 0.0 | 1.7 | 2.8 |
+| (3) D1c-engine-window-only | 617 | 2.367 | 1.317 | 44.1 | 0.137 | 84.3 | 600 | 6 | plain | False | 9.5 | 4.1 | 86.3 | 21.0 | 28.94 | 53 | 555 | 1.2051 | 86.8 | 60.5 | 10.79 | 100.55 | 5.021 | 3.0 | 2.8 | 0.9 | 6.3 | 22.9 | 33.3 |
+| (4) D1c-outside-window-only | 671 | 2.574 | 1.269 | 43.5 | 0.119 | 79.6 | 1200 | 10 | plain | False | 34.2 | 42.0 | 23.8 | 15.0 | 18.41 | 203 | 593 | 6.7911 | 79.4 | 50.1 | 7.62 | 98.97 | 9.015 | 28.4 | 19.7 | 34.6 | 30.1 | 52.1 | 42.2 |
+| (4) D1c-outside-window-only | 671 | 2.574 | 1.269 | 43.5 | 0.119 | 79.6 | 400 | 4 | plain | False | 0.2 | 0.0 | 99.8 | 30.0 | 30.0 | 1 | 589 | 0.0207 | 95.6 | 64.9 | 11.95 | 96.95 | 3.331 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 2.4 |
+| (4) D1c-outside-window-only | 671 | 2.574 | 1.269 | 43.5 | 0.119 | 79.6 | 600 | 6 | plain | False | 11.1 | 7.3 | 81.6 | 22.0 | 28.54 | 66 | 593 | 1.4241 | 91.4 | 61.0 | 11.38 | 98.97 | 5.067 | 3.0 | 5.1 | 3.1 | 7.1 | 27.3 | 28.9 |
+| (5) D1c-as-sizing-modifier | 705 | 2.704 | 1.237 | 42.8 | 0.106 | 74.7 | 1200 | 10 | sizing_modifier | False | 32.7 | 44.9 | 22.3 | 15.0 | 18.61 | 204 | 623 | 6.4267 | 79.3 | 52.8 | 8.04 | 97.15 | 8.787 | 29.6 | 14.3 | 30.4 | 29.5 | 53.5 | 42.6 |
+| (5) D1c-as-sizing-modifier | 705 | 2.704 | 1.237 | 42.8 | 0.106 | 74.7 | 400 | 4 | sizing_modifier | False | 0.5 | 0.0 | 99.5 | 29.0 | 29.99 | 3 | 617 | 0.0592 | 94.7 | 68.4 | 12.48 | 94.64 | 3.211 | 0.0 | 0.0 | 0.0 | 0.0 | 1.6 | 2.3 |
+| (5) D1c-as-sizing-modifier | 705 | 2.704 | 1.237 | 42.8 | 0.106 | 74.7 | 600 | 6 | sizing_modifier | False | 8.8 | 5.9 | 85.2 | 21.0 | 28.85 | 55 | 623 | 1.1177 | 91.5 | 66.5 | 12.07 | 97.15 | 4.881 | 5.6 | 2.5 | 0.7 | 6.6 | 20.2 | 27.7 |
+

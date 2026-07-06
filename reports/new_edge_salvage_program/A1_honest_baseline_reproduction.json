@@ -1,0 +1,62 @@
+{
+ "status": "HONEST-RECERT DRAFT \u2014 pending auditor verdict",
+ "repo_head": "818cda8f924f031924aa6c6e6f677e4dbd251260",
+ "incident": "INC-20260706-1141",
+ "stream_unfiltered": {
+  "source": "tools_1m_truth_recert.a_streams(...)['exit3'] (filled==True only), rows(ts,R=R_new,mae_r=mae_new,risk_usd)",
+  "measured": {
+   "n": 705,
+   "netR": 74.7,
+   "PF": 1.237,
+   "WR": 42.8,
+   "expR": 0.106
+  },
+  "reference": {
+   "n": 705,
+   "PF": 1.237,
+   "WR": 42.8,
+   "netR": 74.7
+  },
+  "match": true
+ },
+ "stream_kept": {
+  "source": "tools_sim_parity_check.load_rows()",
+  "measured": {
+   "n": 583,
+   "netR": 89.2,
+   "PF": 1.361,
+   "WR": 44.9,
+   "expR": 0.153
+  },
+  "reference": {
+   "n": 583,
+   "PF": 1.361,
+   "WR": 44.9,
+   "netR": 89.2
+  },
+  "match": true
+ },
+ "row_10_1200": {
+  "measured": {
+   "pass_pct": 31.4,
+   "bust_pct": 37.3,
+   "exp_pct": 31.2,
+   "med_days": 16.0,
+   "n": 525
+  },
+  "reference": {
+   "pass_pct": 31.4,
+   "bust_pct": 37.3,
+   "exp_pct": 31.2,
+   "med_days": 16,
+   "n": 525
+  },
+  "tolerance_pp": 0.5
+ },
+ "canary_ok": true,
+ "data_span": {
+  "start": "2021-06-22 20:00:00-04:00",
+  "end": "2026-06-22 19:59:00-04:00",
+  "weeks": 260.7
+ }
+}
