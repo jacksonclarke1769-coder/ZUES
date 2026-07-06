@@ -1,0 +1,53 @@
+# 10 -- VPC parameter plateau (CHECK 2)
+
+RESEARCH ONLY. LIVE HOLD ACTIVE. Native 5m engine (`nq_vwap_pullback.backtest`), unchanged, full 2022-2026, base cost 0.75pt. Robustness map only -- no re-tuning, no new recommended config. Locked CFG: `{'atr_stop': 2.5, 'trail_atr': 5.0, 'slot_min': 6, 'slot_max': 66, 'max_trades': 2, 'slope_mult': 0.3, 'trend_mult': 0.5, 'daily_stop': 120}`.
+
+`netR_pts` = net P&L in POINTS (`t.pnl.sum()`), the same convention `nq_vwap_pullback.report()`/`vpc_recert_real.metrics()` already use as `net` (the native engine carries no per-trade stop_pts, so no R-multiple net is definable here -- stated explicitly, not hidden). `pf` = points-based PF.
+
+Verdict (mechanical): **narrow peak** if locked_PF - max(neighbor_PF) > 0.25; else **plateau** if >=70% of neighbors within +-0.15 PF of locked; else **neither**.
+
+## Grid A -- slope_mult x trend_mult (15 cells) -- VERDICT: **plateau**
+
+| slope_mult | trend_mult | locked | n | pf | netR_pts |
+| --- | --- | --- | --- | --- | --- |
+| 0.2 | 0.35 | False | 605 | 1.114 | 2943.2 |
+| 0.2 | 0.5 | False | 585 | 1.129 | 3171.79 |
+| 0.2 | 0.65 | False | 561 | 1.155 | 3651.73 |
+| 0.25 | 0.35 | False | 503 | 1.254 | 5340.29 |
+| 0.25 | 0.5 | False | 480 | 1.241 | 4845.67 |
+| 0.25 | 0.65 | False | 461 | 1.273 | 5229.11 |
+| 0.3 | 0.35 | False | 423 | 1.266 | 4684.01 |
+| 0.3 | 0.5 | True | 408 | 1.294 | 4919.18 |
+| 0.3 | 0.65 | False | 390 | 1.323 | 5124.72 |
+| 0.35 | 0.35 | False | 353 | 1.394 | 5633.46 |
+| 0.35 | 0.5 | False | 339 | 1.399 | 5470.29 |
+| 0.35 | 0.65 | False | 326 | 1.43 | 5577.54 |
+| 0.4 | 0.35 | False | 302 | 1.341 | 4211.8 |
+| 0.4 | 0.5 | False | 288 | 1.351 | 4126.88 |
+| 0.4 | 0.65 | False | 274 | 1.359 | 4018.25 |
+
+## Grid B -- atr_stop x trail_atr (9 cells) -- VERDICT: **plateau**
+
+| atr_stop | trail_atr | locked | n | pf | netR_pts |
+| --- | --- | --- | --- | --- | --- |
+| 2 | 4 | False | 409 | 1.316 | 4623.43 |
+| 2 | 5 | False | 409 | 1.34 | 5303.57 |
+| 2 | 6 | False | 409 | 1.355 | 5784.07 |
+| 2.5 | 4 | False | 408 | 1.246 | 3903.24 |
+| 2.5 | 5 | True | 408 | 1.294 | 4919.18 |
+| 2.5 | 6 | False | 408 | 1.327 | 5665.75 |
+| 3 | 4 | False | 405 | 1.303 | 4715.79 |
+| 3 | 5 | False | 405 | 1.339 | 5669.21 |
+| 3 | 6 | False | 404 | 1.341 | 6039.96 |
+
+## Grid C -- slot_max (3 cells) -- VERDICT: **plateau**
+
+| slot_max | locked | n | pf | netR_pts |
+| --- | --- | --- | --- | --- |
+| 54 | False | 401 | 1.32 | 5190.63 |
+| 66 | True | 408 | 1.294 | 4919.18 |
+| 78 | False | 411 | 1.301 | 5035.18 |
+
+## PF freeze check: no cell exceeded PF>1.8.
+
+Runtime: 42.1s

@@ -1,4 +1,4 @@
-pandas>=2.0
+pandas>=2.0,<3  # INC-20260707: pandas 3.x breaks 18:00-anchored daily resample (wrong PDH/PDL)
 numpy>=1.24
 requests>=2.31
 websockets>=12.0

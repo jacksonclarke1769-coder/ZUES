@@ -1,0 +1,12 @@
+label,n_trades,wr_pct,pf_pts,pf_R,exp_R,total_R,total_pts,maxdd_R,maxdd_pts,best_trade_pts,worst_trade_pts,section,year,n,pf_old,pf_new,wr_old,wr_new,net_pts_old,net_pts_new,row,stream,pf_dollar,eligible_starts,pass_count,bust_count,exp_count,pass_pct,bust_pct,exp_pct,med_days_pass,worst_day_usd,funded_per_slot_year
+OLD (5m native),408.0,44.9,1.294,1.366,0.1374,56.04,4919.18,-9.067,-1066.4,808.25,-372.22,old_vs_new_standalone,,,,,,,,,,,,,,,,,,,,,
+NEW (1m truth),408.0,45.1,1.318,1.396,0.1484,60.54,5319.67,-8.189,-951.1,808.25,-372.22,old_vs_new_standalone,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,per_year,2022.0,88.0,1.221,1.321,43.2,46.6,934.53,1327.4,,,,,,,,,,,,,
+,,,,,,,,,,,,per_year,2023.0,89.0,1.071,1.174,42.7,46.1,200.8,480.14,,,,,,,,,,,,,
+,,,,,,,,,,,,per_year,2024.0,94.0,1.4,1.357,44.7,41.5,1291.92,1179.73,,,,,,,,,,,,,
+,,,,,,,,,,,,per_year,2025.0,86.0,1.426,1.373,46.5,45.3,1493.19,1345.58,,,,,,,,,,,,,
+,,,,,,,,,,,,per_year,2026.0,51.0,1.339,1.334,49.0,47.1,998.74,986.81,,,,,,,,,,,,,
+,,,,,,,,,,,,headline_funnel,,,,,,,,,"VPC(600,4) standalone",OLD (5m native),1.331,388.0,42.0,11.0,335.0,10.8,2.8,86.3,16.0,-1000.0,1.39
+,,,,,,,,,,,,headline_funnel,,,,,,,,,"A(600,6)+VPC(600,4) portfolio",OLD (5m native),1.362,684.0,190.0,106.0,388.0,27.8,15.5,56.7,18.0,-1000.0,4.04
+,,,,,,,,,,,,headline_funnel,,,,,,,,,"VPC(600,4) standalone",NEW (1m truth),1.364,388.0,42.0,12.0,334.0,10.8,3.1,86.1,16.0,-1000.0,1.39
+,,,,,,,,,,,,headline_funnel,,,,,,,,,"A(600,6)+VPC(600,4) portfolio",NEW (1m truth),1.377,684.0,196.0,116.0,372.0,28.7,17.0,54.4,18.0,-1000.0,4.22
