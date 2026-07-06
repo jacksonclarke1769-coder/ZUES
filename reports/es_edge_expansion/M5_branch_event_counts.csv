@@ -1,0 +1,13 @@
+level,side,event_type,n,tr_wk,sub_floor
+pdh,upper,break_and_retest,1387,2.559,False
+pdh,upper,first_touch_rejection,1066,1.967,False
+pdh,upper,sweep_and_close_back_inside,3265,6.024,False
+pdl,lower,break_and_retest,1070,1.974,False
+pdl,lower,first_touch_rejection,929,1.714,False
+pdl,lower,sweep_and_close_back_inside,3277,6.046,False
+prior_close,lower,break_and_retest,1845,3.404,False
+prior_close,lower,first_touch_rejection,1438,2.653,False
+prior_close,lower,sweep_and_close_back_inside,5137,9.478,False
+prior_close,upper,break_and_retest,1886,3.48,False
+prior_close,upper,first_touch_rejection,1390,2.565,False
+prior_close,upper,sweep_and_close_back_inside,4891,9.024,False

@@ -1,0 +1,91 @@
+stream,budget,cap,eligible,pass_count,bust_count,expire_count,not_pass,pass_pct,bust_pct,expire_pct,not_pass_pct,attempts_per_pass,med_days,trades_per_eval,f_slot,e_dollar,note
+M1,150,1,2200.0,0.0,0.0,2200.0,2200.0,0.0,0.0,100.0,100.0,,,19.3,0.0,-131.0,
+M1,150,2,2200.0,0.0,0.0,2200.0,2200.0,0.0,0.0,100.0,100.0,,,19.3,0.0,-131.0,
+M1,150,3,2200.0,0.0,0.0,2200.0,2200.0,0.0,0.0,100.0,100.0,,,19.3,0.0,-131.0,
+M1,150,4,2200.0,0.0,0.0,2200.0,2200.0,0.0,0.0,100.0,100.0,,,19.3,0.0,-131.0,
+M1,150,6,2200.0,0.0,0.0,2200.0,2200.0,0.0,0.0,100.0,100.0,,,19.3,0.0,-131.0,
+M1,200,1,2379.0,0.0,0.0,2379.0,2379.0,0.0,0.0,100.0,100.0,,,20.09,0.0,-131.0,
+M1,200,2,2379.0,0.0,0.0,2379.0,2379.0,0.0,0.0,100.0,100.0,,,20.09,0.0,-131.0,
+M1,200,3,2379.0,0.0,0.0,2379.0,2379.0,0.0,0.0,100.0,100.0,,,20.09,0.0,-131.0,
+M1,200,4,2379.0,0.0,0.0,2379.0,2379.0,0.0,0.0,100.0,100.0,,,20.09,0.0,-131.0,
+M1,200,6,2379.0,2.0,1.0,2376.0,2377.0,0.1,0.0,99.9,99.9,1189.5,26.0,20.09,0.01,-124.27,
+M1,300,1,2462.0,0.0,0.0,2462.0,2462.0,0.0,0.0,100.0,100.0,,,20.63,0.0,-131.0,
+M1,300,2,2462.0,33.0,8.0,2421.0,2429.0,1.3,0.3,98.3,98.7,74.61,24.0,20.57,0.16,-23.77,
+M1,300,3,2462.0,88.0,13.0,2361.0,2374.0,3.6,0.5,95.9,96.4,27.98,23.0,20.44,0.44,154.95,
+M1,300,4,2462.0,115.0,23.0,2324.0,2347.0,4.7,0.9,94.4,95.3,21.41,22.0,20.37,0.58,242.68,
+M1,300,6,2462.0,143.0,78.0,2241.0,2319.0,5.8,3.2,91.0,94.2,17.22,23.0,20.25,0.72,333.66,
+M1,400,1,2475.0,0.0,0.0,2475.0,2475.0,0.0,0.0,100.0,100.0,,,20.72,0.0,-131.0,
+M1,400,2,2475.0,88.0,48.0,2339.0,2387.0,3.6,1.9,94.5,96.4,28.12,22.0,20.45,0.44,153.44,
+M1,400,3,2475.0,185.0,102.0,2188.0,2290.0,7.5,4.1,88.4,92.5,13.38,21.0,20.03,0.94,466.98,
+M1,400,4,2475.0,264.0,142.0,2069.0,2211.0,10.7,5.7,83.6,89.3,9.38,21.0,19.74,1.37,722.33,
+M1,400,6,2475.0,382.0,257.0,1836.0,2093.0,15.4,10.4,74.2,84.6,6.48,21.0,19.18,2.03,1103.75,
+M1,500,1,2481.0,5.0,11.0,2465.0,2476.0,0.2,0.4,99.4,99.8,496.2,29.0,20.74,0.02,-114.88,
+M1,500,2,2481.0,104.0,93.0,2284.0,2377.0,4.2,3.7,92.1,95.8,23.86,21.0,20.3,0.52,204.35,
+M1,500,3,2481.0,213.0,173.0,2095.0,2268.0,8.6,7.0,84.4,91.4,11.65,20.0,19.72,1.1,555.82,
+M1,500,4,2481.0,355.0,237.0,1889.0,2126.0,14.3,9.6,76.1,85.7,6.99,20.0,19.14,1.9,1013.7,
+M1,500,6,2481.0,550.0,446.0,1485.0,1931.0,22.2,18.0,59.9,77.8,4.51,18.0,17.81,3.17,1642.48,
+M1,600,1,2484.0,23.0,8.0,2453.0,2461.0,0.9,0.3,98.8,99.1,108.0,15.0,20.7,0.11,-56.93,
+M1,600,2,2484.0,110.0,95.0,2279.0,2374.0,4.4,3.8,91.7,95.6,22.58,21.0,20.25,0.55,223.27,
+M1,600,3,2484.0,231.0,170.0,2083.0,2253.0,9.3,6.8,83.9,90.7,10.75,17.0,19.53,1.21,612.96,
+M1,600,4,2484.0,397.0,281.0,1806.0,2087.0,16.0,11.3,72.7,84.0,6.26,19.0,18.69,2.17,1147.58,
+M1,600,6,2484.0,657.0,495.0,1332.0,1827.0,26.4,19.9,53.6,73.6,3.78,17.0,16.93,3.99,1984.94,
+M8_median,150,1,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,150,2,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,150,3,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,150,4,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,150,6,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,200,1,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,200,2,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,200,3,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,200,4,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,200,6,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,300,1,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,300,2,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,300,3,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,300,4,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,300,6,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,400,1,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,400,2,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,400,3,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,400,4,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,400,6,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,500,1,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,500,2,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,500,3,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,500,4,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,500,6,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,600,1,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,600,2,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,600,3,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,600,4,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_median,600,6,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.3806 (not this funnel)
+M8_max,150,1,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,150,2,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,150,3,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,150,4,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,150,6,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,200,1,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,200,2,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,200,3,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,200,4,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,200,6,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,300,1,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,300,2,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,300,3,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,300,4,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,300,6,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,400,1,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,400,2,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,400,3,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,400,4,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,400,6,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,500,1,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,500,2,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,500,3,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,500,4,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,500,6,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,600,1,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,600,2,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,600,3,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,600,4,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)
+M8_max,600,6,,,,,,,,,,,,,,,BLOCKED -- see wave3_stage1_streams.py docstring (M8 tz-mismatch defect); csv-recorded standalone n=184 PF=1.7909 (not this funnel)

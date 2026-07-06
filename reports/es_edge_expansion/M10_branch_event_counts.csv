@@ -1,0 +1,7 @@
+classifier,trigger,n,tr_wk,sub_floor
+flat_vwap_slope_or30,or_boundary_touch,3180,5.867,False
+flat_vwap_slope_or30,failed_breakout_reclaim,900,1.661,False
+vwap_crosses_ge3_by_1100,or_boundary_touch,13591,25.076,False
+vwap_crosses_ge3_by_1100,failed_breakout_reclaim,4058,7.487,False
+inside_prior_day_range_at_1100,or_boundary_touch,5833,10.762,False
+inside_prior_day_range_at_1100,failed_breakout_reclaim,1762,3.251,False

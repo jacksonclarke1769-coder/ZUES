@@ -1,0 +1,7 @@
+failure_def,timing,n_events,events_per_week,passes_freq_floor
+OR30_break_reclaim,le10bars,7357,13.584542337114218,True
+OR30_break_reclaim,before_1030,1072,1.9794249538380375,True
+ONH_ONL_break_reclaim,le10bars,6528,12.053811659192826,True
+ONH_ONL_break_reclaim,before_1030,1618,2.987602215774202,True
+PMH_PML_break_reclaim,le10bars,6976,12.881034027960961,True
+PMH_PML_break_reclaim,before_1030,1735,3.203640200474809,True

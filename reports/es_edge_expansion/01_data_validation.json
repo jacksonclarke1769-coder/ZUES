@@ -1,0 +1,242 @@
+{
+  "caveat": "CFD proxy, documented optimistic bias vs real futures; graduates need real CME data before certification.",
+  "source": "ES_1m_24h.parquet (Dukascopy 24h ET CFD-index proxy for ES)",
+  "date_range": {
+    "start": "2013-12-31 11:00:00-05:00",
+    "end": "2026-05-25 12:00:00-04:00",
+    "n_bars": 3734525
+  },
+  "missing_days": {
+    "es_rth_day_count": 3233,
+    "nq_rth_day_count": 3233,
+    "days_in_nq_missing_from_es": [],
+    "days_in_es_missing_from_nq": [],
+    "n_missing_in_es": 0,
+    "n_missing_in_nq": 0
+  },
+  "bar_density": {
+    "rth_expected_bars": 390,
+    "rth_density_mean": 0.970531458437428,
+    "rth_density_median": 1.0,
+    "rth_density_p10": 0.9461538461538461,
+    "rth_days_n": 3233,
+    "rth_days_below_95pct": 337,
+    "rth_pct_days_below_95": 10.42375502629137,
+    "day24h_density_mean": 0.859627223061186,
+    "day24h_density_median": 0.9640449438202248,
+    "day24h_full_session_denom_bars": 1335.0,
+    "named_session_density": {
+      "asia": {
+        "mean": 0.9084871516467606,
+        "p10": 0.7194444444444444,
+        "median": 0.975
+      },
+      "london": {
+        "mean": 0.9615331610680448,
+        "p10": 0.8666666666666667,
+        "median": 1.0
+      },
+      "ny_am": {
+        "mean": 0.9921100113413754,
+        "p10": 0.9933333333333337,
+        "median": 1.0
+      },
+      "ny_lunch": {
+        "mean": 0.9759408602150538,
+        "p10": 0.9416666666666667,
+        "median": 1.0
+      },
+      "ny_pm": {
+        "mean": 0.9838920919638409,
+        "p10": 0.9555555555555556,
+        "median": 1.0
+      }
+    }
+  },
+  "low_density_breakdown": {
+    "n_low_density_days": 337,
+    "n_holiday_adjacent": 122,
+    "n_half_day": 0,
+    "n_dec30_vendor_cutoff": 8,
+    "n_unexplained": 207,
+    "unexplained_sample": [
+      "2014-02-01",
+      "2014-02-22",
+      "2014-03-19",
+      "2014-04-27",
+      "2014-04-29",
+      "2014-04-30",
+      "2014-05-04",
+      "2014-05-05",
+      "2014-05-06",
+      "2014-05-12",
+      "2014-05-13",
+      "2014-05-14",
+      "2014-05-19",
+      "2014-05-21",
+      "2014-05-22"
+    ]
+  },
+  "duplicates": {
+    "raw_file": "/Users/jacksonclarke/trading-team/data/nq/ES_1m_24h.parquet",
+    "n_rows_raw": 3734525,
+    "n_duplicate_timestamps_raw": 0,
+    "note": "load_spine() already de-dupes (keep='first'); this counts pre-dedup raw file dupes."
+  },
+  "tz_dst": {
+    "overall_pass": true,
+    "checks": [
+      {
+        "date": "2019-03-10",
+        "kind": "spring_forward",
+        "rth_open_before": "2019-03-08 09:30:00-05:00",
+        "utcoffset_before": "-1 day, 19:00:00",
+        "rth_open_after": "2019-03-11 09:30:00-04:00",
+        "utcoffset_after": "-1 day, 20:00:00",
+        "expected_offset_before": "-1 days +19:00:00",
+        "expected_offset_after": "-1 days +20:00:00",
+        "pass_": true
+      },
+      {
+        "date": "2023-03-12",
+        "kind": "spring_forward",
+        "rth_open_before": "2023-03-10 09:30:00-05:00",
+        "utcoffset_before": "-1 day, 19:00:00",
+        "rth_open_after": "2023-03-13 09:30:00-04:00",
+        "utcoffset_after": "-1 day, 20:00:00",
+        "expected_offset_before": "-1 days +19:00:00",
+        "expected_offset_after": "-1 days +20:00:00",
+        "pass_": true
+      },
+      {
+        "date": "2019-11-03",
+        "kind": "fall_back",
+        "rth_open_before": "2019-11-01 09:30:00-04:00",
+        "utcoffset_before": "-1 day, 20:00:00",
+        "rth_open_after": "2019-11-04 09:30:00-05:00",
+        "utcoffset_after": "-1 day, 19:00:00",
+        "expected_offset_before": "-1 days +20:00:00",
+        "expected_offset_after": "-1 days +19:00:00",
+        "pass_": true
+      },
+      {
+        "date": "2023-11-05",
+        "kind": "fall_back",
+        "rth_open_before": "2023-11-03 09:30:00-04:00",
+        "utcoffset_before": "-1 day, 20:00:00",
+        "rth_open_after": "2023-11-06 09:30:00-05:00",
+        "utcoffset_after": "-1 day, 19:00:00",
+        "expected_offset_before": "-1 days +20:00:00",
+        "expected_offset_after": "-1 days +19:00:00",
+        "pass_": true
+      }
+    ]
+  },
+  "holiday_half_day": {
+    "n_short_days_flagged": 83,
+    "n_confirmed_holiday": 24,
+    "p10_daycount": 811.0,
+    "sample": [
+      {
+        "date": "2013-12-31",
+        "bar_count": 420,
+        "is_market_holiday": false
+      },
+      {
+        "date": "2014-07-04",
+        "bar_count": 645,
+        "is_market_holiday": true
+      },
+      {
+        "date": "2014-08-01",
+        "bar_count": 493,
+        "is_market_holiday": false
+      },
+      {
+        "date": "2014-09-01",
+        "bar_count": 549,
+        "is_market_holiday": true
+      },
+      {
+        "date": "2014-09-21",
+        "bar_count": 1,
+        "is_market_holiday": false
+      },
+      {
+        "date": "2014-11-02",
+        "bar_count": 1,
+        "is_market_holiday": false
+      },
+      {
+        "date": "2014-11-23",
+        "bar_count": 1,
+        "is_market_holiday": false
+      },
+      {
+        "date": "2014-11-27",
+        "bar_count": 491,
+        "is_market_holiday": true
+      },
+      {
+        "date": "2014-12-24",
+        "bar_count": 525,
+        "is_market_holiday": false
+      },
+      {
+        "date": "2014-12-26",
+        "bar_count": 424,
+        "is_market_holiday": false
+      },
+      {
+        "date": "2014-12-28",
+        "bar_count": 1,
+        "is_market_holiday": false
+      },
+      {
+        "date": "2014-12-30",
+        "bar_count": 645,
+        "is_market_holiday": false
+      },
+      {
+        "date": "2014-12-31",
+        "bar_count": 170,
+        "is_market_holiday": false
+      },
+      {
+        "date": "2015-01-04",
+        "bar_count": 1,
+        "is_market_holiday": false
+      },
+      {
+        "date": "2015-02-01",
+        "bar_count": 1,
+        "is_market_holiday": false
+      }
+    ]
+  },
+  "outlier_candles": {
+    "mult": 20.0,
+    "n_bars_checked": 780757,
+    "n_outlier_candles": 0,
+    "pct_outlier": 0.0,
+    "sample_timestamps": []
+  },
+  "zero_volume": {
+    "pct_zero_vol_1m_24h": 2.422530308406022,
+    "pct_zero_vol_1m_rth": 1.7263837792163856,
+    "pct_zero_vol_5m_24h": 2.3045582684497226,
+    "pct_zero_vol_5m_rth": 1.6615484079521576
+  },
+  "gaps": {
+    "n_total_transitions": 3734524,
+    "n_intraweek_gaps_gt1min": 112128,
+    "intraweek_gap_p50": 2.0,
+    "intraweek_gap_p99": 106.0,
+    "intraweek_gap_max": 983.0,
+    "n_weekend_or_holiday_closures_gt24h": 647
+  },
+  "continuous_contract_note": "CFD index feed, NOT a rolled futures continuation: NO contract-roll gaps to detect/splice (a convenience), but futures-specific roll/basis behavior is UNTESTED here and needs separate validation once real CME data is available.",
+  "verdict": "STOP",
+  "stop_reason": "RTH density <95% on 10.42% of days (>5% threshold)",
+  "runtime_sec": 6.1
+}

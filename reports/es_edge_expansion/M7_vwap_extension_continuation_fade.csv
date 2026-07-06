@@ -1,0 +1,13 @@
+grid_direction,entry_type,stop_mult,exit_type,n,tr_wk,wr,pf,expR,totR,maxDD_R,flag,n_no_pullback_skip
+continuation,next_bar_open,1.0,vwap_target,0,0.0,,,,0.0,0.0,N/A_geometrically_invalid,
+continuation,next_bar_open,1.0,1.5R,126392,233.196,0.3987,0.527,-0.3921,-49562.299,-49561.099,dead,0.0
+continuation,next_bar_open,1.0,trail,126392,233.196,0.2689,0.4335,-0.3743,-47305.38,-47304.37,dead,0.0
+continuation,next_bar_open,1.5,vwap_target,0,0.0,,,,0.0,0.0,N/A_geometrically_invalid,
+continuation,next_bar_open,1.5,1.5R,126392,233.196,0.4096,0.6572,-0.2453,-31006.861,-31126.909,dead,0.0
+continuation,next_bar_open,1.5,trail,126392,233.196,0.3031,0.5726,-0.2347,-29668.348,-29766.01,dead,0.0
+continuation,pullback_after_extension,1.0,vwap_target,0,0.0,,,,0.0,0.0,N/A_geometrically_invalid,
+continuation,pullback_after_extension,1.0,1.5R,118743,219.083,0.4023,0.5416,-0.3751,-44540.351,-44541.927,dead,9650.0
+continuation,pullback_after_extension,1.0,trail,118743,219.083,0.2711,0.4434,-0.3624,-43032.113,-43031.423,dead,9650.0
+continuation,pullback_after_extension,1.5,vwap_target,0,0.0,,,,0.0,0.0,N/A_geometrically_invalid,
+continuation,pullback_after_extension,1.5,1.5R,118743,219.083,0.4107,0.6656,-0.2373,-28172.202,-28366.73,dead,9650.0
+continuation,pullback_after_extension,1.5,trail,118743,219.083,0.3053,0.5855,-0.2251,-26731.186,-26898.963,dead,9650.0
