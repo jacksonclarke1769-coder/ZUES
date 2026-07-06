@@ -1,0 +1,37 @@
+{
+  "repo_head": "4bf64ebac2f6e3ac5b86222a9bb4ad6420b31ec8",
+  "repo_head_date": "2026-07-06T13:57:11+08:00",
+  "incident": "INC-20260706-1141 (D1c timestamp lookahead, fixed; numbers below are post-fix)",
+  "all_ok": true,
+  "unfiltered": {
+    "pf": 1.237,
+    "n": 705,
+    "netR": 74.66
+  },
+  "kept": {
+    "pf": 1.361,
+    "wr": 44.9,
+    "n": 583,
+    "tr_wk": 2.24
+  },
+  "row": {
+    "pass_pct": 31.4,
+    "bust_pct": 37.3,
+    "exp_pct": 31.2,
+    "med_days": 16,
+    "n": 525
+  },
+  "expected": {
+    "unfiltered_pf": 1.237,
+    "unfiltered_n": 705,
+    "kept_pf": 1.361,
+    "kept_wr": 44.9,
+    "kept_n": 583,
+    "kept_tr_wk": 2.24,
+    "row_pass": 31.4,
+    "row_bust": 37.3,
+    "row_exp": 31.2,
+    "row_med": 16,
+    "row_n": 525
+  }
+}

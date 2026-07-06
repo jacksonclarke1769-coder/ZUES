@@ -1,0 +1,808 @@
+{
+  "features_daily": {
+    "rows": 2678,
+    "cols": 53,
+    "date_min": "2016-01-04 00:00:00",
+    "date_max": "2026-05-25 00:00:00",
+    "columns": {
+      "date": {
+        "dtype": "datetime64[ns]",
+        "nan_rate": 0.0
+      },
+      "rth_open": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "rth_high": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "rth_low": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "rth_close": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "n_rth_bars": {
+        "dtype": "int64",
+        "nan_rate": 0.0
+      },
+      "or5_high": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "or5_low": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "or15_high": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "or15_low": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "or30_high": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "or30_low": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "first_5m_ret": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "first_15m_ret": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "first_30m_ret": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "on_hi": {
+        "dtype": "float64",
+        "nan_rate": 0.0022
+      },
+      "on_lo": {
+        "dtype": "float64",
+        "nan_rate": 0.0022
+      },
+      "on_range": {
+        "dtype": "float64",
+        "nan_rate": 0.0022
+      },
+      "pm_hi": {
+        "dtype": "float64",
+        "nan_rate": 0.003
+      },
+      "pm_lo": {
+        "dtype": "float64",
+        "nan_rate": 0.003
+      },
+      "pm_range": {
+        "dtype": "float64",
+        "nan_rate": 0.003
+      },
+      "dow": {
+        "dtype": "int32",
+        "nan_rate": 0.0
+      },
+      "is_holiday_adjacent": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "is_half_day": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "pdh": {
+        "dtype": "float64",
+        "nan_rate": 0.0004
+      },
+      "pdl": {
+        "dtype": "float64",
+        "nan_rate": 0.0004
+      },
+      "prior_close": {
+        "dtype": "float64",
+        "nan_rate": 0.0004
+      },
+      "prior_open": {
+        "dtype": "float64",
+        "nan_rate": 0.0004
+      },
+      "prior_range": {
+        "dtype": "float64",
+        "nan_rate": 0.0004
+      },
+      "prior_direction": {
+        "dtype": "float64",
+        "nan_rate": 0.0004
+      },
+      "gap_pts": {
+        "dtype": "float64",
+        "nan_rate": 0.0004
+      },
+      "atr14_daily": {
+        "dtype": "float64",
+        "nan_rate": 0.0049
+      },
+      "atr14_daily_prior": {
+        "dtype": "float64",
+        "nan_rate": 0.0052
+      },
+      "gap_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0052
+      },
+      "on_range_pctile": {
+        "dtype": "float64",
+        "nan_rate": 0.0071
+      },
+      "pm_range_pctile": {
+        "dtype": "float64",
+        "nan_rate": 0.0071
+      },
+      "atr14_daily_pctile": {
+        "dtype": "float64",
+        "nan_rate": 0.0119
+      },
+      "intraday_atr14_at_open": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "intraday_atr14_at_open_pctile": {
+        "dtype": "float64",
+        "nan_rate": 0.0071
+      },
+      "regime_gap_and_go_1000": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "regime_gap_fill_1000": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "regime_trend_up_dev_1000": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "regime_trend_dn_dev_1000": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "regime_range_dev_1000": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "regime_high_vol_1000": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "regime_low_vol_1000": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "regime_gap_and_go_1030": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "regime_gap_fill_1030": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "regime_trend_up_dev_1030": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "regime_trend_dn_dev_1030": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "regime_range_dev_1030": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "regime_high_vol_1030": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "regime_low_vol_1030": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      }
+    }
+  },
+  "features_intraday": {
+    "rows": 205122,
+    "cols": 36,
+    "ts_min": "2016-01-04 09:30:00-05:00",
+    "ts_max": "2026-05-25 12:00:00-04:00",
+    "columns": {
+      "ts": {
+        "dtype": "datetime64[ns, America/New_York]",
+        "nan_rate": 0.0
+      },
+      "date": {
+        "dtype": "datetime64[ns]",
+        "nan_rate": 0.0
+      },
+      "minutes_since_open": {
+        "dtype": "int64",
+        "nan_rate": 0.0
+      },
+      "Open": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "High": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "Low": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "Close": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "Volume": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "vwap": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "vwap_dist_pts": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "vwap_dist_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0052
+      },
+      "vwap_slope_6bar": {
+        "dtype": "float64",
+        "nan_rate": 0.0783
+      },
+      "trend_slope_20bar": {
+        "dtype": "float64",
+        "nan_rate": 0.2481
+      },
+      "atr14_5m": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "compression_score": {
+        "dtype": "float64",
+        "nan_rate": 0.1436
+      },
+      "day_high_sofar": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "day_low_sofar": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "d1c_drift": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "dist_to_pdh": {
+        "dtype": "float64",
+        "nan_rate": 0.0004
+      },
+      "dist_to_pdl": {
+        "dtype": "float64",
+        "nan_rate": 0.0004
+      },
+      "dist_to_onh": {
+        "dtype": "float64",
+        "nan_rate": 0.0018
+      },
+      "dist_to_onl": {
+        "dtype": "float64",
+        "nan_rate": 0.0018
+      },
+      "dist_to_pmh": {
+        "dtype": "float64",
+        "nan_rate": 0.0025
+      },
+      "dist_to_pml": {
+        "dtype": "float64",
+        "nan_rate": 0.0025
+      },
+      "dist_to_or15h": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "dist_to_or15l": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "dist_to_prior_close": {
+        "dtype": "float64",
+        "nan_rate": 0.0004
+      },
+      "dist_to_pdh_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0052
+      },
+      "dist_to_pdl_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0052
+      },
+      "dist_to_onh_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0069
+      },
+      "dist_to_onl_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0069
+      },
+      "dist_to_pmh_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0076
+      },
+      "dist_to_pml_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0076
+      },
+      "dist_to_or15h_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0052
+      },
+      "dist_to_or15l_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0052
+      },
+      "dist_to_prior_close_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0052
+      }
+    }
+  },
+  "profile_a_context": {
+    "rows": 705,
+    "cols": 107,
+    "columns": {
+      "ts": {
+        "dtype": "datetime64[ns, America/New_York]",
+        "nan_rate": 0.0
+      },
+      "date": {
+        "dtype": "datetime64[ns]",
+        "nan_rate": 0.0
+      },
+      "direction": {
+        "dtype": "object",
+        "nan_rate": 0.0
+      },
+      "entry": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "stop": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "target": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "risk_pts": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "risk_usd": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "stop_bucket": {
+        "dtype": "object",
+        "nan_rate": 0.0
+      },
+      "d1c_keep": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "d1c_drift_sign": {
+        "dtype": "int64",
+        "nan_rate": 0.0
+      },
+      "confluence_score": {
+        "dtype": "int64",
+        "nan_rate": 0.0
+      },
+      "grade": {
+        "dtype": "object",
+        "nan_rate": 0.0
+      },
+      "R": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "mae_r": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "mfe_r": {
+        "dtype": "float64",
+        "nan_rate": 0.0
+      },
+      "filled": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "outcome": {
+        "dtype": "object",
+        "nan_rate": 0.0
+      },
+      "trade_seq_in_day": {
+        "dtype": "int64",
+        "nan_rate": 0.0
+      },
+      "is_first_of_day": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "is_second_of_day": {
+        "dtype": "bool",
+        "nan_rate": 0.0
+      },
+      "rth_open": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "rth_high": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "rth_low": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "rth_close": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "n_rth_bars": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "or5_high": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "or5_low": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "or15_high": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "or15_low": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "or30_high": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "or30_low": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "first_5m_ret": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "first_15m_ret": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "first_30m_ret": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "on_hi": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "on_lo": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "on_range": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "pm_hi": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "pm_lo": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "pm_range": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dow": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "is_holiday_adjacent": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "is_half_day": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "pdh": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "pdl": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "prior_close": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "prior_open": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "prior_range": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "prior_direction": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "gap_pts": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "atr14_daily": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "atr14_daily_prior": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "gap_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "on_range_pctile": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "pm_range_pctile": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "atr14_daily_pctile": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "intraday_atr14_at_open": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "intraday_atr14_at_open_pctile": {
+        "dtype": "float64",
+        "nan_rate": 0.0184
+      },
+      "regime_gap_and_go_1000": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "regime_gap_fill_1000": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "regime_trend_up_dev_1000": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "regime_trend_dn_dev_1000": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "regime_range_dev_1000": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "regime_high_vol_1000": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "regime_low_vol_1000": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "regime_gap_and_go_1030": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "regime_gap_fill_1030": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "regime_trend_up_dev_1030": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "regime_trend_dn_dev_1030": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "regime_range_dev_1030": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "regime_high_vol_1030": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "regime_low_vol_1030": {
+        "dtype": "object",
+        "nan_rate": 0.0184
+      },
+      "minutes_since_open": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "Open": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "High": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "Low": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "Close": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "Volume": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "vwap": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "vwap_dist_pts": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "vwap_dist_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "vwap_slope_6bar": {
+        "dtype": "float64",
+        "nan_rate": 0.3177
+      },
+      "trend_slope_20bar": {
+        "dtype": "float64",
+        "nan_rate": 0.8454
+      },
+      "atr14_5m": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "compression_score": {
+        "dtype": "float64",
+        "nan_rate": 0.6113
+      },
+      "day_high_sofar": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "day_low_sofar": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "d1c_drift": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_pdh": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_pdl": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_onh": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_onl": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_pmh": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_pml": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_or15h": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_or15l": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_prior_close": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_pdh_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_pdl_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_onh_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_onl_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_pmh_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_pml_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_or15h_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_or15l_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      },
+      "dist_to_prior_close_atr": {
+        "dtype": "float64",
+        "nan_rate": 0.0241
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+ "firewall": {
+  "canary_stream_ok": true,
+  "canary_funnel_ok": true,
+  "measured_unfiltered": {
+   "n": 705,
+   "PF": 1.237,
+   "WR": 42.8,
+   "netR": 74.7,
+   "expR": 0.106
+  },
+  "measured_kept": {
+   "n": 583,
+   "PF": 1.361,
+   "WR": 44.9,
+   "netR": 89.2,
+   "expR": 0.153
+  },
+  "measured_1200_10": {
+   "pass_pct": 31.4,
+   "bust_pct": 37.3,
+   "exp_pct": 31.2,
+   "med_days": 16.0,
+   "n": 525
+  }
+ },
+ "priors": [
+  "no filter raises total R (7 replications)",
+  "denominator-artifact rule: pass% up while pass-count down = auto-reject (DEC-20260706-1108)"
+ ],
+ "runtime_sec": 8.3,
+ "n_regime_split_rows": 46,
+ "n_lift_rows": 261,
+ "n_avoid_tag_cells_tested": 520,
+ "n_single_basis_passes": 55,
+ "n_true_cross_basis_nominees": 0
+}

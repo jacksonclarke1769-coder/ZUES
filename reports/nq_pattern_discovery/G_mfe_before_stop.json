@@ -1,0 +1,47 @@
+{
+ "unfiltered_705": {
+  "stream": "unfiltered_705",
+  "n_losers": 403,
+  "counts": {
+   "<0(never favorable)": 0,
+   "0-0.25R": 47,
+   "0.25-0.5R": 105,
+   "0.5-0.75R": 77,
+   "0.75-1.0R": 68,
+   ">=1.0R": 106
+  },
+  "pct": {
+   "<0(never favorable)": 0.0,
+   "0-0.25R": 11.7,
+   "0.25-0.5R": 26.1,
+   "0.5-0.75R": 19.1,
+   "0.75-1.0R": 16.9,
+   ">=1.0R": 26.3
+  },
+  "n_ge_0_5R": 251,
+  "pct_ge_0_5R": 62.3
+ },
+ "kept_583": {
+  "stream": "kept_583",
+  "n_losers": 321,
+  "counts": {
+   "<0(never favorable)": 0,
+   "0-0.25R": 36,
+   "0.25-0.5R": 89,
+   "0.5-0.75R": 60,
+   "0.75-1.0R": 53,
+   ">=1.0R": 83
+  },
+  "pct": {
+   "<0(never favorable)": 0.0,
+   "0-0.25R": 11.2,
+   "0.25-0.5R": 27.7,
+   "0.5-0.75R": 18.7,
+   "0.75-1.0R": 16.5,
+   ">=1.0R": 25.9
+  },
+  "n_ge_0_5R": 196,
+  "pct_ge_0_5R": 61.1
+ },
+ "note": "time-to-stop/time-to-TP1 NOT available in this feature store (mae_r/mfe_r are scalar per-trade summaries, not a bar-level time series) -- reporting the available proxy only: mfe_r distribution of losers."
+}
