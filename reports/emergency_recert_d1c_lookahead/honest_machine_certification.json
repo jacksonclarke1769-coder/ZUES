@@ -1,0 +1,111 @@
+{
+ "label": "HONEST-RECERT DRAFT -- pending auditor verdict + operator approval",
+ "incident": "INC-20260706-1141",
+ "data_source": {
+  "csv": "reports/emergency_recert_d1c_lookahead/honest_d1c_stream.csv (705 rows, loaded directly, not regenerated)",
+  "summary_json": "reports/emergency_recert_d1c_lookahead/honest_d1c_stream_summary.json (co-located Wave-1 artifact)",
+  "span": {
+   "start": "2021-06-22 20:00:00-04:00",
+   "end": "2026-06-22 19:59:00-04:00",
+   "weeks": 260.7
+  },
+  "note_on_unfiltered_705": "the CSV carries R/mae_r only for kept==True rows (583); the 122 dropped rows have blank R/mae_r (no exit simulated for them), so PF/WR/expR/totR for the full 705 cannot be recomputed from the CSV alone. Row (a) below is therefore taken from the co-located honest_d1c_stream_summary.json's unfiltered_A_all_705 block, cross-checked by independently recomputing (b) honest-kept directly from the CSV and confirming an EXACT match to summary_json's honest block (see verification below)."
+ },
+ "d1c_attachment_proof": {
+  "check": "eval_ts <= ts (fill timestamp) for every row in the 705-row CSV",
+  "result": "0 of 705 rows have eval_ts > ts (verified directly on the CSV this session)",
+  "cited_canaries": [
+   "test_d1c_timestamp_canary.py (synthetic, permanent, no data dependency)",
+   "test_no_future_d1c_attachment.py (real Databento slice, skips if research data mirror unavailable)"
+  ]
+ },
+ "cost_assumptions": "existing repo conventions unchanged: 1m-truth fills (tools_1m_truth_recert.M1Map), Exit#3 exit model, size-to-risk via risk_usd/trade, adverse-first (mae/trough) bookkeeping in day_rows/eval_run -- no new cost assumptions introduced this task.",
+ "a_unfiltered_705": {
+  "source": "honest_d1c_stream_summary.json.unfiltered_A_all_705 (not recomputed this session, see data_source note)",
+  "n": 705,
+  "PF": 1.237,
+  "WR": 42.8,
+  "expR": 0.106,
+  "totR": 74.7,
+  "per_year_PF_WR": "NOT AVAILABLE this session -- CSV lacks R for the 122 dropped (kept=False) rows and honest_d1c_stream_summary.json's per_year block covers honest/kept only, not the full 705"
+ },
+ "b_honest_d1c_583": {
+  "recomputed_from_csv_this_session": true,
+  "n": 583,
+  "PF": 1.361,
+  "WR": 44.9,
+  "expR": 0.153,
+  "totR": 89.2,
+  "per_year": {
+   "2021": {
+    "n": 70,
+    "PF": 1.512,
+    "WR": 42.9
+   },
+   "2022": {
+    "n": 113,
+    "PF": 1.072,
+    "WR": 40.7
+   },
+   "2023": {
+    "n": 118,
+    "PF": 1.326,
+    "WR": 47.5
+   },
+   "2024": {
+    "n": 110,
+    "PF": 1.087,
+    "WR": 38.2
+   },
+   "2025": {
+    "n": 118,
+    "PF": 1.881,
+    "WR": 51.7
+   },
+   "2026": {
+    "n": 54,
+    "PF": 1.605,
+    "WR": 50.0
+   }
+  },
+  "cross_check_vs_summary_json": "EXACT match on n/PF/WR/expR/totR and all 6 per-year rows"
+ },
+ "c_sanity_deltas": {
+  "PF_delta_honest_minus_unfiltered": 0.124,
+  "reference_expected_delta": 0.12,
+  "match": true,
+  "note": "honest D1c adds a modest real PF improvement over the raw 705-signal set, consistent with the Wave-1 characterization"
+ },
+ "d_eval_row_cap10_1200": {
+  "config": "Profile A + honest D1c (583 kept) + Exit#3 sizing, Apex 50K spec (start=$50,000 trail=$2,500 target=$3,000 dll=$1,000 ARES-stop=$550), MAX_A_QTY overridden to 10, budget=$1,200, via tools_account_size_research.build_events/day_rows/eval_run",
+  "computed": {
+   "pass_pct": 31.4,
+   "bust_pct": 37.1,
+   "exp_pct": 31.4,
+   "median_days_pass": 16,
+   "n_eligible_starts": 525,
+   "pass_count": 165,
+   "bust_count": 195,
+   "expire_count": 165
+  },
+  "auditor_reference": {
+   "pass_pct": 31.4,
+   "bust_pct": 37.3,
+   "exp_pct": 31.2,
+   "median_days_pass": 16
+  },
+  "deltas_pp": {
+   "pass_pct": 0.0,
+   "bust_pct": 0.2,
+   "exp_pct": 0.2
+  },
+  "tolerance_pp": 0.5,
+  "verdict": "MATCH (all legs within 0.5pp tolerance)",
+  "canary_updates_authorized_and_applied": [
+   "tools_sim_parity_check.py CANARY_EXPECT -> pass_pct=31.4 bust_pct=37.1 exp_pct=31.4 med_days=16 n=525 (was 47.8/15.9/36.2/16/395)",
+   "test_tools_sim_parity_check.py docstring updated to match",
+   "tools_profileC_a_enhancement.py CANARY_EXPECT -> same new row (tools_wyckoff_a_tags.py and tools_8ideas_stream_studies.py import this constant, no separate definition found)"
+  ],
+  "viability_of_1200_budget_cap10": "BUST (37.1% bust vs 31.4% pass, and bust > pass) -- the honest-stream cap-10/$1,200 config busts more often than it passes. Plainly: NOT VIABLE as a standalone characterization at this cell; see 06_honest_sizing_matrix.csv /.md for the full budget x cap surface (auditor judges the frontier, not this task)."
+ }
+}

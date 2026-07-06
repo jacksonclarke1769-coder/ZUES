@@ -2,7 +2,14 @@
 
 With both LIVE-ONLY sizing behaviors (cushion gate, P3 brake) disabled, the trade-level replay
 must reproduce the certified cap-10 day-level row exactly (see module docstring / task record):
-pass 47.8 / bust 15.9 / expire 36.2 / median 16d, n=395 starts.
+pass 31.4 / bust 37.3 / expire 31.2 / median 16d, n=525 starts.
+
+INC-20260706-1141 honest re-cert row (was 47.8/15.9/36.2, n=395 -- lookahead-invalidated; the
+prior row was built on a pre-fix `run_d1c_real.attach_drift` kept-set. See
+reports/emergency_recert_d1c_lookahead/ for the honest stream and defect trace).
+
+# canonical row from pipeline regeneration; CSV round-trip flips one knife-edge start by 1 ULP
+# (documented in 05_honest_machine_certification.md)
 """
 import tools_sim_parity_check as P
 

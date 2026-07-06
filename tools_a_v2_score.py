@@ -34,7 +34,7 @@ def build(df5, mp, d1_tz, d1):
     feats = eng._features(); fi = feats.index
     tr = M1.run(feats, "NQ", A_PARAMS["exit3"])
     tr = tr[tr.session == "ny_am"].copy()
-    tr = RD.attach_drift(tr, d1_tz)
+    tr = RD.attach_drift(tr, d1_tz, fi)  # INC-20260706-1141: fill_bar + feats.index, not date/time strings
     tr = tr[tr.d1c_keep].copy()
 
     et5 = df5.index.tz_convert(NY); day5 = et5.normalize()

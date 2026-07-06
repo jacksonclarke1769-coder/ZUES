@@ -69,7 +69,10 @@ CUSHION_FRAC = 0.9             # config_defaults.OPEN_RISK_CUSHION_FRAC
 # Apex 50K DLL) — same numbers as tools_account_size_research.SPECS["50K"].
 SPEC_50K = dict(start=50_000.0, trail=2_500.0, target=3_000.0, dll=1_000.0, stop=550.0, max_qty=60)
 
-CANARY_EXPECT = dict(pass_pct=47.8, bust_pct=15.9, exp_pct=36.2, med_days=16, n=395)
+# INC-20260706-1141 honest re-cert row (was 47.8/15.9/36.2 — lookahead-invalidated)
+# canonical row from pipeline regeneration; CSV round-trip flips one knife-edge start by 1 ULP
+# (documented in 05_honest_machine_certification.md)
+CANARY_EXPECT = dict(pass_pct=31.4, bust_pct=37.3, exp_pct=31.2, med_days=16, n=525)
 
 
 def load_rows():

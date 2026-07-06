@@ -189,7 +189,8 @@ def build_augmented_rows(feats, mp, d1_tz):
     params = A_PARAMS["exit3"]
     tr = M1.run(feats, "NQ", params)
     tr = tr[tr.session == "ny_am"].copy()
-    tr = RD.attach_drift(tr, d1_tz)
+    # INC-20260706-1141: fill_bar + feats.index, not date/time strings.
+    tr = RD.attach_drift(tr, d1_tz, feats.index)
     fi = feats.index; n5 = len(fi)
     rows = []
     mfe_checked = mfe_mismatch = 0

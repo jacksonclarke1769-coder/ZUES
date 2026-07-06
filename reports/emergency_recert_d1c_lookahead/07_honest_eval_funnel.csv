@@ -1,0 +1,9 @@
+label,budget,cap,pass_pct,bust_pct,exp_pct,median_days_pass,mean_days_all,pass_count,eligible_starts,funded_per_slot_year,E_proxy,mean_risk_usd,mean_contracts,dl_freq,tl_freq,trades_per_eval,attempts_per_funded,fee_drag_at_131,fee_drag_at_30
+INVALIDATED-LOOKAHEAD (pre-fix),1200,10,47.8,15.9,36.2,16,"n/a (copied verbatim, not recomputed)",n/a,395,"n/a (copied verbatim, not recomputed)",n/a,n/a,n/a,n/a,n/a,n/a,n/a,n/a,n/a
+honest-A10/$1200,1200,10,31.4,37.1,31.4,16.0,20.09,165,525,5.7146,3011.9,102.85,8.926,75.8,32.8,6.92,3.182,416.8,95.5
+honest-top1-by-funded_per_slot_year,1100,20,37.1,50.7,12.2,14.0,15.29,195,525,8.8752,3583.3,102.85,12.947,67.4,14.9,5.16,2.692,352.7,80.8
+honest-top2-by-funded_per_slot_year,1200,20,33.9,55.2,10.9,12.0,14.31,178,525,8.6513,3259.5,102.85,13.666,65.1,11.8,4.82,2.949,386.3,88.5
+honest-top3-by-funded_per_slot_year,1100,15,35.8,44.2,20.0,14.0,16.99,188,525,7.6964,3450.0,102.85,11.322,69.1,22.9,5.79,2.793,365.9,83.8
+honest-top4-by-funded_per_slot_year,1200,15,34.3,48.2,17.5,13.0,16.28,180,525,7.6904,3297.6,102.85,11.765,68.4,19.4,5.53,2.917,382.1,87.5
+honest-top5-by-funded_per_slot_year,1000,20,34.9,48.2,17.0,15.0,17.12,183,525,7.435,3354.7,102.85,12.154,69.5,21.9,5.76,2.869,375.8,86.1
+honest-lowest-bust(pass_pct>=25),1100,8,25.0,26.1,49.0,16.0,23.23,131,525,3.9232,2364.2,102.85,7.367,79.6,41.7,7.94,4.008,525.0,120.2

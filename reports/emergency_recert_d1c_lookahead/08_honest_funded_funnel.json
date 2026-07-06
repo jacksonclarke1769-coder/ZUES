@@ -1,0 +1,559 @@
+{
+ "label": "HONEST-RECERT DRAFT \u2014 pending auditor verdict + operator approval",
+ "incident": "INC-20260706-1141",
+ "stream": "honest D1c (post-fix), tools_sim_parity_check.load_rows(), n=583",
+ "rules_source": "apex_funded_40.py (imported, not modified)",
+ "overlap_caveat": "monthly rolling starts OVERLAP -> effective independent samples ~4-5, bust% has wide CI",
+ "cells": [
+  {
+   "budget": 150,
+   "cap": 2,
+   "n_starts": 49,
+   "e_paid": 276,
+   "med_paid": 0,
+   "med_months": 36.6,
+   "bust_pct": 0.0,
+   "closed_max_pct": 0.0,
+   "data_end_pct": 100.0,
+   "safety_net_pct": 89.8,
+   "med_days_to_safety_net": 716.5,
+   "worst_day": -273.0,
+   "payout_count_dist_pct": {
+    "0": 81.6,
+    "1": 18.4,
+    "2": 0.0,
+    "3": 0.0,
+    "4": 0.0,
+    "5": 0.0,
+    "6": 0.0
+   },
+   "per_start_year": {
+    "2021": {
+     "n": 7,
+     "bust_pct": 0.0,
+     "closed_pct": 0.0,
+     "data_end_pct": 100.0
+    },
+    "2022": {
+     "n": 12,
+     "bust_pct": 0.0,
+     "closed_pct": 0.0,
+     "data_end_pct": 100.0
+    },
+    "2023": {
+     "n": 12,
+     "bust_pct": 0.0,
+     "closed_pct": 0.0,
+     "data_end_pct": 100.0
+    },
+    "2024": {
+     "n": 12,
+     "bust_pct": 0.0,
+     "closed_pct": 0.0,
+     "data_end_pct": 100.0
+    },
+    "2025": {
+     "n": 6,
+     "bust_pct": 0.0,
+     "closed_pct": 0.0,
+     "data_end_pct": 100.0
+    }
+   }
+  },
+  {
+   "budget": 200,
+   "cap": 2,
+   "n_starts": 49,
+   "e_paid": 1491,
+   "med_paid": 1100,
+   "med_months": 36.6,
+   "bust_pct": 0.0,
+   "closed_max_pct": 0.0,
+   "data_end_pct": 100.0,
+   "safety_net_pct": 100.0,
+   "med_days_to_safety_net": 580.0,
+   "worst_day": -291.0,
+   "payout_count_dist_pct": {
+    "0": 8.2,
+    "1": 51.0,
+    "2": 22.4,
+    "3": 16.3,
+    "4": 2.0,
+    "5": 0.0,
+    "6": 0.0
+   },
+   "per_start_year": {
+    "2021": {
+     "n": 7,
+     "bust_pct": 0.0,
+     "closed_pct": 0.0,
+     "data_end_pct": 100.0
+    },
+    "2022": {
+     "n": 12,
+     "bust_pct": 0.0,
+     "closed_pct": 0.0,
+     "data_end_pct": 100.0
+    },
+    "2023": {
+     "n": 12,
+     "bust_pct": 0.0,
+     "closed_pct": 0.0,
+     "data_end_pct": 100.0
+    },
+    "2024": {
+     "n": 12,
+     "bust_pct": 0.0,
+     "closed_pct": 0.0,
+     "data_end_pct": 100.0
+    },
+    "2025": {
+     "n": 6,
+     "bust_pct": 0.0,
+     "closed_pct": 0.0,
+     "data_end_pct": 100.0
+    }
+   }
+  },
+  {
+   "budget": 250,
+   "cap": 4,
+   "n_starts": 49,
+   "e_paid": 7230,
+   "med_paid": 7236,
+   "med_months": 32.4,
+   "bust_pct": 0.0,
+   "closed_max_pct": 73.5,
+   "data_end_pct": 26.5,
+   "safety_net_pct": 100.0,
+   "med_days_to_safety_net": 285.0,
+   "worst_day": -446.0,
+   "payout_count_dist_pct": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.0,
+    "3": 6.1,
+    "4": 12.2,
+    "5": 8.2,
+    "6": 73.5
+   },
+   "per_start_year": {
+    "2021": {
+     "n": 7,
+     "bust_pct": 0.0,
+     "closed_pct": 100.0,
+     "data_end_pct": 0.0
+    },
+    "2022": {
+     "n": 12,
+     "bust_pct": 0.0,
+     "closed_pct": 100.0,
+     "data_end_pct": 0.0
+    },
+    "2023": {
+     "n": 12,
+     "bust_pct": 0.0,
+     "closed_pct": 100.0,
+     "data_end_pct": 0.0
+    },
+    "2024": {
+     "n": 12,
+     "bust_pct": 0.0,
+     "closed_pct": 41.7,
+     "data_end_pct": 58.3
+    },
+    "2025": {
+     "n": 6,
+     "bust_pct": 0.0,
+     "closed_pct": 0.0,
+     "data_end_pct": 100.0
+    }
+   }
+  },
+  {
+   "budget": 300,
+   "cap": 4,
+   "n_starts": 49,
+   "e_paid": 8174,
+   "med_paid": 8585,
+   "med_months": 30.4,
+   "bust_pct": 8.2,
+   "closed_max_pct": 81.6,
+   "data_end_pct": 10.2,
+   "safety_net_pct": 100.0,
+   "med_days_to_safety_net": 236.0,
+   "worst_day": -547.0,
+   "payout_count_dist_pct": {
+    "0": 0.0,
+    "1": 2.0,
+    "2": 0.0,
+    "3": 8.2,
+    "4": 4.1,
+    "5": 4.1,
+    "6": 81.6
+   },
+   "per_start_year": {
+    "2021": {
+     "n": 7,
+     "bust_pct": 42.9,
+     "closed_pct": 57.1,
+     "data_end_pct": 0.0
+    },
+    "2022": {
+     "n": 12,
+     "bust_pct": 8.3,
+     "closed_pct": 91.7,
+     "data_end_pct": 0.0
+    },
+    "2023": {
+     "n": 12,
+     "bust_pct": 0.0,
+     "closed_pct": 100.0,
+     "data_end_pct": 0.0
+    },
+    "2024": {
+     "n": 12,
+     "bust_pct": 0.0,
+     "closed_pct": 100.0,
+     "data_end_pct": 0.0
+    },
+    "2025": {
+     "n": 6,
+     "bust_pct": 0.0,
+     "closed_pct": 16.7,
+     "data_end_pct": 83.3
+    }
+   }
+  },
+  {
+   "budget": 400,
+   "cap": 4,
+   "n_starts": 49,
+   "e_paid": 8277,
+   "med_paid": 10175,
+   "med_months": 18.9,
+   "bust_pct": 20.4,
+   "closed_max_pct": 73.5,
+   "data_end_pct": 6.1,
+   "safety_net_pct": 87.8,
+   "med_days_to_safety_net": 190.0,
+   "worst_day": -661.0,
+   "payout_count_dist_pct": {
+    "0": 16.3,
+    "1": 4.1,
+    "2": 0.0,
+    "3": 2.0,
+    "4": 4.1,
+    "5": 0.0,
+    "6": 73.5
+   },
+   "per_start_year": {
+    "2021": {
+     "n": 7,
+     "bust_pct": 0.0,
+     "closed_pct": 100.0,
+     "data_end_pct": 0.0
+    },
+    "2022": {
+     "n": 12,
+     "bust_pct": 0.0,
+     "closed_pct": 100.0,
+     "data_end_pct": 0.0
+    },
+    "2023": {
+     "n": 12,
+     "bust_pct": 75.0,
+     "closed_pct": 25.0,
+     "data_end_pct": 0.0
+    },
+    "2024": {
+     "n": 12,
+     "bust_pct": 8.3,
+     "closed_pct": 91.7,
+     "data_end_pct": 0.0
+    },
+    "2025": {
+     "n": 6,
+     "bust_pct": 0.0,
+     "closed_pct": 50.0,
+     "data_end_pct": 50.0
+    }
+   }
+  },
+  {
+   "budget": 480,
+   "cap": 4,
+   "n_starts": 49,
+   "e_paid": 8554,
+   "med_paid": 10257,
+   "med_months": 18.4,
+   "bust_pct": 22.4,
+   "closed_max_pct": 75.5,
+   "data_end_pct": 2.0,
+   "safety_net_pct": 87.8,
+   "med_days_to_safety_net": 171.0,
+   "worst_day": -882.0,
+   "payout_count_dist_pct": {
+    "0": 12.2,
+    "1": 8.2,
+    "2": 2.0,
+    "3": 0.0,
+    "4": 0.0,
+    "5": 2.0,
+    "6": 75.5
+   },
+   "per_start_year": {
+    "2021": {
+     "n": 7,
+     "bust_pct": 0.0,
+     "closed_pct": 100.0,
+     "data_end_pct": 0.0
+    },
+    "2022": {
+     "n": 12,
+     "bust_pct": 8.3,
+     "closed_pct": 91.7,
+     "data_end_pct": 0.0
+    },
+    "2023": {
+     "n": 12,
+     "bust_pct": 75.0,
+     "closed_pct": 25.0,
+     "data_end_pct": 0.0
+    },
+    "2024": {
+     "n": 12,
+     "bust_pct": 8.3,
+     "closed_pct": 91.7,
+     "data_end_pct": 0.0
+    },
+    "2025": {
+     "n": 6,
+     "bust_pct": 0.0,
+     "closed_pct": 83.3,
+     "data_end_pct": 16.7
+    }
+   }
+  },
+  {
+   "budget": 600,
+   "cap": 6,
+   "n_starts": 49,
+   "e_paid": 5531,
+   "med_paid": 970,
+   "med_months": 8.4,
+   "bust_pct": 57.1,
+   "closed_max_pct": 42.9,
+   "data_end_pct": 0.0,
+   "safety_net_pct": 63.3,
+   "med_days_to_safety_net": 66.0,
+   "worst_day": -1000.0,
+   "payout_count_dist_pct": {
+    "0": 38.8,
+    "1": 18.4,
+    "2": 0.0,
+    "3": 0.0,
+    "4": 0.0,
+    "5": 0.0,
+    "6": 42.9
+   },
+   "per_start_year": {
+    "2021": {
+     "n": 7,
+     "bust_pct": 71.4,
+     "closed_pct": 28.6,
+     "data_end_pct": 0.0
+    },
+    "2022": {
+     "n": 12,
+     "bust_pct": 83.3,
+     "closed_pct": 16.7,
+     "data_end_pct": 0.0
+    },
+    "2023": {
+     "n": 12,
+     "bust_pct": 75.0,
+     "closed_pct": 25.0,
+     "data_end_pct": 0.0
+    },
+    "2024": {
+     "n": 12,
+     "bust_pct": 25.0,
+     "closed_pct": 75.0,
+     "data_end_pct": 0.0
+    },
+    "2025": {
+     "n": 6,
+     "bust_pct": 16.7,
+     "closed_pct": 83.3,
+     "data_end_pct": 0.0
+    }
+   }
+  },
+  {
+   "budget": 640,
+   "cap": 4,
+   "n_starts": 49,
+   "e_paid": 6131,
+   "med_paid": 4403,
+   "med_months": 12.4,
+   "bust_pct": 55.1,
+   "closed_max_pct": 42.9,
+   "data_end_pct": 2.0,
+   "safety_net_pct": 75.5,
+   "med_days_to_safety_net": 132.0,
+   "worst_day": -882.0,
+   "payout_count_dist_pct": {
+    "0": 28.6,
+    "1": 16.3,
+    "2": 4.1,
+    "3": 6.1,
+    "4": 0.0,
+    "5": 2.0,
+    "6": 42.9
+   },
+   "per_start_year": {
+    "2021": {
+     "n": 7,
+     "bust_pct": 100.0,
+     "closed_pct": 0.0,
+     "data_end_pct": 0.0
+    },
+    "2022": {
+     "n": 12,
+     "bust_pct": 50.0,
+     "closed_pct": 50.0,
+     "data_end_pct": 0.0
+    },
+    "2023": {
+     "n": 12,
+     "bust_pct": 91.7,
+     "closed_pct": 8.3,
+     "data_end_pct": 0.0
+    },
+    "2024": {
+     "n": 12,
+     "bust_pct": 25.0,
+     "closed_pct": 75.0,
+     "data_end_pct": 0.0
+    },
+    "2025": {
+     "n": 6,
+     "bust_pct": 0.0,
+     "closed_pct": 83.3,
+     "data_end_pct": 16.7
+    }
+   }
+  },
+  {
+   "budget": 480,
+   "cap": 5,
+   "n_starts": 49,
+   "e_paid": 7820,
+   "med_paid": 10000,
+   "med_months": 17.3,
+   "bust_pct": 46.9,
+   "closed_max_pct": 49.0,
+   "data_end_pct": 4.1,
+   "safety_net_pct": 87.8,
+   "med_days_to_safety_net": 131.0,
+   "worst_day": -882.0,
+   "payout_count_dist_pct": {
+    "0": 16.3,
+    "1": 10.2,
+    "2": 0.0,
+    "3": 8.2,
+    "4": 8.2,
+    "5": 8.2,
+    "6": 49.0
+   },
+   "per_start_year": {
+    "2021": {
+     "n": 7,
+     "bust_pct": 85.7,
+     "closed_pct": 14.3,
+     "data_end_pct": 0.0
+    },
+    "2022": {
+     "n": 12,
+     "bust_pct": 41.7,
+     "closed_pct": 58.3,
+     "data_end_pct": 0.0
+    },
+    "2023": {
+     "n": 12,
+     "bust_pct": 75.0,
+     "closed_pct": 25.0,
+     "data_end_pct": 0.0
+    },
+    "2024": {
+     "n": 12,
+     "bust_pct": 25.0,
+     "closed_pct": 75.0,
+     "data_end_pct": 0.0
+    },
+    "2025": {
+     "n": 6,
+     "bust_pct": 0.0,
+     "closed_pct": 66.7,
+     "data_end_pct": 33.3
+    }
+   }
+  },
+  {
+   "budget": 640,
+   "cap": 5,
+   "n_starts": 49,
+   "e_paid": 6422,
+   "med_paid": 4727,
+   "med_months": 11.4,
+   "bust_pct": 53.1,
+   "closed_max_pct": 46.9,
+   "data_end_pct": 0.0,
+   "safety_net_pct": 73.5,
+   "med_days_to_safety_net": 91.0,
+   "worst_day": -1000.0,
+   "payout_count_dist_pct": {
+    "0": 26.5,
+    "1": 16.3,
+    "2": 4.1,
+    "3": 6.1,
+    "4": 0.0,
+    "5": 0.0,
+    "6": 46.9
+   },
+   "per_start_year": {
+    "2021": {
+     "n": 7,
+     "bust_pct": 71.4,
+     "closed_pct": 28.6,
+     "data_end_pct": 0.0
+    },
+    "2022": {
+     "n": 12,
+     "bust_pct": 66.7,
+     "closed_pct": 33.3,
+     "data_end_pct": 0.0
+    },
+    "2023": {
+     "n": 12,
+     "bust_pct": 83.3,
+     "closed_pct": 16.7,
+     "data_end_pct": 0.0
+    },
+    "2024": {
+     "n": 12,
+     "bust_pct": 25.0,
+     "closed_pct": 75.0,
+     "data_end_pct": 0.0
+    },
+    "2025": {
+     "n": 6,
+     "bust_pct": 0.0,
+     "closed_pct": 100.0,
+     "data_end_pct": 0.0
+    }
+   }
+  }
+ ]
+}

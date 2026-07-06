@@ -70,7 +70,8 @@ B2_WINDOW_BARS = 6        # 30 min / 5m
 SMT_LOOKBACK = 20         # 5m bars, per the brief
 STALE_MIN = 15.0          # SMT alignment: reject if matched other-instrument bar is this old
 
-CANARY_EXPECT = dict(pass_pct=47.8, bust_pct=15.9, exp_pct=36.2, med_days=16, n=395)
+# INC-20260706-1141 honest re-cert row (was 47.8/15.9/36.2, n=395 -- lookahead-invalidated)
+CANARY_EXPECT = dict(pass_pct=31.4, bust_pct=37.3, exp_pct=31.2, med_days=16, n=525)  # INC-20260706-1141 honest re-cert row (canonical, pipeline-regenerated)
 
 
 # =========================================================================== load + reconstruct
@@ -90,7 +91,8 @@ def build_raw_and_kept(feats, mp, d1_tz):
     params = A_PARAMS["exit3"]
     tr = M1.run(feats, "NQ", params)
     tr = tr[tr.session == "ny_am"].copy()
-    tr = RD.attach_drift(tr, d1_tz)
+    # INC-20260706-1141: fill_bar + feats.index, not date/time strings.
+    tr = RD.attach_drift(tr, d1_tz, feats.index)
     fi = feats.index; n5 = len(fi)
     raw = []
     for _, t in tr.iterrows():

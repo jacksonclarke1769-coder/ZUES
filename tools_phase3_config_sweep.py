@@ -38,7 +38,9 @@ def a_streams_d1c(feats, mp, d1_tz):
     for variant, params in A_PARAMS.items():
         tr = M1.run(feats, "NQ", params)
         tr = tr[tr.session == "ny_am"].copy()
-        tr = RD.attach_drift(tr, d1_tz)                      # the validated live gate (fail-closed)
+        # INC-20260706-1141: fill_bar + feats.index, not date/time strings (avoids the
+        # UTC-relocalized-as-NY lookahead defect).
+        tr = RD.attach_drift(tr, d1_tz, feats.index)          # the validated live gate (fail-closed)
         rows, dropped = [], 0
         fi = feats.index; n5 = len(fi)
         for _, t in tr.iterrows():

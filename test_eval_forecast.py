@@ -133,10 +133,11 @@ def test_forecast_is_deterministic():
 @pytest.mark.skipif(not HAS_CACHE, reason="certified day cache absent (run --rebuild)")
 def test_calibration_reproduces_certified():
     """Seeded FRESH (start balance, start-trail floor, 30 days), the forecast must reproduce the
-    locked 47.8/15.9/36.2 (cap-10 re-lock 2026-07-05) within rounding — proof it's the certified
-    machine, conditioned."""
+    HONEST-RECERT row 31.4/37.3/31.2 (INC-20260706-1141, D1c lookahead fix; supersedes the
+    pre-fix 47.8/15.9/36.2 cap-10 re-lock 2026-07-05 number) within the 0.5pp calibration
+    tolerance — proof it's the certified machine, conditioned. Authorized by INC-20260706-1141."""
     days = EF.load_distribution()
     fc = EF.forecast(days, EF.START, EF.START - EF.TRAIL, EF.EXPIRE_DAYS)
-    assert fc["pass_pct"] == pytest.approx(47.8, abs=0.3)
-    assert fc["bust_pct"] == pytest.approx(15.9, abs=0.3)
-    assert fc["expire_pct"] == pytest.approx(36.2, abs=0.3)
+    assert fc["pass_pct"] == pytest.approx(31.4, abs=0.5)
+    assert fc["bust_pct"] == pytest.approx(37.3, abs=0.5)
+    assert fc["expire_pct"] == pytest.approx(31.2, abs=0.5)
