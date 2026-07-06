@@ -1,0 +1,12 @@
+auditor_flag,base,bust_pct,denom_artifact,eligible_n_10_1200,eligible_n_15_1000,exp_pct,expr,n,pass_10_1200,pass_15_1000,pass_n_10_1200,pass_n_15_1000,pass_pct,pf,policy,section,totr,wr
+,"10,$1200",15.9,,,,36.2,,395,,,,,47.8,,B0_all-10 (baseline),citation_a,,
+,"15,$1000",12.7,,,,42.5,,395,,,,,44.8,,B0_all-10 (baseline),citation_a,,
+,"10,$1200",18.2,,,,29.9,,395,,,,,51.9,,B3_<20-SKIP_rest-15,citation_a,,
+,"15,$1000",13.4,,,,36.2,,395,,,,,50.4,,B3_<20-SKIP_rest-15,citation_a,,
+False,,,False,361,361,,0.4436,392,45.7,51.5,165,186,,2.421,sub20_requires_band_atr>=2_else_drop,new_cell_b,173.9,60.2
+,,,,,,,0.0864,59,,,,,,1.177,b1_<20,tagonly_c_B5_pref,5.1,40.7
+,,,,,,,0.5622,82,,,,,,2.78,b2_20-30,tagonly_c_B5_pref,46.1,58.5
+,,,,,,,0.4352,91,,,,,,2.26,b3_30-45,tagonly_c_B5_pref,39.6,57.1
+,,,,,,,0.1976,65,,,,,,1.506,b4_45-60,tagonly_c_B5_pref,12.8,49.2
+,,,,,,,0.5935,68,,,,,,3.369,b5_60-80,tagonly_c_B5_pref,40.4,67.6
+,,,,,,,0.5706,70,,,,,,4.277,b6_80+,tagonly_c_B5_pref,39.9,75.7

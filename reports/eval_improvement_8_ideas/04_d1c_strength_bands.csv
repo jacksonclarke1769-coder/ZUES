@@ -1,0 +1,25 @@
+auditor_flag,band,denom_artifact_10,denom_artifact_15,eligible_n_10_1200,eligible_n_15_1000,expr,n,normalization,one_year_flag,pass_10_1200,pass_15_1000,pass_n_10_1200,pass_n_15_1000,per_year,pf,section,totr,wr
+,0,,,,,0.2934,87,raw points,,,,,,"{""2021"": 6.8, ""2022"": 8.9, ""2023"": 8.0, ""2024"": -1.2, ""2025"": 5.0, ""2026"": -2.0}",1.756,per_band,25.5,48.3
+,1,,,,,0.5003,87,raw points,,,,,,"{""2021"": 8.3, ""2022"": 6.4, ""2023"": 9.0, ""2024"": 3.8, ""2025"": 14.0, ""2026"": 2.0}",2.67,per_band,43.5,58.6
+,2,,,,,0.6166,87,raw points,,,,,,"{""2021"": 11.6, ""2022"": 4.9, ""2023"": 6.2, ""2024"": 8.2, ""2025"": 20.3, ""2026"": 2.3}",3.109,per_band,53.6,66.7
+,3,,,,,0.228,87,raw points,,,,,,"{""2021"": 0.7, ""2022"": 3.3, ""2023"": 8.1, ""2024"": 5.5, ""2025"": 2.6, ""2026"": -0.4}",1.609,per_band,19.8,55.2
+,4,,,,,0.476,87,raw points,,,,,,"{""2021"": 0.4, ""2022"": 4.3, ""2023"": 6.7, ""2024"": 2.4, ""2025"": 16.0, ""2026"": 11.7}",2.804,per_band,41.4,64.4
+,0,,,,,0.3038,87,drift/ATR14(1m),,,,,,"{""2021"": 8.8, ""2022"": 8.8, ""2023"": 6.9, ""2024"": -0.1, ""2025"": 5.0, ""2026"": -3.0}",1.788,per_band,26.4,48.3
+,1,,,,,0.4785,87,drift/ATR14(1m),,,,,,"{""2021"": 3.9, ""2022"": 8.6, ""2023"": 4.6, ""2024"": 6.1, ""2025"": 14.9, ""2026"": 3.4}",2.448,per_band,41.6,56.3
+,2,,,,,0.5692,87,drift/ATR14(1m),,,,,,"{""2021"": 8.0, ""2022"": 2.0, ""2023"": 13.0, ""2024"": 9.1, ""2025"": 14.7, ""2026"": 2.8}",2.867,per_band,49.5,66.7
+,3,,,,,0.4549,87,drift/ATR14(1m),,,,,,"{""2021"": 7.2, ""2022"": 3.5, ""2023"": 4.0, ""2024"": 6.3, ""2025"": 16.5, ""2026"": 2.2}",2.569,per_band,39.6,65.5
+,4,,,,,0.3079,87,drift/ATR14(1m),,,,,,"{""2021"": 0.1, ""2022"": 4.9, ""2023"": 9.5, ""2024"": -2.6, ""2025"": 6.7, ""2026"": 8.1}",2.001,per_band,26.8,56.3
+,0,,,,,0.2872,87,percentile-by-minutes-since-open,,,,,,"{""2021"": 3.8, ""2022"": 7.4, ""2023"": 10.5, ""2024"": 0.3, ""2025"": 5.0, ""2026"": -2.0}",1.719,per_band,25.0,49.4
+,1,,,,,0.496,87,percentile-by-minutes-since-open,,,,,,"{""2021"": 12.8, ""2022"": 6.6, ""2023"": 4.4, ""2024"": 0.2, ""2025"": 16.1, ""2026"": 3.0}",2.792,per_band,43.2,58.6
+,2,,,,,0.5003,87,percentile-by-minutes-since-open,,,,,,"{""2021"": 8.6, ""2022"": 5.1, ""2023"": 4.0, ""2024"": 6.6, ""2025"": 17.4, ""2026"": 1.8}",2.513,per_band,43.5,60.9
+,3,,,,,0.3773,87,percentile-by-minutes-since-open,,,,,,"{""2021"": -0.2, ""2022"": 4.6, ""2023"": 14.9, ""2024"": 5.5, ""2025"": 4.0, ""2026"": 4.0}",2.127,per_band,32.8,58.6
+,4,,,,,0.4535,87,percentile-by-minutes-since-open,,,,,,"{""2021"": 2.9, ""2022"": 4.2, ""2023"": 4.2, ""2024"": 6.0, ""2025"": 15.5, ""2026"": 6.8}",2.639,per_band,39.5,65.5
+False,,False,False,325,325,0.4552,348,drop_band0[raw points],"top single-year share of positive totR delta = 63% -> spread, OK",40.6,44.6,132,145,,2.48,policy,158.4,61.2
+False,,False,False,168,168,0.4223,174,allow_only_band2-3[raw points],no positive totR delta vs baseline (n/a),20.8,23.2,35,39,,2.266,policy,73.5,60.9
+False,,False,False,321,321,0.4096,348,drop_band4[raw points]_exhaustion-check,no positive totR delta vs baseline (n/a),36.4,48.9,117,157,,2.209,policy,142.5,57.2
+False,,False,False,325,325,0.4526,348,drop_band0[drift/ATR14(1m)],"top single-year share of positive totR delta = 97% -> ONE-YEAR-DRIVEN, REJECT",42.8,46.8,139,152,,2.468,policy,157.5,61.2
+False,,False,False,166,166,0.512,174,allow_only_band2-3[drift/ATR14(1m)],no positive totR delta vs baseline (n/a),25.9,28.9,43,48,,2.721,policy,89.1,66.1
+False,,False,False,317,317,0.4516,348,drop_band4[drift/ATR14(1m)]_exhaustion-check,"top single-year share of positive totR delta = 100% -> ONE-YEAR-DRIVEN, REJECT",40.7,47.3,129,150,,2.378,policy,157.2,59.2
+False,,False,False,322,322,0.4568,348,drop_band0[percentile-by-minutes-since-open],"top single-year share of positive totR delta = 100% -> ONE-YEAR-DRIVEN, REJECT",41.6,45.7,134,147,,2.499,policy,159.0,60.9
+False,,False,False,169,169,0.4388,174,allow_only_band2-3[percentile-by-minutes-since-open],no positive totR delta vs baseline (n/a),20.7,23.7,35,40,,2.319,policy,76.3,59.8
+False,,False,False,325,325,0.4152,348,drop_band4[percentile-by-minutes-since-open]_exhaustion-check,no positive totR delta vs baseline (n/a),40.0,48.6,130,158,,2.238,policy,144.5,56.9

@@ -1,0 +1,35 @@
+{
+ "head": "c03e7318441a6539155d9e885f2bd2df95cd08e2",
+ "provenance": "reports/apex_validation.json -> cap10_relock_2026-07-05 (DEC-20260705-1102): eval pass_pct 47.8 / bust 15.9 / expire 36.2 / median 16d, same A10 Exit#3+D1c config this file's canary reproduces via eval_funnel(as_rows(kept),1200,10).",
+ "n_kept": 435,
+ "n_raw": 705,
+ "canary_10_1200": {
+  "pass_pct": 47.8,
+  "bust_pct": 15.9,
+  "exp_pct": 36.2,
+  "med_days": 16,
+  "n": 395,
+  "e_funded": 12206,
+  "e_attempt": 5773
+ },
+ "canary_15_1000": {
+  "pass_pct": 55.2,
+  "bust_pct": 13.4,
+  "exp_pct": 31.4,
+  "med_days": 15,
+  "n": 395,
+  "e_funded": 11826,
+  "e_attempt": 6459
+ },
+ "canary_expected": {
+  "pass_pct": 47.8,
+  "bust_pct": 15.9,
+  "exp_pct": 36.2,
+  "med_days": 16,
+  "n": 395
+ },
+ "wr_pct": 58.6,
+ "trades_per_week": 1.68,
+ "span_start": "2021-06-25 10:25:00-04:00",
+ "span_end": "2026-06-17 09:40:00-04:00"
+}

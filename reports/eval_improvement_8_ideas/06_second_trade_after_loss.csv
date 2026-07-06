@@ -1,0 +1,17 @@
+base,bust_pct,double_loss_days_total,eligible_n,exp_pct,med_days,n,pass_n,pass_pct,policy,triple_loss_days_total,two_plus_trade_days_total
+10_1200,15.9,26,395,36.2,16,395,189,47.8,A_baseline,0,159
+10_1200,14.4,0,395,36.7,16,395,193,48.9,B_skip_2nd_after_1st_loss,0,113
+10_1200,15.2,7,395,35.9,16,395,193,48.9,C_2nd_after_loss_only_if_band>=2,0,129
+10_1200,14.4,0,395,37.5,16,395,190,48.1,D_2nd_after_loss_only_if_opposite_dir,0,118
+10_1200,15.9,26,395,35.4,16,395,192,48.6,E_2nd_after_loss_only_if_same_dir,0,154
+10_1200,15.9,26,395,35.4,16,395,192,48.6,F_half_risk_2nd_after_loss,0,159
+10_1200,15.2,21,395,37.0,16,395,189,47.8,G_skip_2nd_after_loss_if_sub20pt_stop,0,154
+10_1200,14.4,0,395,36.7,16,395,193,48.9,H_stop_trading_after_any_loss_same_day,0,113
+15_1000,13.4,17,395,31.4,15,395,218,55.2,A_baseline,0,140
+15_1000,11.6,0,395,32.9,15,395,219,55.4,B_skip_2nd_after_1st_loss,0,117
+15_1000,12.7,7,395,31.9,15,395,219,55.4,C_2nd_after_loss_only_if_band>=2,0,124
+15_1000,11.6,0,395,32.9,15,395,219,55.4,D_2nd_after_loss_only_if_opposite_dir,0,117
+15_1000,13.4,17,395,31.4,15,395,218,55.2,E_2nd_after_loss_only_if_same_dir,0,140
+15_1000,12.9,17,395,31.9,15,395,218,55.2,F_half_risk_2nd_after_loss,0,140
+15_1000,12.7,13,395,32.2,15,395,218,55.2,G_skip_2nd_after_loss_if_sub20pt_stop,0,136
+15_1000,11.6,0,395,32.9,15,395,219,55.4,H_stop_trading_after_any_loss_same_day,0,117
