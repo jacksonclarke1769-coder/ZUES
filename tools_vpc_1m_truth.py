@@ -135,6 +135,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import tools_salvage_vpc_reeval as VR        # VPC/A machinery, ASR, event_pf/PF_FLAGS, df_to_md_table
 import tools_vpc_audit_standalone as VA      # cost_variant_stats (reused verbatim)
 import tools_salvage_stress as ST            # FIREWALL_FILES, sha_of
+import vpc_trail as VT                       # canonical VPC trail stepper (PHASE-0-SIM-ONLY extraction)
 
 NY = "America/New_York"
 OUTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reports", "vpc_standalone_audit")
@@ -213,33 +214,18 @@ def vpc_1m_truth_trades(feats, d1rth):
             pnl_old = d * (exit_px - entry) - cost
 
             # ---- NEW: 1m-truth re-walk of the SAME trade's exit (entry/direction/stop unchanged) ----
+            # Rewired (PHASE-0-SIM-ONLY) to call the canonical vpc_trail.walk_1m_trail() -- a
+            # behavior-preserving extraction, not a logic change (see vpc_trail.py header).
             pnl_new, exit_reason_new, filled_1m = None, None, False
+            stop_path = []
             if idx1 is not None:
                 t_entry = idx[ei]
                 a1 = int(np.searchsorted(idx1, t_entry, side="left"))
                 if a1 < len(idx1):
                     filled_1m = True
-                    stop_new = entry - stopdist if d == 1 else entry + stopdist
-                    peak_close = entry
-                    j5 = ei
-                    exit_px_new = None
-                    stop_path = []
-                    for x in range(a1, len(idx1)):
-                        while j5 + 1 < n and idx1[x] >= idx[j5 + 1]:
-                            j5 += 1
-                        atr_prev = A[j5 - 1] if j5 - 1 >= 0 else np.nan
-                        atr_now = atr_prev if not np.isnan(atr_prev) else A[ei - 1]
-                        hi1, lo1, cl1 = H1[x], L1[x], C1[x]
-                        # adverse-first: stop check uses the level set BEFORE this bar's own close
-                        if (lo1 <= stop_new) if d == 1 else (hi1 >= stop_new):
-                            exit_px_new = stop_new; exit_reason_new = "stop"; break
-                        peak_close = max(peak_close, cl1) if d == 1 else min(peak_close, cl1)
-                        cand = (peak_close - trail_atr * atr_now) if d == 1 else (peak_close + trail_atr * atr_now)
-                        new_stop_new = max(stop_new, cand) if d == 1 else min(stop_new, cand)
-                        stop_path.append((stop_new, new_stop_new))
-                        stop_new = new_stop_new
-                    if exit_px_new is None:
-                        exit_px_new = C1[len(idx1) - 1]; exit_reason_new = "eod"
+                    exit_px_new, exit_reason_new, stop_path = VT.walk_1m_trail(
+                        idx1[a1:], H1[a1:], L1[a1:], C1[a1:], A, idx, ei,
+                        entry, d, stopdist, trail_atr)
                     # ratchet-direction self-check (structural: can never fail by construction)
                     for a, b in stop_path:
                         assert (b >= a) if d == 1 else (b <= a), "trail ratchet moved AGAINST price"
@@ -252,7 +238,8 @@ def vpc_1m_truth_trades(feats, d1rth):
             out.append(dict(ts=idx[ei], d=d, entry=float(entry), stop_pts=float(stopdist),
                             pnl_pts_old=float(pnl_old), mae_pts=float(mae), mfe_pts=float(mfe),
                             eod_old=bool(eod_old), pnl_pts_new=pnl_new,
-                            exit_reason_new=exit_reason_new, filled_1m=filled_1m))
+                            exit_reason_new=exit_reason_new, filled_1m=filled_1m,
+                            stop_path_new=stop_path))
             busy_until = exit_i; taken += 1; day_pnl += pnl_old
     df = pd.DataFrame(out).sort_values("ts").reset_index(drop=True)
     return df, skipped_no_1m
