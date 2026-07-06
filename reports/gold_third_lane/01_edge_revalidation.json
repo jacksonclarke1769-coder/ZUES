@@ -1,0 +1,272 @@
+{
+  "priors": "PRE-REGISTERED PRIORS\n  full-sample PF 1.45 is LUMPY: 2023 0.78 / 2024 1.67 / 2025 1.07 / 2026 2.29 (per-year honesty is the point)\n  ~0.6 tr/wk -> ~2.6 trades/eval -> expected portfolio effect SMALL\n  15yr definitive verdict: simple gold strategies are dead after costs -- if the extended window\n    kills this edge, that IS the expected outcome; report plainly\n  PF > 1.8 full-sample -> suspicious -> FREEZE + FLAG\nKILL GATES: extended-window full PF < 1.15 @ 0.6pt RT | 2019-2022 pseudo-OOS PF < 1.0 | vol-gate cliff",
+  "canary": {
+    "full": {
+      "n": 140,
+      "pf": 1.4540713639821663,
+      "wr": 0.4928571428571429,
+      "totR": 208.42923214285537
+    },
+    "per_year": [
+      {
+        "year": 2022,
+        "n": 18,
+        "pf": 2.2883049401211206,
+        "wr": 0.6111111111111112,
+        "totR": 35.5346250000001
+      },
+      {
+        "year": 2023,
+        "n": 31,
+        "pf": 0.7849831378526528,
+        "wr": 0.41935483870967744,
+        "totR": -15.839125000000692
+      },
+      {
+        "year": 2024,
+        "n": 33,
+        "pf": 1.667499988253281,
+        "wr": 0.5757575757575758,
+        "totR": 45.66241071428622
+      },
+      {
+        "year": 2025,
+        "n": 44,
+        "pf": 1.0656785357873486,
+        "wr": 0.4090909090909091,
+        "totR": 12.361124999999717
+      },
+      {
+        "year": 2026,
+        "n": 14,
+        "pf": 2.2920947452816596,
+        "wr": 0.5714285714285714,
+        "totR": 130.7101964285701
+      }
+    ],
+    "claimed": {
+      "2023": 0.78,
+      "2024": 1.67,
+      "2025": 1.07,
+      "2026": 2.29
+    },
+    "mismatches": [],
+    "ok": true
+  },
+  "extended_window": {
+    "full_faithful": {
+      "n": 277,
+      "pf": 1.039648154596018,
+      "wr": 0.4187725631768953,
+      "totR": 32.091285714287004
+    },
+    "per_year": [
+      {
+        "year": 2019,
+        "n": 33,
+        "pf": 0.7656431036120097,
+        "wr": 0.3939393939393939,
+        "totR": -11.897839285714689
+      },
+      {
+        "year": 2020,
+        "n": 52,
+        "pf": 0.6027679255278912,
+        "wr": 0.36538461538461536,
+        "totR": -55.994499999998965
+      },
+      {
+        "year": 2021,
+        "n": 44,
+        "pf": 2.249547045405199,
+        "wr": 0.5681818181818182,
+        "totR": 76.45425000000006
+      },
+      {
+        "year": 2022,
+        "n": 25,
+        "pf": 1.060962864036461,
+        "wr": 0.4,
+        "totR": 3.0518750000001065
+      },
+      {
+        "year": 2023,
+        "n": 31,
+        "pf": 0.8295573437111091,
+        "wr": 0.41935483870967744,
+        "totR": -11.78760714285708
+      },
+      {
+        "year": 2024,
+        "n": 34,
+        "pf": 0.8112568829803236,
+        "wr": 0.4117647058823529,
+        "totR": -20.014178571428783
+      },
+      {
+        "year": 2025,
+        "n": 46,
+        "pf": 0.8249734499978281,
+        "wr": 0.34782608695652173,
+        "totR": -39.5245892857136
+      },
+      {
+        "year": 2026,
+        "n": 12,
+        "pf": 1.8709493197605074,
+        "wr": 0.5,
+        "totR": 91.80387499999999
+      }
+    ],
+    "pseudo_oos_2019_2022": {
+      "n": 154,
+      "pf": 1.0383322987567893,
+      "wr": 0.43506493506493504,
+      "totR": 11.613785714286465
+    },
+    "full_at_06rt": {
+      "n": 277,
+      "pf": 0.9405627751909305,
+      "wr": 0.41155234657039713,
+      "totR": -51.008714285712955
+    }
+  },
+  "cost_ladder": [
+    {
+      "cost_rt": 0.3,
+      "slip": 0.0,
+      "n": 277,
+      "pf": 1.039648154596018,
+      "wr": 0.4187725631768953,
+      "totR": 32.091285714287004
+    },
+    {
+      "cost_rt": 0.3,
+      "slip": 0.1,
+      "n": 277,
+      "pf": 0.9957070392555843,
+      "wr": 0.4043321299638989,
+      "totR": -3.57732142856125
+    },
+    {
+      "cost_rt": 0.3,
+      "slip": 0.2,
+      "n": 277,
+      "pf": 0.9307186718167467,
+      "wr": 0.3862815884476534,
+      "totR": -60.15764285713599
+    },
+    {
+      "cost_rt": 0.6,
+      "slip": 0.0,
+      "n": 277,
+      "pf": 0.9405627751909305,
+      "wr": 0.41155234657039713,
+      "totR": -51.008714285712955
+    },
+    {
+      "cost_rt": 0.6,
+      "slip": 0.1,
+      "n": 277,
+      "pf": 0.9018212720085232,
+      "wr": 0.4007220216606498,
+      "totR": -86.67732142856119
+    },
+    {
+      "cost_rt": 0.6,
+      "slip": 0.2,
+      "n": 277,
+      "pf": 0.8441941610847051,
+      "wr": 0.38267148014440433,
+      "totR": -143.25764285713595
+    },
+    {
+      "cost_rt": 1.0,
+      "slip": 0.0,
+      "n": 277,
+      "pf": 0.8248421087141358,
+      "wr": 0.4043321299638989,
+      "totR": -161.808714285713
+    },
+    {
+      "cost_rt": 1.0,
+      "slip": 0.1,
+      "n": 277,
+      "pf": 0.7920026635744691,
+      "wr": 0.3935018050541516,
+      "totR": -197.47732142856125
+    },
+    {
+      "cost_rt": 1.0,
+      "slip": 0.2,
+      "n": 277,
+      "pf": 0.7429171623959465,
+      "wr": 0.37545126353790614,
+      "totR": -254.057642857136
+    }
+  ],
+  "one_min_truth": {
+    "status": "OK",
+    "rewalked_full": {
+      "n": 277,
+      "pf": 0.9951494949889768,
+      "wr": 0.3971119133574007,
+      "totR": -4.095499999997717
+    },
+    "five_m_native": {
+      "n": 277,
+      "pf": 1.039648154596018,
+      "wr": 0.4187725631768953,
+      "totR": 32.091285714287004
+    },
+    "pf_shift": -0.044498659607041136,
+    "nodata_trades": 39,
+    "timestamp_convention": "HistData M1 naive timestamps are ALREADY America/New_York wall-clock (follow US DST calendar directly, no offset shift needed); verified via an 8-date sweep 2019-2023 spanning DST boundaries vs the dukascopy UTC series (a first-pass fixed-UTC-5 test looked plausible on 2 dates but broke down elsewhere -- best-fit offset flips +4h/+5h exactly at DST changeovers). Stop/target rebased to the M1 series' own entry-time open (relative ATR distances preserved) to avoid cross-vendor absolute-price noise."
+  },
+  "vol_gate_sensitivity": {
+    "rows": [
+      {
+        "gate": 0.6,
+        "n": 192,
+        "pf": 0.8500719987210562,
+        "wr": 0.4010416666666667,
+        "totR": -92.27503571428466
+      },
+      {
+        "gate": 0.65,
+        "n": 228,
+        "pf": 0.9842792552156483,
+        "wr": 0.4166666666666667,
+        "totR": -10.83471428571346
+      },
+      {
+        "gate": 0.7,
+        "n": 277,
+        "pf": 1.039648154596018,
+        "wr": 0.4187725631768953,
+        "totR": 32.091285714287004
+      },
+      {
+        "gate": 0.75,
+        "n": 332,
+        "pf": 0.9522372319321832,
+        "wr": 0.40963855421686746,
+        "totR": -46.59501785714007
+      },
+      {
+        "gate": 0.8,
+        "n": 372,
+        "pf": 1.0325427674759777,
+        "wr": 0.4112903225806452,
+        "totR": 36.13964285714552
+      }
+    ],
+    "cliff": false
+  },
+  "kill_gates": {
+    "extended_06_kill": true,
+    "pseudo_oos_kill": false,
+    "cliff_kill": false,
+    "freeze_flag_pf_gt_1_8": false
+  }
+}
