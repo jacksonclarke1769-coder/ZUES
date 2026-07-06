@@ -405,7 +405,10 @@ def headline_funnel(a2022, v_rows_old, v_rows_new, portfolio_ok):
 
         if portfolio_ok:
             ev_p = VR.ASR.build_events(a2022, 600, 6) + ev_v
-            for e in ev_p:  # normalize: A events are tz-aware NY; 1m-truth VPC events may be tz-naive NY
+            for e in ev_p:  # normalize naive VPC stamps (naive digits are UTC wall-clock, NOT NY —
+                # see tools_opt_windows_exits.to_ny_ts). Labeling them NY here is safe ONLY because
+                # this path uses ts for sort/date-bucketing, which is invariant to the 4-5h offset
+                # within the RTH day; NEVER reuse this shortcut for hour-of-day filtering.
                 if getattr(e["ts"], "tzinfo", None) is None:
                     e["ts"] = e["ts"].tz_localize("America/New_York")
             ev_p.sort(key=lambda e: e["ts"])

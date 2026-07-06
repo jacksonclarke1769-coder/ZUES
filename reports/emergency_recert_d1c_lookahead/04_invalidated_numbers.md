@@ -1,3 +1,5 @@
+**REGENERATION STATUS (added 2026-07-06): the re-certification COMPLETED at commit 818cda8 — the honest stream (583/PF 1.361) and honest row (31.4/37.3/31.2) are live in tools_sim_parity_check.load_rows() and all suite canaries. Items below describe the PRE-re-cert invalidation state; do not re-block on this ledger (a Lane-2 agent did on 2026-07-06).**
+
 # D1c Attachment Timestamp Look-Ahead — Invalidation Ledger
 
 INC-20260706-1141. This is a ledger only — no files below are edited by this task. Regeneration
