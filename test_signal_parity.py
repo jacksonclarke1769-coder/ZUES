@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.join(FW, "engine"))
 sys.path.insert(0, os.path.join(FW, "models"))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import data as D, htf, model01_sweep_mss_fvg as M1
-from strategy_engine_profileA import ProfileAEngine, PROFILE_A, NY
+from strategy_engine_profileA import ProfileAEngine, PROFILE_A, NY, _derive_fill_instant
 
 TEST_START = pd.Timestamp("2025-06-01", tz=NY)
 TEST_END   = pd.Timestamp("2025-12-01", tz=NY)
@@ -45,7 +45,15 @@ def main():
     bt = M1.run(f, "NQ", PROFILE_A)
     bt = bt[bt.session == "ny_am"].copy()
     bt["date"] = bt["date"].astype(str)
-    bt["k"] = [key(d, t) for d, t in zip(bt["date"], bt["time"])]
+    # INC-20260707: key BOTH the reference and the warmup-dedup seed off the SAME derivation
+    # latest_signal() now uses — _derive_fill_instant(feats.index, fill_bar).isoformat() — NOT a
+    # parallel f"{date} {time}" string reconstruction. Two code paths independently building "the
+    # same" timestamp is exactly how the INC-20260706-1141 / fafe12d drift hid; seeding this
+    # parity tool (whose job is to DETECT drift) from a lookalike would reintroduce that risk.
+    # f.index is tz-aware NY and bt.fill_bar positionally indexes it, so this resolves to the true
+    # fill instant — byte-identical to the live ts_signal, which is _derive_fill_instant(<live
+    # feats.index>, fill_bar).isoformat() for the same fill.
+    bt["k"] = [_derive_fill_instant(f.index, int(fb)).isoformat() for fb in bt["fill_bar"]]
     bt["fdate"] = pd.to_datetime(bt["date"]).dt.tz_localize(NY)   # calendar date (correct for ny_am)
     ref = bt[(bt.fdate >= TEST_START) & (bt.fdate < TEST_END)].copy()
     ref_map = {r["k"]: r for _, r in ref.iterrows()}
