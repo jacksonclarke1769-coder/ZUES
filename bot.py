@@ -14,7 +14,8 @@ live trading path or flag; live order placement is structurally impossible from 
 Fills are simulated from bar OHLC with the backtest's conservative stop-first convention.
 Run:  python bot.py --start 2025-10-20 --end 2025-12-01
 """
-import argparse, os, sys
+import argparse, json, os, sys
+from datetime import datetime, timezone
 import pandas as pd
 
 from store import Store
@@ -25,7 +26,7 @@ import config
 FW = os.path.expanduser("~/trading-team/backtests/ict-nq-framework")
 sys.path.insert(0, os.path.join(FW, "engine")); sys.path.insert(0, os.path.join(FW, "models"))
 import data as D                                       # noqa: E402  (SIM bar source)
-from strategy_engine_profileA import ProfileAEngine, NY  # noqa: E402
+from strategy_engine_profileA import ProfileAEngine, NY, TimestampReconstructionError  # noqa: E402
 
 LIVE_ENABLED = False                                   # hard, permanent: this file never trades live
 # Poll latest_signal() 09:30..13:35 ET. The realtime reservation can emit a ny_am signal
@@ -102,10 +103,44 @@ class SimBot:
         # poll the engine EVERY decision bar so the signal list matches the backtest 1:1;
         # _consider records the signal first, then acts only if flat + risk-allowed.
         if self.cfg.STRAT["nyam_start_min"] <= self._mins(ts) <= DECISION_END_MIN:
-            sig = self.engine.latest_signal()
+            try:
+                sig = self.engine.latest_signal()
+            except TimestampReconstructionError as e:
+                # BROKEN-PLUMBING invariant, not an ordinary no-signal condition (see
+                # strategy_engine_profileA.py). Fail closed: record a loud incident + engage
+                # the existing HALT.flag primitive, but do NOT let the process die and do NOT
+                # widen this to `except Exception` — every other exception is unchanged.
+                self._handle_timestamp_reconstruction_error(e, ts)
+                sig = None
             if sig:
                 self._consider(sig, ts, o, h, l, c)
         self.last_close = c
+
+    def _handle_timestamp_reconstruction_error(self, e, ts):
+        """TimestampReconstructionError from ProfileAEngine.latest_signal() means the fill's
+        true instant could not be derived from feats.index[fill_bar] — broken plumbing, never
+        an ordinary no-signal condition. Fail closed:
+          (i)  record a loud incident via the EXISTING telemetry path (self._ev/self.st.log,
+               already used for every other noteworthy bot event);
+          (ii) engage the EXISTING fail-closed halt primitive (out/watchdog/HALT.flag, the
+               same file watchdog.py writes and watchdog_belief.watchdog_entry_block() checks)
+               so new entries are blocked by design until an operator investigates. This never
+               touches open positions/exits — same asymmetric authority as the watchdog itself.
+        """
+        msg = (f"TimestampReconstructionError at {ts}: fill_bar={e.fill_bar!r} "
+               f"index_len={e.index_len!r} derived_instant={e.derived_instant!r}")
+        self._ev("incident", msg)
+        try:
+            import watchdog_belief as WB
+            os.makedirs(WB.WATCHDOG_DIR, exist_ok=True)
+            payload = dict(ts_utc=datetime.now(timezone.utc).isoformat(),
+                            invariant="TIMESTAMP_RECONSTRUCTION", note=msg, account_tag=None)
+            tmp = WB.HALT_FLAG_PATH + ".tmp"
+            with open(tmp, "w") as f:
+                json.dump(payload, f)
+            os.replace(tmp, WB.HALT_FLAG_PATH)
+        except Exception as halt_err:   # noqa: BLE001 — a halt-write failure must not crash the
+            self._ev("incident", f"HALT.flag write failed (swallowed): {halt_err!r}")   # engine
 
     def _roll_day(self, ts):
         day = ts.date()

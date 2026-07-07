@@ -22,6 +22,53 @@ PROFILE_A = dict(entry_type="ote", sessions={"asia", "london", "ny_am", "ny_lunc
                  partial=[(1, 0.5)])   # Exit #3 (frozen v2): bank 50% at +1R, hold 50% to +2R
 
 
+class TimestampReconstructionError(Exception):
+    """BROKEN-PLUMBING invariant, not an ordinary no-signal condition — must escape
+    latest_signal() uncaught so the caller (bot.py) fails closed rather than trade on an
+    unknown instant.
+
+    A correctly-derived ny_am fill ALWAYS has a valid `fill_bar` positional index into a
+    tz-aware NY `feats.index` landing inside the 09:30-16:00 ET session. Any of the three
+    conditions below is impossible for a real fill and means the plumbing between model01
+    and the engine is broken (same defect class as INC-20260706-1141: re-localizing a
+    UTC-wall-clock date/time string as NY silently shifts the instant ~4h)."""
+
+    def __init__(self, fill_bar, index_len, derived_instant):
+        self.fill_bar = fill_bar
+        self.index_len = index_len
+        self.derived_instant = derived_instant
+        super().__init__(
+            f"cannot reconstruct fill instant: fill_bar={fill_bar!r} index_len={index_len!r} "
+            f"derived_instant={derived_instant!r}"
+        )
+
+
+def _derive_fill_instant(feats_index, fill_bar):
+    """PURE: the fill's true instant is feats_index[fill_bar] — NEVER the date/time strings
+    model01 also emits (those are calendar-date keys for shadow_ledger/review_week only;
+    re-parsing them re-localizes a UTC-wall-clock reading as NY and shifts the instant ~4h).
+
+    fill_bar is a valid positional index into feats_index because model01 emits it from a
+    reset_index()'d frame that preserves row order (frozen, self-contained — no threading
+    through emission required). Raises TimestampReconstructionError (never returns None) on:
+      * fill_bar out of range for feats_index
+      * feats_index not tz-aware NY at that position
+      * the derived instant falling outside the 09:30-16:00 ET session
+    These are broken-plumbing invariants; the caller must NOT catch this and continue."""
+    fb = int(fill_bar)
+    n = len(feats_index)
+    if not (0 <= fb < n):
+        raise TimestampReconstructionError(fill_bar=fb, index_len=n, derived_instant=None)
+    ets = feats_index[fb]
+    if ets.tzinfo is None or NY not in str(ets.tzinfo):
+        raise TimestampReconstructionError(fill_bar=fb, index_len=n, derived_instant=None)
+    ny_ets = ets.tz_convert(NY)
+    mins_of_day = ny_ets.hour * 60 + ny_ets.minute
+    if not (9 * 60 + 30 <= mins_of_day <= 16 * 60):
+        raise TimestampReconstructionError(fill_bar=fb, index_len=n, derived_instant=ny_ets)
+    return ny_ets
+
+
 class ProfileAEngine:
     def __init__(self, strat_cfg):
         self.c = strat_cfg
@@ -58,15 +105,19 @@ class ProfileAEngine:
             return None
         if not len(tr):
             return None
-        tr["fill_ts"] = pd.to_datetime(tr["date"].astype(str) + " " + tr["time"])
         recent = self.buf.index.max()
-        # a fresh fill = a trade whose fill timestamp is the most recent 1-2 bars, NY-AM, unacted
+        # a fresh fill = a trade whose fill timestamp is the most recent 1-2 bars, NY-AM, unacted.
+        # The fill's true instant comes ONLY from feats.index[fill_bar] (_derive_fill_instant) —
+        # this sits OUTSIDE the try/except above BY DESIGN: an out-of-range fill_bar or a broken
+        # index here is broken plumbing (must escape to bot.py), never an ordinary no-signal.
         for _, t in tr.tail(3).iterrows():
-            key = f"{t['date']} {t['time']}"
-            if t["session"] != "ny_am" or key in self.acted_ts:
+            if t["session"] != "ny_am":
                 continue
-            ftime = pd.Timestamp(f"{t['date']} {t['time']}", tz=NY)
-            if (recent - ftime) <= pd.Timedelta(minutes=10):    # filled now (this bar or last)
+            ets = _derive_fill_instant(feats.index, t["fill_bar"])
+            key = ets.isoformat()
+            if key in self.acted_ts:
+                continue
+            if (recent - ets) <= pd.Timedelta(minutes=10):    # filled now (this bar or last)
                 self.acted_ts.add(key)
                 d = 1 if t["direction"] == "long" else -1
                 return dict(side=t["direction"], entry=float(t["entry"]), stop=float(t["stop"]),
