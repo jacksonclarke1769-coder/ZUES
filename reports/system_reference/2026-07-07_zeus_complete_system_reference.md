@@ -56,7 +56,7 @@ Rejection guards: `risk ≤ 0.5pt` (degenerate) or `risk > 1.2% of price` (stop 
 
 **(f) Session gating.** NY-AM 09:30–11:30 ET is enforced **live**, not in the engine: `latest_signal()` filters `session != "ny_am"` (`strategy_engine_profileA.py:66`); `in_entry_window()` checks `nyam_start_min=570 / nyam_end_min=690`; flat by `flat_min=870` (14:30 ET).
 
-**(g) Trade emission** (301-323): emits `date`/`time` as **strings** from the fill timestamp, plus `entry/stop/target/rr/direction/liq_swept/sweep_bar/mss_bar/fill_bar/exit_bar`. One position at a time (`i = exit_i + 1`). ⚠️ The string `date`/`time` emission is the root of the live `latest_signal()` defect (§9.1).
+**(g) Trade emission** (301-323): emits `date`/`time` as **strings** from the fill timestamp, plus `entry/stop/target/rr/direction/liq_swept/sweep_bar/mss_bar/fill_bar/exit_bar`. One position at a time (`i = exit_i + 1`). The string `date`/`time` emission was the root of the live `latest_signal()` defect — **FIXED 2026-07-07** (commit fafe12d; §9.1).
 
 ### The parameter dicts (verbatim)
 
@@ -71,7 +71,7 @@ PROFILE_A = dict(entry_type="ote", sessions={"asia","london","ny_am","ny_lunch",
 Defined by `partial=[(1,0.5)]` + `rr=2.0`: **50% of size banks at +1R, 50% rides to +2R, both share one stop at swept-extreme+2tk** → max win 1.5R combined, max loss −1R. Live name `EXIT_MODEL="EXIT3_FIXED_PARTIAL"` (`config.py:56`); integer split `exit3_split(qty)` → `(qty//2 @ +1R, remainder @ +2R)` (`config.py:64-66`). No trail, no breakeven.
 
 ### The live engine wrapper — `ProfileAEngine`
-`_features()` (40-48) rebuilds the causal frame each call (sessions + daily/weekly HTF + session levels + 1H/4H swings). `latest_signal()` (50-75) runs the frozen model in realtime mode and returns a fresh fill if one printed in the last ~10 min in NY-AM and is unacted. **⚠️ Known live defect (§9.1): lines 61/68 reconstruct the fill timestamp from `date`+`time` strings re-localized as NY, not from the tz-aware index — the same class as INC-20260706-1141, TICKETED-NOT-FIXED, live-arming-blocking.**
+`_features()` (40-48) rebuilds the causal frame each call (sessions + daily/weekly HTF + session levels + 1H/4H swings). `latest_signal()` (50-75) runs the frozen model in realtime mode and returns a fresh fill if one printed in the last ~10 min in NY-AM and is unacted. **✅ FIXED 2026-07-07 (§9.1, commit fafe12d): reconstruction now derives the instant from `feats.index[fill_bar]` via `_derive_fill_instant()` (raise-don't-parse, typed `TimestampReconstructionError`, 09:30-16:00 assert, permanent canary). The prior string re-localization was the same class as INC-20260706-1141.**
 
 ---
 
@@ -190,7 +190,7 @@ Permanent guards: `test_d1c_timestamp_canary.py` + `test_no_future_d1c_attachmen
 
 ## 9. THE FOUR DEFECT CLASSES CAUGHT (each now a permanent canary)
 
-1. **D1c timestamp look-ahead (INC-20260706-1141)** — research attach evaluated drift 4-5h after the fill. Fixed (index-derived, raise-don't-parse) + 2 canaries. **Live sibling in `latest_signal()` still TICKETED-NOT-FIXED — mandatory before arming.**
+1. **D1c timestamp look-ahead (INC-20260706-1141)** — research attach evaluated drift 4-5h after the fill. Fixed (index-derived, raise-don't-parse) + 2 canaries. **Live sibling in `latest_signal()` — FIXED 2026-07-07 (commit fafe12d): index-derived, typed-raise vs None (broken≠empty), permanent canary incl. DST edges. Arming blocker removed. NOTE: the ~4h shift meant the 10-min freshness gate was never meaningfully exercised — it becomes load-bearing on first real fill flow, watch early in N≥30.**
 2. **Direction confound** — pooled context stats on a directional strategy (the VWAP-slope "PF 2.52") → mandatory interaction check.
 3. **Denominator artifact (DEC-20260706-1108)** — pass% up while pass-count down → count-basis rule.
 4. **Dependency drift (INC-20260706-1627)** — unpinned pandas 3.0.3 corrupted the 18:00-anchored daily resample → a ghost 548-trade stream. Pinned + gate canary.
@@ -206,7 +206,7 @@ Permanent guards: `test_d1c_timestamp_canary.py` + `test_no_future_d1c_attachmen
 | VPC | CERTIFIED, Phase-0 sim-only, NOT wired |
 | VPC live trail lane | DESIGNED, not built (gated on A N≥30 fills) |
 | D1c live gate | causal, correct, `enabled=False` default |
-| `latest_signal()` timestamp fix | TICKETED, NOT FIXED (arming-blocker) |
+| `latest_signal()` timestamp fix | **FIXED 2026-07-07** (fafe12d; index-derived, typed-raise, canaried) |
 | Eval/funded simulators | built, canary-gated |
 | Watchdog / telemetry / config locks | built, tested |
 | Re-lock DEC | DRAFT, unsigned |
