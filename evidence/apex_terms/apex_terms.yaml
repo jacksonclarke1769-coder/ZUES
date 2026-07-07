@@ -1,0 +1,221 @@
+# APEX COUNTERPARTY-TERMS CANARY — pinned snapshot of Apex 50K rule constants.
+#
+# READ-ONLY drift instrumentation. This file does NOT define behavior for any simulator,
+# strategy, config, or live limit — it is a snapshot the canary test compares CODE against.
+# If code and this file disagree, the canary FAILS and names both values + both locations
+# (see test_apex_terms_canary.py). This file is never edited to make a test pass; if a
+# real Apex rule changes, the operator updates this file (see apex_terms_review.md), which
+# forces a re-certification of every simulator still using the old number.
+#
+# ABSOLUTE HONESTY: every "apex_rule" entry below is confidence: UNVERIFIED with
+# source: PENDING. The repo's own docstrings (apex_funded_40.py, tools_account_size_research.py)
+# say these are "help-center-derived — VERIFY against the live contract before relying on the
+# $ numbers." No live Apex contract/help-center page has been read to confirm any of these
+# values in this task. Do NOT treat source: PENDING as anything other than "not yet verified".
+#
+# The two "funded_value_placeholder" / "eval_fee_placeholder" entries are separately tagged
+# confidence: PLACEHOLDER — these are NOT even claimed to be real Apex numbers; they are a
+# stand-in ($8,000 funded-account value, $131 eval fee) used only to produce an E[proxy]
+# ranking metric in tools_salvage_track_a.py. Never treat them as authoritative economics.
+
+snapshot_date: "2026-07-07"
+pinned_by: "zeus-implementer (task: apex counterparty-terms canary)"
+schema_note: >
+  Each entry: value (pinned, magnitude-normalized where the codebase uses a signed
+  convention), confidence (UNVERIFIED | PLACEHOLDER), source (PENDING for all Apex-rule
+  entries; docstring path cited, not a live-contract citation), consumed_by (file:line
+  list of the canonical constants this snapshot pins against; not an exhaustive
+  every-reference list — see FINDINGS for the wider duplication problem).
+
+constants:
+
+  start_50k:
+    value: 50000.0
+    confidence: UNVERIFIED
+    source: "PENDING — apex_funded_40.py:1-17 docstring: 'help-center-derived — VERIFY against the live contract'"
+    consumed_by:
+      - "tools_account_size_research.py:30  SPECS['50K']['start']"
+      - "apex_funded_40.py:34  START"
+
+  dll_50k:
+    value: 1000.0
+    value_note: "magnitude; apex_funded_40.py stores this as a signed daily-loss-limit DLL = -1000.0 (sign-convention difference from SPECS, which stores dll=1000.0 as a positive magnitude — see NOTE below)"
+    confidence: UNVERIFIED
+    source: "PENDING — apex_funded_40.py:1-11 docstring: 'help-center-derived — VERIFY against the live contract'"
+    consumed_by:
+      - "tools_account_size_research.py:30  SPECS['50K']['dll'] = 1_000.0  (positive magnitude)"
+      - "apex_funded_40.py:36  DLL = -1_000.0  (signed; NOTE the sign-convention difference vs SPECS)"
+
+  eod_trail:
+    value: 2500.0
+    confidence: UNVERIFIED
+    source: "PENDING — apex_funded_40.py:6-7 docstring: 'help-center-derived — VERIFY against the live contract'"
+    consumed_by:
+      - "tools_account_size_research.py:30  SPECS['50K']['trail']"
+      - "apex_funded_40.py:34  TRAIL"
+
+  lock_trigger_eod_peak:
+    value: 52600.0
+    value_note: "EOD-balance peak at which the trailing threshold locks at start+$100 (= start + trail + $100 = 50000 + 2500 + 100)"
+    confidence: UNVERIFIED
+    source: "PENDING — apex_funded_40.py:6-7 docstring: 'help-center-derived — VERIFY against the live contract'"
+    consumed_by:
+      - "apex_funded_40.py:34  LOCK_EOD (also reused as MIN_REQ, same value, in the same line)"
+      - "tools_account_size_research.py:95  eval_run(): 'if peak - tr >= sb + 100.0' (== sb+trail+100 == 52600.0 for 50K)"
+
+  locked_floor:
+    value: 50100.0
+    value_note: "= start + 100 — the frozen trailing-stop threshold once locked"
+    confidence: UNVERIFIED
+    source: "PENDING — apex_funded_40.py:6-7 / tools_account_size_research.py:1-8 docstrings: 'help-center-derived — VERIFY against the live contract'"
+    consumed_by:
+      - "tools_account_size_research.py:96  eval_run(): 'thr = sb + 100.0; locked = True'"
+      - "apex_funded_40.py:97  run_pa(): 'thr = START + 100.0; locked = True'"
+
+  profit_target:
+    value: 3000.0
+    value_note: "PASS at start + target = 53000.0 for the 50K eval"
+    confidence: UNVERIFIED
+    source: "PENDING — tools_account_size_research.py:5 docstring: 'target $3k ... (known)' — 'help-center-derived, VERIFY vs live contract'"
+    consumed_by:
+      - "tools_account_size_research.py:30  SPECS['50K']['target']"
+      - "tools_account_size_research.py:99  eval_run(): 'if bal >= sb + tg: return \"PASS\"'"
+
+  eval_expiry_days:
+    value: 30
+    confidence: UNVERIFIED
+    source: "PENDING — tools_account_size_research.py:1 docstring: 'help-center-derived — VERIFY vs live contract'; project_nq_momentum_eval_timelimit vault note reaffirms 30d as user-confirmed but that is a separate, non-code source"
+    consumed_by:
+      - "tools_account_size_research.py:28  EXPIRE_DAYS"
+      - "apex_funded_40.py:39  PAYOUT_EVERY_D (NOTE: this is a DIFFERENT constant — the ~monthly payout-sweep cadence, not eval expiry — do not conflate; also = 30 by coincidence)"
+
+  bot_daily_stop:
+    value: 550.0
+    value_note: "magnitude; this is the BOT's own self-imposed daily stop (ARES 0.55x of the 50K DLL), not an Apex-published rule per se, but it is sized off the Apex DLL and is included here because a DLL/terms change should re-derive it"
+    confidence: UNVERIFIED
+    source: "PENDING — tools_account_size_research.py:9 docstring: 'ARES self-imposed daily stop scales with the DLL at the 50K ratio (0.55x)'"
+    consumed_by:
+      - "tools_account_size_research.py:30  SPECS['50K']['stop'] = 550.0  (positive magnitude)"
+      - "apex_funded_40.py:37  DAILY_STOP = -550.0  (signed; NOTE the sign-convention difference vs SPECS)"
+
+  payout_ladder:
+    value: [1500.0, 1500.0, 2000.0, 2500.0, 2500.0, 3000.0]
+    lifetime_cap: 13000.0
+    rungs: 6
+    confidence: UNVERIFIED
+    source: "PENDING — apex_funded_40.py:15 docstring: 'Ladder caps: $1.5k, $1.5k, $2k, $2.5k, $2.5k, $3k — SIX payouts max (~$13k), then the PA CLOSES' (help-center-derived, unverified)"
+    consumed_by:
+      - "apex_funded_40.py:35  LADDER"
+      - "tools_account_size_research.py:31  SPECS['50K']['ladder']"
+
+  payout_floor:
+    value: 52100.0
+    value_note: "withdraw down to no lower than this balance"
+    confidence: UNVERIFIED
+    source: "PENDING — apex_funded_40.py:12-14 docstring: 'help-center-derived — VERIFY against the live contract'"
+    consumed_by:
+      - "apex_funded_40.py:34  PAYOUT_FLOOR"
+
+  min_req:
+    value: 52600.0
+    value_note: "minimum balance required to be payout-eligible; same numeric value as lock_trigger_eod_peak in this codebase but a conceptually distinct rule — both happen to equal start+trail+100"
+    confidence: UNVERIFIED
+    source: "PENDING — apex_funded_40.py:12-14 docstring: 'help-center-derived — VERIFY against the live contract'"
+    consumed_by:
+      - "apex_funded_40.py:34  MIN_REQ"
+
+  qual_day:
+    value: 250.0
+    value_note: "a day counts as 'qualifying' if net >= +$250"
+    confidence: UNVERIFIED
+    source: "PENDING — apex_funded_40.py:12-14 docstring: 'help-center-derived — VERIFY against the live contract'"
+    consumed_by:
+      - "apex_funded_40.py:38  QUAL_DAY"
+
+  qual_n:
+    value: 5
+    value_note: ">= 5 qualifying days since last payout required for payout eligibility"
+    confidence: UNVERIFIED
+    source: "PENDING — apex_funded_40.py:12-14 docstring: 'help-center-derived — VERIFY against the live contract'"
+    consumed_by:
+      - "apex_funded_40.py:38  QUAL_N"
+
+  consistency:
+    value: 0.50
+    value_note: "no single day since last payout may be >= 50% of the accumulated profit since last payout"
+    confidence: UNVERIFIED
+    source: "PENDING — apex_funded_40.py:12-14 docstring: 'help-center-derived — VERIFY against the live contract'"
+    consumed_by:
+      - "apex_funded_40.py:38  CONSISTENCY"
+
+  payout_cadence_days:
+    value: 30
+    value_note: "attempt a payout-eligibility sweep every ~30 days once otherwise eligible — an operational polling cadence in the sim, not confirmed as an Apex-mandated minimum interval"
+    confidence: UNVERIFIED
+    source: "PENDING — apex_funded_40.py:39 comment: 'attempt a payout sweep every ~month once eligible' (help-center-derived, unverified)"
+    consumed_by:
+      - "apex_funded_40.py:39  PAYOUT_EVERY_D"
+
+  funded_value_placeholder:
+    value: 8000.0
+    confidence: PLACEHOLDER
+    source: "tools_salvage_track_a.py:32 docstring + :242 code: 'E_proxy = pass_pct/100 * 8000 - 131 (column label carries the \"8k pending A4\" placeholder'; NOT a verified Apex funded-account value — a stand-in used only to rank options in an E[proxy] research metric"
+    consumed_by:
+      - "tools_salvage_track_a.py:242  e_proxy = (pass_pct / 100) * 8000.0 - 131.0"
+      - "tools_salvage_track_a.py:467  key literally tagged 'E_proxy_PLACEHOLDER_funded_value_8k_pending_A4'"
+
+  eval_fee_placeholder:
+    value: 131.0
+    confidence: PLACEHOLDER
+    source: "tools_salvage_track_a.py:242 code (same E_proxy formula); NOT a verified Apex eval fee — see funded_value_placeholder note"
+    consumed_by:
+      - "tools_salvage_track_a.py:242  e_proxy = (pass_pct / 100) * 8000.0 - 131.0"
+
+  max_a_qty:
+    value: 40
+    confidence: INTERNAL
+    value_note: >
+      NOT an Apex-published counterparty term — this is the repo's OWN internal research
+      ceiling on A-size regardless of budget (fill-quality realism). It was not in this
+      task's STEP-2 pin list (which only names true Apex-rule constants + the funded
+      value/fee placeholders), but STEP 3 of the task spec explicitly asked for
+      tools_account_size_research.MAX_A_QTY to be imported and asserted by the drift-guard
+      canary alongside the real Apex constants, so it is pinned here for canary
+      completeness with its own distinct confidence tag (INTERNAL, not UNVERIFIED/
+      PLACEHOLDER) to keep the honesty distinction clean. Flagged for auditor sign-off.
+    source: "N/A — internal parameter, not sourced from Apex; tools_account_size_research.py:40"
+    consumed_by:
+      - "tools_account_size_research.py:40  MAX_A_QTY = 40"
+      - "tools_account_size_research.py:47  build_events(): 'q = min(max_qty, MAX_A_QTY, int(budget // risk1))'"
+
+findings:
+  duplication:
+    summary: >
+      These constants are NOT centralized — they are re-declared as independent literals
+      in ~10+ files across the repo. A real Apex terms change requires editing every one
+      of them; missing any file is silent partial drift (the exact failure mode this
+      canary's cross-file consistency check is designed to catch, WARN-only).
+    files_with_independent_literals:
+      - "apex_12mo_business.py:14,16   SB, TRAIL, LOCK_EOD, FLOOR = 50_000.0, 2_500.0, 52_600.0, 50_100.0 / DAILY_STOP, EXPIRE = -550.0, 30"
+      - "apex_6mo_fleet_build.py:12    SB, TRAIL, LOCK_EOD, FLOOR, EXPIRE, DAILY_STOP = 50_000.0, 2_500.0, 52_600.0, 50_100.0, 30, -550.0"
+      - "apex_dd_type_compare.py:15    SB, TRAIL, LOCK_EOD, FLOOR, EXPIRE, DAILY_STOP = 50_000.0, 2_500.0, 52_600.0, 50_100.0, 30, -550.0"
+      - "apex_fleet_5yr.py:11,13       START, TRAIL, LOCK_EOD, FLOOR = 50_000.0, 2_500.0, 52_600.0, 50_100.0 / DAILY_STOP = -550.0"
+      - "apex_fleet_6mo.py:11,13       START, TRAIL, LOCK_EOD, FLOOR = 50_000.0, 2_500.0, 52_600.0, 50_100.0 / DAILY_STOP = -550.0"
+      - "_fleet_5yr.py:30              references FR.APEX_ACCOUNTS['50K'] (start 50k, trailing 2500, target 3000) — indirect, via funded_rules.py"
+      - "apex_eval_deployed.py:33,34   DAILY_STOP = -550.0 / EXPIRE_DAYS = 30"
+      - "apex_eval_eod.py:19,20        EXPIRE_DAYS = 30 / DAILY_STOP = -550.0"
+    verified_this_task: >
+      As of 2026-07-07, all of the above literals agree with the pinned values in this
+      snapshot (spot-checked by direct grep, not by an automated tool — see
+      test_apex_terms_canary.py's cross-file WARN check for the ongoing automated version).
+      No drift found today; the risk is FUTURE drift when only some files get updated.
+  separate_model_do_not_conflate:
+    summary: >
+      apex_12mo_business.py:15 also defines MINP=500.0, CF=2_000.0, CL=4_000.0 (NC=5) —
+      this is a SEPARATE, pre-4.0 MFFU-style funded-payout model ($2k/$4k-forever ladder),
+      distinct from the real Apex 4.0 ladder-capped model (LADDER/PAYOUT_FLOOR/MIN_REQ in
+      apex_funded_40.py). apex_funded_40.py's own docstring says the pre-4.0 funded sims'
+      "$2k/$4k-forever payout model exceeded the real 4.0 lifetime ceiling." Do not pin or
+      compare MINP/CF/CL against this canary's Apex-4.0 constants — they belong to a
+      different, superseded model that happens to still exist in the same file.
+    location: "apex_12mo_business.py:15  SAFETY, CF, CL, NC, MINP = 52_100.0, 2_000.0, 4_000.0, 5, 500.0"
