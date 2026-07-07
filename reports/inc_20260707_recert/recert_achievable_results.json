@@ -1,0 +1,102 @@
+{
+  "inc": "INC-20260707",
+  "frame": "MEASUREMENT ONLY -- frozen strategy untouched; no arming, no hold-lift, no VPC wiring",
+  "strategy_unfiltered": {
+    "n": 502,
+    "PF": 1.003990988463024,
+    "WR": 37.3,
+    "totR": 1.01,
+    "expR": 0.002,
+    "trades_per_wk": 1.94,
+    "per_year": {
+      "2021": {
+        "n": 55,
+        "PF": 1.266,
+        "WR": 40.0
+      },
+      "2022": {
+        "n": 96,
+        "PF": 0.998,
+        "WR": 38.5
+      },
+      "2023": {
+        "n": 110,
+        "PF": 1.024,
+        "WR": 39.1
+      },
+      "2024": {
+        "n": 101,
+        "PF": 0.775,
+        "WR": 32.7
+      },
+      "2025": {
+        "n": 92,
+        "PF": 1.223,
+        "WR": 39.1
+      },
+      "2026": {
+        "n": 48,
+        "PF": 0.892,
+        "WR": 33.3
+      }
+    }
+  },
+  "strategy_d1c_kept": {
+    "n": 394,
+    "PF": 1.0373273243794334,
+    "WR": 37.8,
+    "totR": 7.37,
+    "expR": 0.019,
+    "trades_per_wk": 1.53,
+    "per_year": {
+      "2021": {
+        "n": 50,
+        "PF": 1.311,
+        "WR": 40.0
+      },
+      "2022": {
+        "n": 76,
+        "PF": 0.97,
+        "WR": 38.2
+      },
+      "2023": {
+        "n": 81,
+        "PF": 1.027,
+        "WR": 39.5
+      },
+      "2024": {
+        "n": 80,
+        "PF": 0.852,
+        "WR": 33.8
+      },
+      "2025": {
+        "n": 72,
+        "PF": 1.241,
+        "WR": 40.3
+      },
+      "2026": {
+        "n": 35,
+        "PF": 0.962,
+        "WR": 34.3
+      }
+    },
+    "dropped_by_d1c": 122
+  },
+  "eval_A_only_cap6_budget900_LOW_CONFIDENCE_fees": {
+    "cap": 6,
+    "budget": 900.0,
+    "n_starts": 348,
+    "pass_pct": 3.4,
+    "bust_pct": 8.9,
+    "exp_pct": 87.6,
+    "med_days_to_pass": 19.5,
+    "mean_days_to_pass": 19.0,
+    "e_funded_LOW_CONFIDENCE": 210,
+    "e_per_attempt_LOW_CONFIDENCE": -60
+  },
+  "funded_cap6_budget900_LOW_CONFIDENCE": {
+    "e_paid_mean_LOW_CONFIDENCE": 280,
+    "n_quarterly_starts": 5,
+    "caveat": "WIDE-CI: ~4-5 effective independent samples on the achievable subset -- treat as directional, not a precise point estimate"
+  }
+}
