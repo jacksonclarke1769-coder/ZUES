@@ -1,0 +1,20 @@
+{
+ "ideal_end": 3489894.959775314,
+ "scenarios": {
+  "MILD    (base 0.25pt \u00b7 impact 0.5pt/100NQ)": {
+   "end": 2997286.9351451034,
+   "maxdd": 15.834253870613916,
+   "slip": 91467.18001825784
+  },
+  "MODERATE(base 0.50pt \u00b7 impact 1.5pt/100NQ)  <-- realistic middle": {
+   "end": 2457625.614192943,
+   "maxdd": 18.783697120649627,
+   "slip": 182139.8709096536
+  },
+  "SEVERE  (base 0.75pt \u00b7 impact 4.0pt/100NQ)": {
+   "end": 1795503.420383932,
+   "maxdd": 28.244456718323217,
+   "slip": 271594.204975641
+  }
+ }
+}

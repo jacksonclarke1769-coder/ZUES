@@ -1,0 +1,7 @@
+INFO:DUKASCRIPT:current timestamp :2026-06-04T23:25:00
+INFO:DUKASCRIPT:current timestamp :2026-06-13T04:10:00
+=== ARES AUTO LIVE · PAPER · MFFU-50K-1 · tier 50K-conservative (A=3 MNQ) ===
+  data: Dukascopy NQ (CFD proxy 5m) · Profile A only · D1c ACTIVE_EVAL_FILTER (real DriftGate, validated 1m — running on 5m feed)
+  SAFETY: paper unless --live + both flags · SUPERVISE (MFFU semi-auto) · Ctrl+C to stop
+  PAPER — webhooks are dry-run LOGGED, NO orders placed.
+  warmed up · going live · watching the NY-AM window…

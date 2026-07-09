@@ -1,0 +1,1180 @@
+{
+ "attempts": 261,
+ "funnel": {
+  "PASS": 138,
+  "BUST": 38,
+  "EXPIRE": 82,
+  "INCOMPLETE": 3
+ },
+ "by_firm": {
+  "Apex": {
+   "evals": 136,
+   "eval_pass": 73,
+   "eval_bust": 25,
+   "eval_expire": 35,
+   "funded_opened": 73,
+   "funded_closed6": 62,
+   "funded_bust": 0,
+   "funded_open_atend": 11,
+   "payout": 815191,
+   "fees": 6800,
+   "net": 808391
+  },
+  "MFFU": {
+   "evals": 42,
+   "eval_pass": 21,
+   "eval_bust": 2,
+   "eval_expire": 19,
+   "funded_opened": 21,
+   "funded_closed6": 0,
+   "funded_bust": 0,
+   "funded_open_atend": 21,
+   "payout": 433710,
+   "fees": 2100,
+   "net": 431610
+  },
+  "Topstep": {
+   "evals": 42,
+   "eval_pass": 21,
+   "eval_bust": 5,
+   "eval_expire": 16,
+   "funded_opened": 21,
+   "funded_closed6": 15,
+   "funded_bust": 0,
+   "funded_open_atend": 6,
+   "payout": 235584,
+   "fees": 2100,
+   "net": 233484
+  },
+  "Tradeify": {
+   "evals": 41,
+   "eval_pass": 23,
+   "eval_bust": 6,
+   "eval_expire": 12,
+   "funded_opened": 23,
+   "funded_closed6": 19,
+   "funded_bust": 0,
+   "funded_open_atend": 4,
+   "payout": 270629,
+   "fees": 2050,
+   "net": 268579
+  }
+ },
+ "year": {
+  "2021": 5761.040000000023,
+  "2022": 204101.52000000002,
+  "2023": 405424.6999999996,
+  "2024": 311749.1799999999,
+  "2025": 582489.5299999999,
+  "2026": 245588.23000000004
+ },
+ "total_payout": 1755114.2000000002,
+ "fees": 13050.0,
+ "net": 1742064.2000000002,
+ "funded_detail": [
+  {
+   "firm": "Apex",
+   "open": "2021-07-08",
+   "close": "2023-02-28",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2021-07-08",
+   "close": "2023-02-28",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2021-07-15",
+   "close": "2022-12-13",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12592
+  },
+  {
+   "firm": "Apex",
+   "open": "2021-09-10",
+   "close": "2023-02-28",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12335
+  },
+  {
+   "firm": "Apex",
+   "open": "2021-09-10",
+   "close": "2023-02-28",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12335
+  },
+  {
+   "firm": "Apex",
+   "open": "2021-09-22",
+   "close": "2023-02-28",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2021-09-24",
+   "close": "2023-02-28",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12979
+  },
+  {
+   "firm": "Apex",
+   "open": "2021-10-12",
+   "close": "2023-05-09",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2021-10-12",
+   "close": "2023-05-09",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2021-12-20",
+   "close": "2023-05-09",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12837
+  },
+  {
+   "firm": "Apex",
+   "open": "2021-12-20",
+   "close": "2023-05-09",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12837
+  },
+  {
+   "firm": "Apex",
+   "open": "2021-12-20",
+   "close": "2023-05-09",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12837
+  },
+  {
+   "firm": "Apex",
+   "open": "2021-12-16",
+   "close": "2023-02-28",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 11946
+  },
+  {
+   "firm": "Apex",
+   "open": "2021-12-16",
+   "close": "2023-02-28",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 11946
+  },
+  {
+   "firm": "Apex",
+   "open": "2022-01-11",
+   "close": "2023-05-09",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12461
+  },
+  {
+   "firm": "Apex",
+   "open": "2022-01-12",
+   "close": "2023-06-12",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2022-02-14",
+   "close": "2023-06-12",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12921
+  },
+  {
+   "firm": "Apex",
+   "open": "2022-02-14",
+   "close": "2023-06-12",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12921
+  },
+  {
+   "firm": "Apex",
+   "open": "2022-02-11",
+   "close": "2023-06-12",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2022-02-14",
+   "close": "2023-06-12",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12921
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2022-04-22",
+   "close": "2023-06-12",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12007
+  },
+  {
+   "firm": "MFFU",
+   "open": "2022-04-22",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 45,
+   "total": 35550
+  },
+  {
+   "firm": "Topstep",
+   "open": "2022-04-21",
+   "close": "2023-06-12",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12750
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2022-04-21",
+   "close": "2023-06-12",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12750
+  },
+  {
+   "firm": "MFFU",
+   "open": "2022-04-25",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 45,
+   "total": 35550
+  },
+  {
+   "firm": "Topstep",
+   "open": "2022-06-14",
+   "close": "2023-09-18",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2022-06-14",
+   "close": "2023-09-18",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "MFFU",
+   "open": "2022-06-14",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 44,
+   "total": 34760
+  },
+  {
+   "firm": "Topstep",
+   "open": "2022-06-14",
+   "close": "2023-09-18",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2022-08-02",
+   "close": "2023-10-23",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "MFFU",
+   "open": "2022-08-02",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 42,
+   "total": 33180
+  },
+  {
+   "firm": "Topstep",
+   "open": "2022-08-11",
+   "close": "2023-09-18",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12060
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2022-08-15",
+   "close": "2023-10-23",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12985
+  },
+  {
+   "firm": "MFFU",
+   "open": "2022-08-15",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 42,
+   "total": 33180
+  },
+  {
+   "firm": "Topstep",
+   "open": "2022-09-22",
+   "close": "2023-10-23",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12989
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2022-09-22",
+   "close": "2023-10-23",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12989
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2022-11-01",
+   "close": "2024-05-08",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12274
+  },
+  {
+   "firm": "MFFU",
+   "open": "2022-11-01",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 40,
+   "total": 31600
+  },
+  {
+   "firm": "Topstep",
+   "open": "2022-10-27",
+   "close": "2023-10-23",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12001
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2022-10-27",
+   "close": "2023-10-23",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12001
+  },
+  {
+   "firm": "MFFU",
+   "open": "2022-11-18",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 39,
+   "total": 30810
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-01-13",
+   "close": "2024-06-13",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12143
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-01-16",
+   "close": "2024-06-13",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-02-09",
+   "close": "2024-06-13",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "MFFU",
+   "open": "2023-02-28",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 36,
+   "total": 28440
+  },
+  {
+   "firm": "Topstep",
+   "open": "2023-02-28",
+   "close": "2024-06-13",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12655
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-03-10",
+   "close": "2024-10-24",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-03-10",
+   "close": "2024-10-24",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-03-10",
+   "close": "2024-10-24",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-03-16",
+   "close": "2024-10-24",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-04-12",
+   "close": "2024-10-24",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12881
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-04-12",
+   "close": "2024-10-24",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12881
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-04-19",
+   "close": "2024-10-24",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12268
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-04-19",
+   "close": "2024-10-24",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12268
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-06-06",
+   "close": "2025-01-07",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12603
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-06-01",
+   "close": "2024-11-21",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12302
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-06-12",
+   "close": "2025-01-07",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12241
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-06-15",
+   "close": "2025-01-07",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12010
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-06-15",
+   "close": "2025-01-07",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12010
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-07-10",
+   "close": "2025-04-14",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-08-24",
+   "close": "2025-04-14",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12785
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-08-24",
+   "close": "2025-04-14",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12785
+  },
+  {
+   "firm": "Apex",
+   "open": "2023-08-24",
+   "close": "2025-04-14",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12785
+  },
+  {
+   "firm": "Topstep",
+   "open": "2023-09-28",
+   "close": "2025-04-22",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2023-10-02",
+   "close": "2025-04-22",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12843
+  },
+  {
+   "firm": "MFFU",
+   "open": "2023-10-02",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 30,
+   "total": 23700
+  },
+  {
+   "firm": "Topstep",
+   "open": "2023-10-09",
+   "close": "2025-04-09",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12405
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2023-10-11",
+   "close": "2025-05-16",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12346
+  },
+  {
+   "firm": "MFFU",
+   "open": "2023-10-13",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 29,
+   "total": 22910
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2023-12-08",
+   "close": "2025-05-09",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12430
+  },
+  {
+   "firm": "MFFU",
+   "open": "2023-12-08",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 27,
+   "total": 21330
+  },
+  {
+   "firm": "Topstep",
+   "open": "2023-12-08",
+   "close": "2025-05-09",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12430
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2023-12-08",
+   "close": "2025-05-09",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12430
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2024-03-11",
+   "close": "2025-07-25",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12927
+  },
+  {
+   "firm": "MFFU",
+   "open": "2024-04-25",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 23,
+   "total": 18170
+  },
+  {
+   "firm": "Topstep",
+   "open": "2024-05-14",
+   "close": "2025-08-25",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12042
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2024-05-29",
+   "close": "2025-08-14",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "MFFU",
+   "open": "2024-05-30",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 22,
+   "total": 17380
+  },
+  {
+   "firm": "Topstep",
+   "open": "2024-05-29",
+   "close": "2025-08-14",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2024-05-30",
+   "close": "2025-08-14",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12766
+  },
+  {
+   "firm": "MFFU",
+   "open": "2024-06-03",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 22,
+   "total": 17380
+  },
+  {
+   "firm": "Topstep",
+   "open": "2024-06-14",
+   "close": "2025-09-24",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2024-07-30",
+   "close": "2025-09-24",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12730
+  },
+  {
+   "firm": "Apex",
+   "open": "2024-07-30",
+   "close": "2025-09-24",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12730
+  },
+  {
+   "firm": "Apex",
+   "open": "2024-07-30",
+   "close": "2025-09-24",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12730
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2024-08-09",
+   "close": "2025-11-20",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12698
+  },
+  {
+   "firm": "MFFU",
+   "open": "2024-08-09",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 20,
+   "total": 15800
+  },
+  {
+   "firm": "Topstep",
+   "open": "2024-09-27",
+   "close": "2025-11-03",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12636
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2024-09-27",
+   "close": "2025-11-03",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12636
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-01-07",
+   "close": "2025-12-03",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-01-07",
+   "close": "2025-12-03",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-01-16",
+   "close": "2025-12-03",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-01-16",
+   "close": "2025-12-03",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-02-05",
+   "close": "2025-12-03",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-02-07",
+   "close": "2025-12-03",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-03-27",
+   "close": "2025-12-15",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-03-27",
+   "close": "2025-12-15",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-03-31",
+   "close": "2026-03-30",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-04-09",
+   "close": "2026-02-24",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12588
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-04-14",
+   "close": "2026-02-10",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12814
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-04-17",
+   "close": "2026-02-10",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12219
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-05-16",
+   "close": "2026-03-13",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-05-16",
+   "close": "2026-03-13",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-05-16",
+   "close": "2026-03-13",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-05-29",
+   "close": "2026-06-17",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-07-29",
+   "close": "2026-06-17",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12480
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-07-29",
+   "close": "2026-06-17",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12480
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-07-29",
+   "close": "2026-06-17",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12480
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-07-31",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 5,
+   "total": 10000
+  },
+  {
+   "firm": "Topstep",
+   "open": "2025-07-31",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 5,
+   "total": 10000
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2025-08-25",
+   "close": "2026-05-14",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 12532
+  },
+  {
+   "firm": "MFFU",
+   "open": "2025-09-10",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 8,
+   "total": 6320
+  },
+  {
+   "firm": "Topstep",
+   "open": "2025-09-10",
+   "close": "2026-06-17",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2025-09-10",
+   "close": "2026-06-17",
+   "outcome": "CLOSED_MAX",
+   "n_payouts": 6,
+   "total": 13000
+  },
+  {
+   "firm": "MFFU",
+   "open": "2025-09-22",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 8,
+   "total": 6320
+  },
+  {
+   "firm": "Topstep",
+   "open": "2025-09-22",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 5,
+   "total": 10000
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2025-09-24",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 5,
+   "total": 9091
+  },
+  {
+   "firm": "MFFU",
+   "open": "2025-09-24",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 8,
+   "total": 6320
+  },
+  {
+   "firm": "Topstep",
+   "open": "2025-10-15",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 5,
+   "total": 9255
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2025-10-23",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 4,
+   "total": 7500
+  },
+  {
+   "firm": "MFFU",
+   "open": "2025-10-23",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 7,
+   "total": 5530
+  },
+  {
+   "firm": "Topstep",
+   "open": "2025-11-12",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 3,
+   "total": 5000
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2025-12-01",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 4,
+   "total": 6869
+  },
+  {
+   "firm": "MFFU",
+   "open": "2025-12-01",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 6,
+   "total": 4740
+  },
+  {
+   "firm": "Topstep",
+   "open": "2025-12-01",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 4,
+   "total": 6869
+  },
+  {
+   "firm": "Tradeify",
+   "open": "2025-12-03",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 4,
+   "total": 6556
+  },
+  {
+   "firm": "MFFU",
+   "open": "2025-12-05",
+   "close": "2026-06-17",
+   "outcome": "OPEN_UNCAPPED",
+   "n_payouts": 6,
+   "total": 4740
+  },
+  {
+   "firm": "Topstep",
+   "open": "2025-12-05",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 3,
+   "total": 4491
+  },
+  {
+   "firm": "Apex",
+   "open": "2025-12-15",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 2,
+   "total": 3000
+  },
+  {
+   "firm": "Apex",
+   "open": "2026-01-07",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 2,
+   "total": 3000
+  },
+  {
+   "firm": "Apex",
+   "open": "2026-01-19",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 2,
+   "total": 3000
+  },
+  {
+   "firm": "Apex",
+   "open": "2026-01-29",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 2,
+   "total": 3000
+  },
+  {
+   "firm": "Apex",
+   "open": "2026-03-13",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 1,
+   "total": 1037
+  },
+  {
+   "firm": "Apex",
+   "open": "2026-03-13",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 1,
+   "total": 1037
+  },
+  {
+   "firm": "Apex",
+   "open": "2026-03-13",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 1,
+   "total": 1037
+  },
+  {
+   "firm": "Apex",
+   "open": "2026-03-18",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 0,
+   "total": 0
+  },
+  {
+   "firm": "Apex",
+   "open": "2026-03-19",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 0,
+   "total": 0
+  },
+  {
+   "firm": "Apex",
+   "open": "2026-06-12",
+   "close": "2026-06-17",
+   "outcome": "OPEN_ATEND",
+   "n_payouts": 0,
+   "total": 0
+  }
+ ]
+}

@@ -1,0 +1,1946 @@
+ts,signal_id,mode,action,ticker,qty,result,note
+2026-06-14T05:25:23.352979+00:00,ZB-ec4cf9a65f13a98fc576,test,exit,MNQ,0,failed,ConnectionError(MaxRetryError("HTTPConnectionPool(host='127.0.0.1', port=80): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x105c3a850>: Failed to establish a new connection: [Errno 61] Connection refused'))"))
+2026-06-14T05:30:13.956618+00:00,ZB-ec4cf9a65f13a98fc576,test,exit,MNQ,0,failed,http 400
+2026-06-14T05:52:14.704842+00:00,ZB-ec4cf9a65f13a98fc576,test,exit,MNQ,,confirmed,http 200
+2026-06-14T05:56:36.130036+00:00,ZB-ec4cf9a65f13a98fc576,test,exit,MNQ,,duplicate-blocked,
+2026-06-14T05:57:02.954048+00:00,ZB-ec4cf9a65f13a98fc576,test,exit,MNQ,,duplicate-blocked,
+2026-06-14T05:58:34.066104+00:00,ZB-ae6228eb824f9e5d2289,test,exit,MNQ,,failed,ConnectionError(MaxRetryError("HTTPConnectionPool(host='127.0.0.1', port=80): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x101712850>: Failed to establish a new connection: [Errno 61] Connection refused'))"))
+2026-06-15T09:45:13.529248+00:00,ZB-3a34ca1ca2c2a49aefb8,test,exit,MNQ,,confirmed,http 200
+2026-06-15T10:00:52.247740+00:00,ZB-d381fdcfc40063970e80,test,exit,MNQ,,confirmed,http 200
+2026-06-15T10:08:46.010856+00:00,ZB-61ded44f50338ba4f63d,live,buy,MNQ,1,refused,missing traderspost-approved.flag
+2026-06-15T10:21:13.673335+00:00,ZB-61ded44f50338ba4f63d,live,buy,MNQ,1,confirmed,http 200
+2026-06-15T10:22:01.075434+00:00,ZB-a85f29a12bb381f09de6,test,exit,MNQ,,confirmed,http 200
+2026-06-15T10:43:50.816140+00:00,ZB-fe6319b22f86c941b2c9,live,exit,MNQ,,confirmed,http 200
+2026-06-15T10:44:40.022884+00:00,ZB-6330481f0200d48fab1a,live,buy,MNQ,1,confirmed,http 200
+2026-06-15T10:45:14.344781+00:00,ZB-492b40d20abd503d7c99,live,cancel,MNQ,,confirmed,http 200
+2026-06-15T10:45:14.734036+00:00,ZB-4132ac6ada0071b211a0,live,exit,MNQ,,confirmed,http 200
+2026-06-15T18:30:10.650980+00:00,ZB-45eb7f1b9b4a6b300189,dry-run,cancel,MNQ,,logged,
+2026-06-15T18:30:10.653727+00:00,ZB-5ed65018604c3759e423,dry-run,exit,MNQ,,logged,
+2026-06-16T14:46:12.743948+00:00,ZB-1eac4ea1db561b4ccf49,dry-run,sell,MNQ,3,logged,
+2026-06-16T18:30:02.749764+00:00,ZB-182cd255c2ced484d0ef,dry-run,cancel,MNQ,,logged,
+2026-06-16T18:30:02.755299+00:00,ZB-25409e87b31602983bcf,dry-run,exit,MNQ,,logged,
+2026-06-17T18:30:14.865848+00:00,ZB-39ff49775020ee148520,live,cancel,MNQ,,confirmed,http 200
+2026-06-17T18:30:15.240256+00:00,ZB-e7f00c4074fec028d8d1,live,exit,MNQ,,confirmed,http 200
+2026-06-18T18:30:15.374759+00:00,ZB-360d765d4beba49b69f3,live,cancel,MNQ,,confirmed,http 200
+2026-06-18T18:30:15.751465+00:00,ZB-3b9a01a5aac6c33d8a0a,live,exit,MNQ,,confirmed,http 200
+2026-06-21T05:41:32.277020+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T05:41:32.303146+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T05:41:44.218707+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T05:41:44.243643+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T05:46:32.969132+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T05:46:32.994934+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T05:46:44.955739+00:00,ZB-e2499ba03d96f0fa29ad,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T05:55:13.141013+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T05:55:13.165351+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:01:19.852071+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:01:19.893856+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T06:01:19.894317+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T06:01:19.900168+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T06:01:19.900554+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T06:01:19.908893+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:01:36.005507+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:01:36.043692+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T06:01:36.044138+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T06:01:36.049869+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T06:01:36.050307+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T06:01:36.071730+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:01:36.077229+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:01:36.100049+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:12:59.538072+00:00,ZB-9b15699b46824d447568,dry-run,sell,MNQ,2,logged,
+2026-06-21T06:12:59.538809+00:00,ZB-83eb3a86671844ad11ff,dry-run,sell,MNQ,1,logged,
+2026-06-21T06:13:19.151520+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:13:19.190277+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T06:13:19.190666+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T06:13:19.196637+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T06:13:19.197008+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T06:13:19.205624+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:13:19.212423+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:13:19.237859+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:13:20.948024+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:13:20.990760+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T06:13:20.991150+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T06:13:20.997552+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T06:13:20.997945+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T06:13:21.020162+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:13:21.026591+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:13:21.052811+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:25:47.067606+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:25:47.122380+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T06:25:47.122773+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T06:25:47.131103+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T06:25:47.131488+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T06:25:47.141167+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:25:47.147361+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:25:47.173392+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:35:03.196992+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:35:03.241489+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T06:35:03.241865+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T06:35:03.248249+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T06:35:03.248644+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T06:35:03.256791+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:35:03.262917+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:35:03.286389+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:36:56.898298+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:36:56.950558+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T06:36:56.950959+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T06:36:56.956733+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T06:36:56.957112+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T06:36:56.965468+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:36:56.971241+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:36:56.994510+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:58:33.828558+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:58:33.873041+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T06:58:33.873734+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T06:58:33.879999+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T06:58:33.880381+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T06:58:33.889118+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:58:33.895627+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T06:58:33.922870+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:05:48.035088+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:05:48.091002+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T07:05:48.091388+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T07:05:48.097411+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T07:05:48.097791+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T07:05:48.106890+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:05:48.113406+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:05:48.140963+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:26:57.369673+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:26:57.413884+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T07:26:57.414387+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T07:26:57.420689+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T07:26:57.421088+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T07:26:57.429864+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:26:57.435943+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:26:57.461578+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:28:04.593298+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:28:04.648187+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T07:28:04.648810+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T07:28:04.654998+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T07:28:04.655428+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T07:28:04.664134+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:28:04.670043+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:28:04.693178+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:48:36.173311+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:48:36.230148+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T07:48:36.230688+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T07:48:36.237556+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T07:48:36.238245+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T07:48:36.247725+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:48:36.254168+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:48:36.280578+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:49:37.640799+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-21T07:49:37.641560+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-21T07:49:37.657797+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-21T07:49:37.670644+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T07:49:37.722567+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T07:49:57.378492+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:49:57.427738+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T07:49:57.428150+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T07:49:57.434317+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T07:49:57.434691+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T07:49:57.443692+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:49:57.449897+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:49:57.476440+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:49:58.010261+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-21T07:49:58.010670+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-21T07:49:58.022907+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-21T07:49:58.034852+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T07:49:58.085761+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T07:58:24.431983+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-21T07:58:24.434295+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-21T07:58:24.453257+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-21T07:58:24.466736+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T07:58:24.516719+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T07:58:26.762548+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:58:26.806601+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T07:58:26.807067+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T07:58:26.813043+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T07:58:26.813467+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T07:58:26.822482+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:58:26.828610+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:58:26.856556+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:58:27.323172+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-21T07:58:27.323587+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-21T07:58:27.334723+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-21T07:58:27.345699+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T07:58:27.389005+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T07:59:50.541603+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:59:50.584360+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T07:59:50.584737+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T07:59:50.591191+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T07:59:50.591584+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T07:59:50.600532+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:59:50.611211+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:59:50.636447+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T07:59:51.152056+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-21T07:59:51.152491+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-21T07:59:51.164706+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-21T07:59:51.176185+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T07:59:51.221187+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T08:35:11.893385+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-21T08:35:11.894225+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-21T08:35:11.906165+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-21T08:35:11.917788+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T08:35:11.964551+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T08:35:11.977824+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T08:35:14.175137+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T08:35:14.214789+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T08:35:14.215174+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T08:35:14.221205+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T08:35:14.221580+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T08:35:14.230326+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T08:35:14.236385+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T08:35:14.262845+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T08:35:14.746835+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-21T08:35:14.747251+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-21T08:35:14.760096+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-21T08:35:14.771097+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T08:35:14.829016+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T08:35:14.840559+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T08:39:44.592332+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T08:39:44.632439+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T08:39:44.632864+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T08:39:44.639278+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T08:39:44.639720+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T08:39:44.648173+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T08:39:44.655819+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T08:39:44.680834+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T08:39:45.108543+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-21T08:39:45.108979+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-21T08:39:45.137447+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-21T08:39:45.157812+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T08:39:45.220101+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T08:39:45.244355+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T08:45:38.194645+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T08:45:38.245586+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T08:45:38.246080+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T08:45:38.257073+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T08:45:38.257489+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T08:45:38.270348+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T08:45:38.278995+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T08:45:38.311917+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T08:45:38.755012+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-21T08:45:38.755423+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-21T08:45:38.777431+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-21T08:45:38.789861+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T08:45:38.834973+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T08:45:38.846795+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T10:48:17.048340+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T10:48:17.089271+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T10:48:17.089787+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T10:48:17.095843+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T10:48:17.096345+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T10:48:17.105691+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T10:48:17.112481+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T10:48:17.137230+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T10:48:17.558142+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-21T10:48:17.558610+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-21T10:48:17.581273+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-21T10:48:17.591963+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T10:48:17.635041+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T10:48:17.646115+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T10:50:46.328099+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T10:50:46.385893+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T10:50:46.386272+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T10:50:46.393359+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T10:50:46.393793+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T10:50:46.403967+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T10:50:46.411213+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T10:50:46.440391+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T10:50:46.882783+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-21T10:50:46.883194+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-21T10:50:46.905660+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-21T10:50:46.918608+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T10:50:46.967597+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T10:50:46.980343+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T12:17:26.475651+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T12:17:26.477013+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T12:17:39.579921+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T12:17:39.581131+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T12:17:39.654996+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T12:17:39.695515+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-21T12:17:39.695924+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-21T12:17:39.701990+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-21T12:17:39.702383+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-21T12:17:39.711199+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T12:17:39.717868+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T12:17:39.743029+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-21T12:17:40.167917+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-21T12:17:40.168341+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-21T12:17:40.179483+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-21T12:17:40.190475+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T12:17:40.236302+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-21T12:17:40.247432+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T00:14:39.342024+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T00:14:39.349395+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T00:14:39.512541+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T00:14:39.564742+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-22T00:14:39.566294+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-22T00:14:39.577210+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-22T00:14:39.577684+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-22T00:14:39.588011+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T00:14:39.594778+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T00:14:39.620695+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T00:14:40.088271+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-22T00:14:40.089348+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-22T00:14:40.102142+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-22T00:14:40.114327+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T00:14:40.163450+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T00:14:40.174762+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T04:06:52.034750+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T04:06:52.035979+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T04:06:52.106177+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T04:06:52.143561+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-22T04:06:52.144031+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-22T04:06:52.149369+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-22T04:06:52.149805+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-22T04:06:52.157825+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T04:06:52.163969+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T04:06:52.186384+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T04:06:52.589217+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-22T04:06:52.590043+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-22T04:06:52.600871+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-22T04:06:52.610929+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T04:06:52.651155+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T04:06:52.661259+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T05:51:14.017409+00:00,ZB-84f1a878ea2f1be8b8d2,test,exit,MNQ,,confirmed,http 200
+2026-06-22T05:52:35.830726+00:00,ZB-61ded44f50338ba4f63d,live,buy,MNQ,1,duplicate-blocked,
+2026-06-22T05:53:05.165089+00:00,ZB-e88983ea1e0e28d726aa,live,buy,MNQ,1,confirmed,http 200
+2026-06-22T05:57:46.350614+00:00,ZB-76c8725ffd0c69653c54,live,cancel,MNQ,,confirmed,http 200
+2026-06-22T05:57:46.717941+00:00,ZB-24c896a520cda11992b2,live,exit,MNQ,,confirmed,http 200
+2026-06-22T06:10:45.555623+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T06:10:45.556760+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T06:10:45.619311+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T06:10:45.657683+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-22T06:10:45.658130+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-22T06:10:45.663866+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-22T06:10:45.664313+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-22T06:10:45.672499+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T06:10:45.679645+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T06:10:45.717635+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T06:10:46.121499+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-22T06:10:46.121960+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-22T06:10:46.132614+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-22T06:10:46.143784+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T06:10:46.183127+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T06:10:46.193588+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T12:25:40.476001+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T12:25:40.477463+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T12:25:40.549388+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T12:25:40.588989+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-22T12:25:40.589467+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-22T12:25:40.595383+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-22T12:25:40.595817+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-22T12:25:40.603932+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T12:25:40.610250+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T12:25:40.633544+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T12:25:41.068945+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-22T12:25:41.069450+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-22T12:25:41.080849+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-22T12:25:41.091988+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T12:25:41.131840+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T12:25:41.142298+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T12:25:42.790083+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T12:25:42.791155+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T12:25:42.881519+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T12:25:42.930363+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-22T12:25:42.930839+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-22T12:25:42.939550+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-22T12:25:42.941056+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-22T12:25:42.950627+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T12:25:42.957605+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T12:25:42.985089+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T12:25:43.506503+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-22T12:25:43.507060+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-22T12:25:43.518377+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-22T12:25:43.529682+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T12:25:43.576355+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T12:25:43.587240+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T14:01:56.174884+00:00,ZB-bae41fe3f04b2bd867cd,live,buy,MNQ,2,confirmed,http 200
+2026-06-22T18:30:15.222550+00:00,ZB-08ff2b722816c2293522,live,cancel,MNQ,,confirmed,http 200
+2026-06-22T18:30:15.614887+00:00,ZB-6ed71e353991f67666b8,live,exit,MNQ,,confirmed,http 200
+2026-06-22T21:07:35.079048+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T21:07:35.080040+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T21:07:35.150703+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T21:07:35.187680+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-22T21:07:35.188090+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-22T21:07:35.193887+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-22T21:07:35.194264+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-22T21:07:35.202439+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T21:07:35.208576+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T21:07:35.231561+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-22T21:07:35.633275+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-22T21:07:35.633827+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-22T21:07:35.644882+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-22T21:07:35.654823+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T21:07:35.692772+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-22T21:07:35.702720+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-23T07:34:49.932835+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-23T07:34:49.933917+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-23T07:34:50.003573+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-23T07:34:50.038045+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-23T07:34:50.038430+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-23T07:34:50.043482+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-23T07:34:50.043850+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-23T07:34:50.051650+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-23T07:34:50.057496+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-23T07:34:50.078973+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-23T07:34:50.474347+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-23T07:34:50.474769+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-23T07:34:50.484237+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-23T07:34:50.493555+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-23T07:34:50.530429+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-23T07:34:50.539619+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-23T07:46:25.500823+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-23T07:46:25.501801+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-23T07:46:25.572597+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-23T07:46:25.607838+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-23T07:46:25.608281+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-23T07:46:25.613623+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-23T07:46:25.613982+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-23T07:46:25.621808+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-23T07:46:25.627390+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-23T07:46:25.648729+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-23T07:46:26.047496+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-23T07:46:26.047914+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-23T07:46:26.057588+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-23T07:46:26.066975+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-23T07:46:26.103304+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-23T07:46:26.112586+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T08:25:38.452262+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:25:38.453777+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:25:38.515459+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:25:38.553460+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-24T08:25:38.553892+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-24T08:25:38.559791+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-24T08:25:38.560203+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-24T08:25:38.568619+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:25:38.574854+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:25:38.597961+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:25:39.024993+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-24T08:25:39.026177+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-24T08:25:39.037281+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-24T08:25:39.048346+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T08:25:39.088472+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T08:25:39.098927+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T08:29:33.063476+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:29:33.064796+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:29:33.152126+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:29:33.200224+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-24T08:29:33.200688+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-24T08:29:33.208305+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-24T08:29:33.208770+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-24T08:29:33.219427+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:29:33.227257+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:29:33.257460+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:29:33.741258+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-24T08:29:33.741850+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-24T08:29:33.754571+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-24T08:29:33.766668+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T08:29:33.813535+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T08:29:33.827210+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T08:48:05.371848+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:48:05.373151+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:48:05.441409+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:48:05.477581+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-24T08:48:05.478051+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-24T08:48:05.483623+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-24T08:48:05.484034+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-24T08:48:05.492305+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:48:05.498557+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:48:05.521752+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:48:05.945284+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-24T08:48:05.945838+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-24T08:48:05.955828+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-24T08:48:05.965914+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T08:48:06.002618+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T08:48:06.013649+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T08:51:40.960520+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:51:40.961835+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:51:41.035491+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:51:41.075943+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-24T08:51:41.076372+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-24T08:51:41.082630+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-24T08:51:41.083032+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-24T08:51:41.091799+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:51:41.098211+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:51:41.123014+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T08:51:41.542799+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-24T08:51:41.543239+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-24T08:51:41.554282+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-24T08:51:41.575703+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T08:51:41.621404+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T08:51:41.632189+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T09:58:43.566689+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T09:58:43.567700+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T09:58:43.626356+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T09:58:43.664046+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-24T09:58:43.664470+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-24T09:58:43.670095+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-24T09:58:43.670497+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-24T09:58:43.679295+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T09:58:43.685607+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T09:58:43.709890+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-24T09:58:44.124886+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-24T09:58:44.125319+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-24T09:58:44.135076+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-24T09:58:44.144797+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T09:58:44.214114+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T09:58:44.225054+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-24T14:21:28.704579+00:00,ZB-6afe2bb8234bbfcb0be1,live,sell,MNQ,2,confirmed,http 200
+2026-06-24T18:30:04.769234+00:00,ZB-1ca318ec0d8400692dc1,live,cancel,MNQ,,confirmed,http 200
+2026-06-24T18:30:05.136710+00:00,ZB-ae1f4a17cc1fc529e4df,live,exit,MNQ,,confirmed,http 200
+2026-06-25T10:05:46.519546+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T10:05:46.520850+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T10:05:46.581410+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T10:05:46.620457+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-25T10:05:46.621006+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-25T10:05:46.626843+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-25T10:05:46.627383+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-25T10:05:46.636010+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T10:05:46.642729+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T10:05:46.666756+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T10:05:47.101386+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-25T10:05:47.101933+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-25T10:05:47.112962+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-25T10:05:47.123876+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T10:05:47.164372+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T10:05:47.175299+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:22:31.579750+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:22:31.580821+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:22:31.642173+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:22:31.681420+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-25T12:22:31.681822+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-25T12:22:31.688013+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-25T12:22:31.688408+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-25T12:22:31.697004+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:22:31.703706+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:22:31.737966+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:22:32.172561+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-25T12:22:32.172994+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-25T12:22:32.183939+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-25T12:22:32.194290+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:22:32.237071+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:22:32.248759+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:29:41.916241+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:29:41.917274+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:29:41.976030+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:29:42.017865+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-25T12:29:42.020222+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-25T12:29:42.026045+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-25T12:29:42.026436+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-25T12:29:42.034362+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:29:42.040552+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:29:42.073695+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:29:42.473199+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-25T12:29:42.473606+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-25T12:29:42.483730+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-25T12:29:42.493581+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:29:42.529904+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:29:42.540097+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:33:40.755105+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:33:40.756111+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:33:40.817186+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:33:40.854118+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-25T12:33:40.854541+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-25T12:33:40.860838+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-25T12:33:40.861258+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-25T12:33:40.870128+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:33:40.876178+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:33:40.899885+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:33:41.326268+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-25T12:33:41.326758+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-25T12:33:41.337138+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-25T12:33:41.347310+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:33:41.386108+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:33:41.396670+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:44:34.979881+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:44:34.981205+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:44:35.043321+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:44:35.080940+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-25T12:44:35.081361+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-25T12:44:35.086964+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-25T12:44:35.087390+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-25T12:44:35.096133+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:44:35.102320+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:44:35.136315+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:44:35.565897+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-25T12:44:35.566350+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-25T12:44:35.576292+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-25T12:44:35.586455+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:44:35.630405+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:44:35.640696+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:51:04.183893+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:51:04.184971+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:51:04.264948+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:51:04.309754+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-25T12:51:04.310164+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-25T12:51:04.315580+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-25T12:51:04.315978+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-25T12:51:04.324085+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:51:04.329997+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:51:04.361349+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:51:04.776662+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-25T12:51:04.777103+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-25T12:51:04.788067+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-25T12:51:04.798257+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:51:04.844786+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:51:04.855151+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:52:15.910532+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:52:15.911790+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:52:15.984325+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:52:16.023777+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-25T12:52:16.024218+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-25T12:52:16.029812+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-25T12:52:16.030254+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-25T12:52:16.038828+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:52:16.044891+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:52:16.068552+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T12:52:16.476587+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-25T12:52:16.477056+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-25T12:52:16.499171+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-25T12:52:16.509941+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:52:16.549366+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T12:52:16.559752+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T13:51:45.845353+00:00,ZB-e5551ec1ef0281d90bb2,live,sell,MNQ,2,confirmed,http 200
+2026-06-25T18:30:03.837745+00:00,ZB-4b591064520c2aa190c5,live,cancel,MNQ,,confirmed,http 200
+2026-06-25T18:30:04.215972+00:00,ZB-d543d3e784023e981ac4,live,exit,MNQ,,confirmed,http 200
+2026-06-25T22:01:07.874114+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T22:01:07.875335+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T22:01:07.947195+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T22:01:07.987068+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-25T22:01:07.987554+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-25T22:01:07.993312+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-25T22:01:07.993800+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-25T22:01:08.002632+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T22:01:08.009137+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T22:01:08.033148+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T22:01:08.446685+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-25T22:01:08.447193+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-25T22:01:08.457688+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-25T22:01:08.467966+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T22:01:08.507464+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T22:01:08.531401+00:00,ZB-78477fc08367c49320f2,dry-run,buy,MNQ,2,logged,
+2026-06-25T23:05:24.570967+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T23:05:24.572027+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T23:05:24.639486+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T23:05:24.678910+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-25T23:05:24.679323+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-25T23:05:24.685268+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-25T23:05:24.685677+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-25T23:05:24.694524+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T23:05:24.700892+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T23:05:24.726403+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T23:05:25.190475+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-25T23:05:25.190911+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-25T23:05:25.202457+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-25T23:05:25.213771+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-25T23:05:25.214186+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-25T23:05:25.296818+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-25T23:05:25.297276+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-25T23:05:25.311605+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-25T23:05:25.312047+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-25T23:07:24.659722+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T23:07:24.660998+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T23:07:24.723597+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T23:07:24.764090+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-25T23:07:24.764495+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-25T23:07:24.770366+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-25T23:07:24.770819+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-25T23:07:24.779549+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T23:07:24.786219+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T23:07:24.819792+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-25T23:07:25.252590+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-25T23:07:25.253004+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-25T23:07:25.264212+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-25T23:07:25.275067+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-25T23:07:25.275460+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-25T23:07:25.319229+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-25T23:07:25.319646+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-25T23:07:25.330769+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-25T23:07:25.331176+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-25T23:12:02.578745+00:00,ZB-c5f4b15792a6df7ba768,dry-run,buy,MNQ,1,logged,
+2026-06-25T23:12:02.580395+00:00,ZB-c476df656cae0266150b,dry-run,buy,MNQ,1,logged,
+2026-06-26T00:59:24.314251+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T00:59:24.315487+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T00:59:24.373978+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T00:59:24.413125+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-26T00:59:24.413555+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-26T00:59:24.419287+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-26T00:59:24.419736+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-26T00:59:24.428707+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T00:59:24.435004+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T00:59:24.468712+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T00:59:24.881310+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-26T00:59:24.881765+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-26T00:59:24.893927+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-26T00:59:24.904546+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T00:59:24.905051+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T00:59:24.946890+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T00:59:24.947311+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T00:59:24.957763+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T00:59:24.958172+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T01:28:42.256687+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T01:28:42.257836+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T01:28:42.325570+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T01:28:42.362480+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-26T01:28:42.362889+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-26T01:28:42.368191+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-26T01:28:42.368586+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-26T01:28:42.376984+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T01:28:42.383198+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T01:28:42.405986+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T01:28:42.880907+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-26T01:28:42.881391+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-26T01:28:42.892984+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-26T01:28:42.904578+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T01:28:42.905051+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T01:28:43.001160+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T01:28:43.001674+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T01:28:43.011865+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T01:28:43.012262+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T01:40:24.698763+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T01:40:24.699764+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T01:40:24.761332+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T01:40:24.800142+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-26T01:40:24.800561+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-26T01:40:24.806581+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-26T01:40:24.807021+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-26T01:40:24.815967+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T01:40:24.822328+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T01:40:24.846881+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T01:40:25.283400+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-26T01:40:25.283858+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-26T01:40:25.294780+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-26T01:40:25.305469+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T01:40:25.305905+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T01:40:25.348520+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T01:40:25.349023+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T01:40:25.359673+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T01:40:25.360108+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T02:15:40.673252+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T02:15:40.674418+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T02:15:40.732582+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T02:15:40.773936+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-26T02:15:40.774420+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-26T02:15:40.779814+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-26T02:15:40.780277+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-26T02:15:40.788650+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T02:15:40.794696+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T02:15:40.819704+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T02:15:41.236438+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-26T02:15:41.236938+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-26T02:15:41.247481+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-26T02:15:41.258073+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T02:15:41.258542+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T02:15:41.297261+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T02:15:41.297787+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T02:15:41.308336+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T02:15:41.308815+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T04:35:10.072214+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T04:35:10.073463+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T04:35:10.134387+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T04:35:10.174060+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-26T04:35:10.174448+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-26T04:35:10.180704+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-26T04:35:10.181217+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-26T04:35:10.191086+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T04:35:10.197886+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T04:35:10.235947+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T04:35:10.657654+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-26T04:35:10.658060+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-26T04:35:10.668905+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-26T04:35:10.679744+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T04:35:10.680142+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T04:35:10.723514+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T04:35:10.723955+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T04:35:10.735017+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T04:35:10.735447+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T04:48:12.916624+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T04:48:12.917794+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T04:48:13.112666+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T04:48:13.162010+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-26T04:48:13.162424+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-26T04:48:13.168696+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-26T04:48:13.169092+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-26T04:48:13.178176+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T04:48:13.185440+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T04:48:13.219090+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T04:48:13.638769+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-26T04:48:13.639176+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-26T04:48:13.650390+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-26T04:48:13.661502+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T04:48:13.661882+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T04:48:13.712543+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T04:48:13.712946+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T04:48:13.724004+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T04:48:13.724400+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T05:38:55.143341+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T05:38:55.144776+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T05:38:55.204522+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T05:38:55.242443+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-26T05:38:55.242921+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-26T05:38:55.248271+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-26T05:38:55.248761+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-26T05:38:55.257151+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T05:38:55.263004+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T05:38:55.298078+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T05:38:55.708962+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-26T05:38:55.709458+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-26T05:38:55.719862+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-26T05:38:55.729914+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T05:38:55.730393+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T05:38:55.771861+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T05:38:55.772407+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T05:38:55.783890+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T05:38:55.784500+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:54:07.823938+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:54:07.825116+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:54:07.886078+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:54:07.925770+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-26T06:54:07.926204+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-26T06:54:07.932171+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-26T06:54:07.932623+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-26T06:54:07.941598+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:54:07.948528+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:54:07.985059+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:54:08.425978+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:54:08.426437+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-26T06:54:08.438131+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-26T06:54:08.448757+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:54:08.449186+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:54:08.492706+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:54:08.493193+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:54:08.503821+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:54:08.504255+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:55:32.721750+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:55:32.722542+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:55:32.745558+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,4,logged,
+2026-06-26T06:55:32.745994+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,4,logged,
+2026-06-26T06:55:32.747326+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:55:32.747678+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:55:32.748235+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,2,logged,
+2026-06-26T06:55:32.748561+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-26T06:55:32.763972+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:55:32.764351+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:55:32.770711+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-26T06:55:52.273928+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:55:52.275340+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:55:52.337117+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:55:52.383733+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-26T06:55:52.384120+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-26T06:55:52.390054+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-26T06:55:52.390448+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-26T06:55:52.399673+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:55:52.406433+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:55:52.430855+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:55:52.449761+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:55:52.450176+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:55:52.450744+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,4,logged,
+2026-06-26T06:55:52.451099+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,4,logged,
+2026-06-26T06:55:52.452265+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:55:52.452612+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:55:52.453128+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,2,logged,
+2026-06-26T06:55:52.453477+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-26T06:55:52.464076+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:55:52.464525+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:55:52.470739+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-26T06:55:52.897219+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:55:52.897643+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-26T06:55:52.908643+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-26T06:55:52.920362+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:55:52.920770+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:55:52.973213+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:55:52.973633+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:55:52.984447+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:55:52.984842+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:56:54.011143+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:56:54.011870+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:56:54.032989+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,4,logged,
+2026-06-26T06:56:54.033479+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,4,logged,
+2026-06-26T06:56:54.034695+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:56:54.035051+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:56:54.035718+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,2,logged,
+2026-06-26T06:56:54.036113+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-26T06:56:54.036916+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-26T06:58:12.648044+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:58:12.649023+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:58:12.712006+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:58:12.761957+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-26T06:58:12.762361+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-26T06:58:12.768361+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-26T06:58:12.768770+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-26T06:58:12.777474+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:58:12.784418+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:58:12.808951+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-26T06:58:12.828991+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:58:12.829473+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:58:12.830163+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,4,logged,
+2026-06-26T06:58:12.830589+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,4,logged,
+2026-06-26T06:58:12.831796+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:58:12.832173+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:58:12.832705+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,2,logged,
+2026-06-26T06:58:12.833063+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-26T06:58:12.844888+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:58:12.845310+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:58:12.863886+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-26T06:58:13.441741+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-26T06:58:13.442196+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-26T06:58:13.455645+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-26T06:58:13.467755+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:58:13.468172+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:58:13.525669+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:58:13.526103+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:58:13.538302+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-26T06:58:13.538789+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-26T18:30:07.739666+00:00,ZB-414e24ae4dd2849e3a3e,live,cancel,MNQ,,confirmed,http 200
+2026-06-26T18:30:08.122792+00:00,ZB-45da3122c4c17525ed5c,live,exit,MNQ,,confirmed,http 200
+2026-06-27T01:55:04.530920+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T01:55:04.532004+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T01:55:04.598569+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T01:55:04.634106+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T01:55:04.634519+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T01:55:04.639699+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T01:55:04.640118+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T01:55:04.648447+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T01:55:04.654458+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T01:55:04.676261+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T01:55:04.692954+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T01:55:04.693392+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T01:55:04.693998+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,4,logged,
+2026-06-27T01:55:04.694397+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,4,logged,
+2026-06-27T01:55:04.695728+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T01:55:04.696166+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T01:55:04.696745+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,2,logged,
+2026-06-27T01:55:04.697119+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T01:55:04.707014+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T01:55:04.707420+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T01:55:04.713150+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T01:55:05.113236+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T01:55:05.113735+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T01:55:05.132149+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T01:55:05.141864+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T01:55:05.142303+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T01:55:05.180224+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T01:55:05.180761+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T01:55:05.190632+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T01:55:05.191085+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T01:59:59.588601+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T01:59:59.590950+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T01:59:59.680882+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T01:59:59.726725+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T01:59:59.727125+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T01:59:59.732544+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T01:59:59.732921+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T01:59:59.741661+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T01:59:59.749735+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T01:59:59.776559+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T01:59:59.796707+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T01:59:59.797120+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T01:59:59.797700+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,4,logged,
+2026-06-27T01:59:59.798063+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,4,logged,
+2026-06-27T01:59:59.799260+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T01:59:59.799625+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T01:59:59.803717+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,2,logged,
+2026-06-27T01:59:59.804065+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T01:59:59.816025+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T01:59:59.816408+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T01:59:59.823491+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T02:00:00.483944+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T02:00:00.484418+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T02:00:00.495824+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T02:00:00.519965+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T02:00:00.520583+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T02:00:00.573003+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T02:00:00.573437+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T02:00:00.589716+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T02:00:00.590155+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T02:25:12.847205+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T02:25:12.848192+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T02:25:12.923764+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T02:25:12.968739+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T02:25:12.969149+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T02:25:12.975499+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T02:25:12.975893+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T02:25:12.984692+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T02:25:12.991925+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T02:25:13.018907+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T02:25:13.038225+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T02:25:13.038631+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T02:25:13.039185+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,4,logged,
+2026-06-27T02:25:13.039556+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,4,logged,
+2026-06-27T02:25:13.040722+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T02:25:13.041071+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T02:25:13.041585+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,2,logged,
+2026-06-27T02:25:13.041928+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T02:25:13.053476+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T02:25:13.053868+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T02:25:13.059940+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T02:25:13.636763+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T02:25:13.637215+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T02:25:13.651917+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T02:25:13.665584+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T02:25:13.666037+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T02:25:13.713950+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T02:25:13.714362+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T02:25:13.727984+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T02:25:13.728581+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:15:50.107999+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T03:15:50.109929+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T03:15:50.198387+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T03:15:50.371314+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T03:15:50.371869+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T03:15:50.389176+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T03:15:50.389870+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T03:15:50.403865+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T03:15:50.417218+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T03:15:50.489915+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T03:15:50.554149+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T03:15:50.554854+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T03:15:50.555858+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,4,logged,
+2026-06-27T03:15:50.562551+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,4,logged,
+2026-06-27T03:15:50.569435+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:15:50.570184+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:15:50.571291+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,2,logged,
+2026-06-27T03:15:50.572030+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T03:15:50.593071+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T03:15:50.594141+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T03:15:50.607405+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T03:15:51.288240+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T03:15:51.288960+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T03:15:51.309036+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T03:15:51.332967+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:15:51.333823+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:15:51.404800+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:15:51.405722+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:15:51.424181+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:15:51.424848+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:57:43.889525+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T03:57:43.890687+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T03:57:43.955120+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T03:57:43.997027+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T03:57:43.997511+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T03:57:44.003291+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T03:57:44.003791+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T03:57:44.012690+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T03:57:44.019264+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T03:57:44.044525+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T03:57:44.074957+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T03:57:44.075471+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T03:57:44.076110+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,4,logged,
+2026-06-27T03:57:44.076851+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,4,logged,
+2026-06-27T03:57:44.078123+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:57:44.078533+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:57:44.079103+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,2,logged,
+2026-06-27T03:57:44.079482+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T03:57:44.090685+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T03:57:44.091178+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T03:57:44.097433+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T03:57:44.656612+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T03:57:44.657096+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T03:57:44.668298+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T03:57:44.679483+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:57:44.679953+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:57:44.728430+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:57:44.728991+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:57:44.739898+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T03:57:44.740560+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T04:15:14.137080+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T04:15:14.138147+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T04:15:14.200451+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T04:15:14.241472+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T04:15:14.241895+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T04:15:14.247819+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T04:15:14.248235+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T04:15:14.256876+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T04:15:14.263560+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T04:15:14.288784+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T04:15:14.319729+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T04:15:14.320172+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T04:15:14.320776+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,4,logged,
+2026-06-27T04:15:14.321164+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,4,logged,
+2026-06-27T04:15:14.322372+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T04:15:14.322754+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T04:15:14.323292+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,2,logged,
+2026-06-27T04:15:14.323669+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T04:15:14.336837+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T04:15:14.337261+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T04:15:14.345088+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T04:15:14.866770+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T04:15:14.867215+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T04:15:14.878183+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T04:15:14.889455+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T04:15:14.889905+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T04:15:14.932821+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T04:15:14.933301+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T04:15:14.943823+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T04:15:14.944232+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:32:17.131586+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:32:17.132711+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:32:17.191811+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:32:17.235614+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T06:32:17.236040+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T06:32:17.242194+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T06:32:17.242702+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T06:32:17.252701+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:32:17.260519+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:32:17.286271+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:32:17.365190+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:32:17.365634+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:32:17.366188+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T06:32:17.366542+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T06:32:17.380263+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:32:17.380651+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:32:17.386393+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T06:32:17.837029+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:32:17.837450+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T06:32:17.848546+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T06:32:17.859463+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:32:17.859871+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:32:17.902172+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:32:17.902580+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:32:17.914024+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:32:17.914450+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:32:58.459217+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:32:58.460204+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:32:58.460880+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T06:32:58.461311+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T06:32:58.474615+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:32:58.475035+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:32:58.480379+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T06:35:44.609025+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:35:44.610032+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:35:44.610605+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T06:35:44.610979+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T06:35:44.612156+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:35:44.612516+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:35:44.613030+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-27T06:35:44.613376+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T06:35:44.626603+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:35:44.627023+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:35:44.632526+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T06:35:47.133616+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:35:47.134496+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:35:47.197869+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:35:47.233786+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T06:35:47.234177+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T06:35:47.239470+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T06:35:47.239855+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T06:35:47.247834+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:35:47.253388+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:35:47.279840+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:35:47.307791+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:35:47.308213+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:35:47.308788+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T06:35:47.309169+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T06:35:47.310349+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:35:47.310699+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:35:47.311243+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-27T06:35:47.311582+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T06:35:47.321809+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:35:47.322202+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:35:47.327872+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T06:35:47.774830+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:35:47.775258+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T06:35:47.785672+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T06:35:47.796021+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:35:47.796426+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:35:47.836166+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:35:47.836561+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:35:47.846607+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:35:47.847045+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:47:56.228484+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:47:56.229696+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:47:56.302451+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:47:56.345830+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T06:47:56.346256+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T06:47:56.352445+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T06:47:56.352869+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T06:47:56.370976+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:47:56.378006+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:47:56.403622+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T06:47:56.422296+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:47:56.422731+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:47:56.423314+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T06:47:56.423752+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T06:47:56.425058+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:47:56.425451+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:47:56.426028+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-27T06:47:56.426390+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T06:47:56.437696+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:47:56.438111+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:47:56.443961+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T06:47:56.872857+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T06:47:56.873317+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T06:47:56.884517+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T06:47:56.896898+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:47:56.897332+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:47:56.953266+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:47:56.953720+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:47:56.965645+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T06:47:56.966118+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T07:08:51.526961+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T07:08:51.527970+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T07:08:51.587267+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T07:08:51.624765+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T07:08:51.625143+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T07:08:51.630500+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T07:08:51.630885+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T07:08:51.639088+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T07:08:51.645254+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T07:08:51.668096+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T07:08:51.702294+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T07:08:51.702697+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T07:08:51.703265+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T07:08:51.703602+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T07:08:51.704765+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T07:08:51.705105+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T07:08:51.705601+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-27T07:08:51.705927+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T07:08:51.716614+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T07:08:51.717190+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T07:08:51.723017+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T07:08:52.131576+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T07:08:52.131974+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T07:08:52.142146+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T07:08:52.152473+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T07:08:52.152843+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T07:08:52.193402+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T07:08:52.193832+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T07:08:52.204054+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T07:08:52.204436+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T08:35:28.884245+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T08:35:28.885597+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T08:35:28.977685+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T08:35:29.034204+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T08:35:29.035863+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T08:35:29.045076+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T08:35:29.045556+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T08:35:29.056312+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T08:35:29.063876+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T08:35:29.093034+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T08:35:29.133341+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T08:35:29.133808+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T08:35:29.134476+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T08:35:29.134965+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T08:35:29.136567+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T08:35:29.136996+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T08:35:29.137643+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-27T08:35:29.138053+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T08:35:29.151238+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T08:35:29.151698+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T08:35:29.159216+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T08:35:29.642553+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T08:35:29.643003+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T08:35:29.654787+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T08:35:29.669898+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T08:35:29.670414+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T08:35:29.718237+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T08:35:29.718648+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T08:35:29.730133+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T08:35:29.730524+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:30:00.162423+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:30:00.165246+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:30:00.425047+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:30:00.540298+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T09:30:00.540825+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T09:30:00.550088+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T09:30:00.550765+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T09:30:00.571748+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:30:00.585138+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:30:00.628615+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:30:00.670069+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:30:00.670580+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:30:00.671296+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T09:30:00.671717+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T09:30:00.673170+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:30:00.673648+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:30:00.674314+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-27T09:30:00.674938+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T09:30:00.691398+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:30:00.692047+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:30:00.703285+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T09:30:01.578957+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:30:01.581072+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T09:30:01.599901+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T09:30:01.619143+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:30:01.620796+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:30:01.686837+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:30:01.687452+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:30:01.701951+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:30:01.702871+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:44:10.962955+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:44:10.964039+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:44:11.025433+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:44:11.064284+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T09:44:11.064679+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T09:44:11.070899+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T09:44:11.071277+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T09:44:11.079680+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:44:11.086190+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:44:11.111166+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:44:11.140892+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:44:11.141291+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:44:11.141840+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T09:44:11.142202+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T09:44:11.143364+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:44:11.143716+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:44:11.144223+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-27T09:44:11.144561+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T09:44:11.155467+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:44:11.155845+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:44:11.161979+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T09:44:11.586737+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:44:11.587149+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T09:44:11.598269+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T09:44:11.609320+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:44:11.609742+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:44:11.652235+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:44:11.652636+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:44:11.663295+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:44:11.663697+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:55:53.988163+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:55:53.989291+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:55:54.051484+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:55:54.091818+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T09:55:54.092247+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T09:55:54.098392+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T09:55:54.098809+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T09:55:54.108264+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:55:54.114773+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:55:54.139072+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T09:55:54.170994+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:55:54.171427+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:55:54.172031+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T09:55:54.172412+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T09:55:54.173635+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:55:54.174009+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:55:54.174553+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-27T09:55:54.174907+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T09:55:54.186989+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:55:54.187411+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:55:54.195017+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T09:55:54.634594+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T09:55:54.635023+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T09:55:54.646527+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T09:55:54.657663+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:55:54.658236+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:55:54.702936+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:55:54.703367+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:55:54.714283+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T09:55:54.714776+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T10:47:27.731710+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T10:47:27.732708+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T10:47:27.791643+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T10:47:27.827901+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T10:47:27.828297+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T10:47:27.833519+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T10:47:27.833904+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T10:47:27.841836+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T10:47:27.847929+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T10:47:27.870568+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T10:47:27.899478+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T10:47:27.899884+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T10:47:27.900453+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T10:47:27.900828+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T10:47:27.901990+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T10:47:27.902327+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T10:47:27.902842+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-27T10:47:27.903187+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T10:47:27.913282+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T10:47:27.913972+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T10:47:27.919434+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T10:47:28.341439+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T10:47:28.342128+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T10:47:28.353659+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T10:47:28.366470+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T10:47:28.366994+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T10:47:28.409666+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T10:47:28.410081+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T10:47:28.420919+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T10:47:28.421312+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:14:24.604269+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T12:14:24.605460+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T12:14:24.663199+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T12:14:24.699775+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T12:14:24.700153+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T12:14:24.705617+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T12:14:24.705993+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T12:14:24.714099+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T12:14:24.720499+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T12:14:24.743210+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T12:14:24.771598+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T12:14:24.771984+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T12:14:24.772514+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T12:14:24.772859+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T12:14:24.774008+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:14:24.774350+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:14:24.775197+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-27T12:14:24.775538+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T12:14:24.786099+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T12:14:24.786476+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T12:14:24.792198+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T12:14:25.235249+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T12:14:25.235685+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T12:14:25.246863+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T12:14:25.257798+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:14:25.258188+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:14:25.308677+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:14:25.309105+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:14:25.320587+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:14:25.320964+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:59:48.846737+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T12:59:48.847729+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T12:59:48.915604+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T12:59:48.951219+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T12:59:48.951612+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T12:59:48.956738+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T12:59:48.957137+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T12:59:48.965077+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T12:59:48.971814+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T12:59:48.994840+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T12:59:49.012377+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T12:59:49.012797+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T12:59:49.013357+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T12:59:49.013799+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T12:59:49.015123+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:59:49.015502+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:59:49.016056+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-27T12:59:49.016399+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T12:59:49.026566+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T12:59:49.026947+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T12:59:49.032260+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T12:59:49.448002+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T12:59:49.448418+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T12:59:49.458537+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T12:59:49.468674+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:59:49.469090+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:59:49.506616+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:59:49.507038+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:59:49.516639+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T12:59:49.517072+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:25:15.547884+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T14:25:15.548947+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T14:25:15.610877+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T14:25:15.651290+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T14:25:15.651704+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T14:25:15.657445+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T14:25:15.657840+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T14:25:15.666781+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T14:25:15.673346+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T14:25:15.711382+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T14:25:15.730918+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T14:25:15.731333+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T14:25:15.731876+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T14:25:15.732224+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T14:25:15.733377+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:25:15.733725+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:25:15.734237+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-27T14:25:15.734578+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T14:25:15.746288+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T14:25:15.746683+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T14:25:15.752615+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T14:25:16.176981+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T14:25:16.177408+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T14:25:16.188898+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T14:25:16.200333+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:25:16.200751+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:25:16.245299+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:25:16.245835+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:25:16.257849+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:25:16.258275+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:28:17.082721+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T14:28:17.083702+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T14:28:17.139626+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T14:28:17.174101+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T14:28:17.174485+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T14:28:17.179673+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T14:28:17.180029+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T14:28:17.188332+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T14:28:17.194582+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T14:28:17.228704+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T14:28:17.246192+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T14:28:17.246583+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T14:28:17.247112+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T14:28:17.247561+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T14:28:17.248775+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:28:17.249168+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:28:17.249757+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-27T14:28:17.250171+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T14:28:17.260128+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T14:28:17.260495+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T14:28:17.265962+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T14:28:17.687698+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T14:28:17.688098+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T14:28:17.698864+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T14:28:17.709120+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:28:17.709515+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:28:17.749105+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:28:17.749527+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:28:17.760752+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T14:28:17.761185+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T15:14:31.217326+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T15:14:31.218366+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T15:14:31.278197+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T15:14:31.324336+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-27T15:14:31.324751+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-27T15:14:31.330595+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-27T15:14:31.330991+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-27T15:14:31.353392+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T15:14:31.362420+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T15:14:31.388320+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-27T15:14:31.409026+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T15:14:31.409437+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T15:14:31.409998+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-27T15:14:31.410359+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-27T15:14:31.411530+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-27T15:14:31.411896+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-27T15:14:31.412415+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-27T15:14:31.412755+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-27T15:14:31.425663+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-27T15:14:31.426076+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-27T15:14:31.432140+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-27T15:14:31.881004+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-27T15:14:31.881426+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-27T15:14:31.891943+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-27T15:14:31.902778+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T15:14:31.903178+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T15:14:31.960772+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T15:14:31.961181+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-27T15:14:31.971891+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-27T15:14:31.972288+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:30:22.524192+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:30:22.525272+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:30:22.584853+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:30:22.641283+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-28T08:30:22.641678+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-28T08:30:22.647195+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-28T08:30:22.647590+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-28T08:30:22.656195+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:30:22.662324+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:30:22.686801+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:30:22.705079+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:30:22.705516+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:30:22.706154+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-28T08:30:22.706537+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-28T08:30:22.707758+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:30:22.708137+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:30:22.708663+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-28T08:30:22.709023+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-28T08:30:22.719328+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:30:22.719737+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:30:22.725922+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-28T08:30:23.204676+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:30:23.213143+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-28T08:30:23.224542+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-28T08:30:23.235516+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:30:23.235997+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:30:23.281370+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:30:23.281903+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:30:23.293181+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:30:23.293659+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:31:56.260741+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:31:56.261829+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:31:56.369413+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:31:56.515905+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-28T08:31:56.516286+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-28T08:31:56.522862+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-28T08:31:56.523270+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-28T08:31:56.532814+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:31:56.540064+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:31:56.567181+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:31:56.588344+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:31:56.588836+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:31:56.589481+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-28T08:31:56.589845+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-28T08:31:56.591044+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:31:56.591391+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:31:56.591927+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-28T08:31:56.592257+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-28T08:31:56.604572+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:31:56.604981+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:31:56.611876+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-28T08:31:57.115695+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:31:57.124736+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-28T08:31:57.138729+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-28T08:31:57.151395+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:31:57.151918+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:31:57.198440+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:31:57.198870+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:31:57.210750+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:31:57.211162+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:37:38.037346+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:37:38.038367+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:37:38.095853+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:37:38.132773+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-28T08:37:38.133160+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-28T08:37:38.138576+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-28T08:37:38.138962+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-28T08:37:38.147172+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:37:38.153147+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:37:38.175664+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:37:38.203804+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:37:38.204192+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:37:38.204751+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-28T08:37:38.205140+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-28T08:37:38.206310+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:37:38.206649+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:37:38.207172+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-28T08:37:38.207500+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-28T08:37:38.217983+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:37:38.218415+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:37:38.224408+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-28T08:37:38.719510+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:37:38.720033+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-28T08:37:38.731499+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-28T08:37:38.742397+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:37:38.742821+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:37:38.786014+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:37:38.786446+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:37:38.796835+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:37:38.797273+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:39:35.775320+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:39:35.776282+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:39:35.840508+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:39:35.883814+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-28T08:39:35.884191+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-28T08:39:35.889543+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-28T08:39:35.889903+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-28T08:39:35.898116+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:39:35.903995+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:39:35.926645+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T08:39:35.944015+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:39:35.944418+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:39:35.944960+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-28T08:39:35.945314+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-28T08:39:35.946488+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:39:35.946831+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:39:35.947354+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-28T08:39:35.947680+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-28T08:39:35.957594+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:39:35.957980+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:39:35.963303+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-28T08:39:36.412758+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-28T08:39:36.413161+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-28T08:39:36.424020+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-28T08:39:36.433723+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:39:36.434110+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:39:36.471905+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:39:36.472305+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:39:36.481966+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T08:39:36.482461+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:50:00.140782+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T10:50:00.143413+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T10:50:00.206811+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T10:50:00.248081+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-28T10:50:00.248547+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-28T10:50:00.253900+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-28T10:50:00.254348+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-28T10:50:00.294395+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T10:50:00.379401+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T10:50:00.412758+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T10:50:00.456027+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T10:50:00.456692+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T10:50:00.457428+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-28T10:50:00.457916+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-28T10:50:00.459401+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:50:00.459874+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:50:00.460553+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-28T10:50:00.461027+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-28T10:50:00.471294+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T10:50:00.471805+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T10:50:00.477315+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-28T10:50:00.984586+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-28T10:50:00.985059+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-28T10:50:00.994726+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-28T10:50:01.004415+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:50:01.004871+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:50:01.044649+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:50:01.045132+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:50:01.055068+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:50:01.055558+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:51:43.141606+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T10:51:43.142601+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T10:51:43.204646+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T10:51:43.255451+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-28T10:51:43.255864+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-28T10:51:43.261404+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-28T10:51:43.261787+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-28T10:51:43.270317+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T10:51:43.279651+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T10:51:43.304442+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T10:51:43.322679+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T10:51:43.323097+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T10:51:43.323662+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-28T10:51:43.324042+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-28T10:51:43.325284+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:51:43.325661+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:51:43.326190+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-28T10:51:43.326543+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-28T10:51:43.337079+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T10:51:43.337497+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T10:51:43.343562+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-28T10:51:43.796304+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-28T10:51:43.796764+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-28T10:51:43.807770+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-28T10:51:43.818541+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:51:43.818945+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:51:43.863575+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:51:43.864155+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:51:43.877286+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T10:51:43.877705+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:12:27.242584+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T11:12:27.243661+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T11:12:27.320012+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T11:12:27.367284+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-28T11:12:27.367686+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-28T11:12:27.372951+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-28T11:12:27.373333+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-28T11:12:27.384586+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T11:12:27.394215+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T11:12:27.427500+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T11:12:27.448260+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T11:12:27.448665+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T11:12:27.449239+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-28T11:12:27.449600+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-28T11:12:27.450885+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:12:27.451273+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:12:27.451825+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-28T11:12:27.452170+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-28T11:12:27.462369+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T11:12:27.462754+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T11:12:27.470775+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-28T11:12:27.963349+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-28T11:12:27.963779+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-28T11:12:27.973946+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-28T11:12:27.984057+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:12:27.984463+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:12:28.032605+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:12:28.033045+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:12:28.043759+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:12:28.044187+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:51:04.761004+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T11:51:04.762039+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T11:51:04.838748+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T11:51:04.877121+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-28T11:51:04.877510+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-28T11:51:04.884552+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-28T11:51:04.884958+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-28T11:51:04.893163+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T11:51:04.900702+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T11:51:04.934616+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-28T11:51:04.953166+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T11:51:04.953603+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T11:51:04.954172+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-28T11:51:04.954556+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-28T11:51:04.955772+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:51:04.956129+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:51:04.956652+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-28T11:51:04.956995+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-28T11:51:04.967957+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-28T11:51:04.968378+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-28T11:51:04.984382+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-28T11:51:05.505293+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-28T11:51:05.505823+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-28T11:51:05.523889+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-28T11:51:05.535813+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:51:05.536265+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:51:05.584799+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:51:05.585337+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:51:05.601344+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:51:05.601762+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-28T11:59:13.162844+00:00,ZB-aec63d1305a259a69281,dry-run,buy,MNQ,10,logged,
+2026-06-29T08:42:24.504223+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T08:42:24.505241+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T08:42:24.572898+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T08:42:24.610793+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-29T08:42:24.611201+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-29T08:42:24.617012+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-29T08:42:24.617440+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-29T08:42:24.626040+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T08:42:24.632699+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T08:42:24.656225+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T08:42:24.674627+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-29T08:42:24.675039+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-29T08:42:24.675587+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-29T08:42:24.675941+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-29T08:42:24.677086+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-29T08:42:24.677446+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-29T08:42:24.677950+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-29T08:42:24.678274+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-29T08:42:24.688871+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-29T08:42:24.689262+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-29T08:42:24.694877+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-29T08:42:25.157959+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-29T08:42:25.158389+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-29T08:42:25.169056+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-29T08:42:25.189543+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T08:42:25.190195+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T08:42:25.234606+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T08:42:25.235035+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T08:42:25.246265+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T08:42:25.246671+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:49:24.569995+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T10:49:24.571723+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T10:49:24.664066+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T10:49:24.727976+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-29T10:49:24.728982+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-29T10:49:24.741070+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-29T10:49:24.741722+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-29T10:49:24.754232+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T10:49:24.764777+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T10:49:24.803636+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T10:49:24.860178+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-29T10:49:24.860930+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-29T10:49:24.862004+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-29T10:49:24.863412+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-29T10:49:24.865575+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:49:24.866278+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:49:24.867523+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-29T10:49:24.868298+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-29T10:49:24.885789+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-29T10:49:24.886766+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-29T10:49:24.897478+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-29T10:49:25.713009+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-29T10:49:25.713725+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-29T10:49:25.731040+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-29T10:49:25.755025+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:49:25.756122+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:49:25.854257+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:49:25.855416+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:49:25.872916+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:49:25.873723+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:50:58.076733+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T10:50:58.079584+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T10:50:58.161602+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T10:50:58.208674+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-29T10:50:58.209166+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-29T10:50:58.215716+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-29T10:50:58.216192+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-29T10:50:58.226169+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T10:50:58.233563+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T10:50:58.259954+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T10:50:58.286448+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-29T10:50:58.287000+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-29T10:50:58.287749+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-29T10:50:58.288231+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-29T10:50:58.289726+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:50:58.290248+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:50:58.291016+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-29T10:50:58.291532+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-29T10:50:58.303790+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-29T10:50:58.304271+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-29T10:50:58.311200+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-29T10:50:58.925288+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-29T10:50:58.925843+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-29T10:50:58.939177+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-29T10:50:58.951081+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:50:58.951582+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:50:59.005005+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:50:59.005638+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:50:59.025522+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T10:50:59.026144+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:14.130746+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T11:43:14.132612+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T11:43:14.210483+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T11:43:14.257666+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-29T11:43:14.258348+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-29T11:43:14.265499+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-29T11:43:14.266135+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-29T11:43:14.276126+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T11:43:14.283550+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T11:43:14.314745+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T11:43:14.335118+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-29T11:43:14.336016+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-29T11:43:14.336870+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-29T11:43:14.337439+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-29T11:43:14.338933+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:14.339487+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:14.340205+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-29T11:43:14.340843+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-29T11:43:14.353335+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-29T11:43:14.353910+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-29T11:43:14.360370+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-29T11:43:14.841246+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-29T11:43:14.841833+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-29T11:43:14.853366+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-29T11:43:14.865258+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:14.865921+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:14.910665+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:14.911269+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:14.923099+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:14.923688+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:24.375732+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T11:43:24.378065+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T11:43:24.480118+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T11:43:24.538926+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-29T11:43:24.539833+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-29T11:43:24.548108+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-29T11:43:24.548928+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-29T11:43:24.560929+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T11:43:24.569826+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T11:43:24.602670+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T11:43:24.628421+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-29T11:43:24.629317+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-29T11:43:24.630462+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-29T11:43:24.631236+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-29T11:43:24.633200+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:24.633945+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:24.634931+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-29T11:43:24.635644+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-29T11:43:24.650702+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-29T11:43:24.651546+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-29T11:43:24.660372+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-29T11:43:25.278978+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-29T11:43:25.279964+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-29T11:43:25.295432+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-29T11:43:25.310529+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:25.311322+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:25.368639+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:25.369630+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:25.387045+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T11:43:25.387869+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T14:06:39.133592+00:00,ZB-cfb25ab219695df511e0,live,sell,MNQ,3,confirmed,http 200
+2026-06-29T14:06:39.537175+00:00,ZB-e305c0c0d78a84526bd9,live,sell,MNQ,2,confirmed,http 200
+2026-06-29T19:30:01.433198+00:00,ZB-5711768ef0cf267ce34a,live,cancel,MNQ,,confirmed,http 200
+2026-06-29T19:30:01.853887+00:00,ZB-897bb50bb50a18bac9da,live,exit,MNQ,,confirmed,http 200
+2026-06-29T20:59:07.594407+00:00,ZB-c11b1d156f1cfacee634,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T20:59:07.595459+00:00,ZB-6c3fa57af08fe90239a1,live,sell,MNQ,4,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T20:59:07.673695+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T20:59:07.710124+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-29T20:59:07.710556+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-29T20:59:07.716104+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-29T20:59:07.716495+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-29T20:59:07.724764+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T20:59:07.731222+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T20:59:07.753550+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T20:59:07.770987+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-29T20:59:07.771403+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-29T20:59:07.771971+00:00,ZB-4409967852a558ee9e6f,dry-run,sell,MNQ,5,logged,
+2026-06-29T20:59:07.772350+00:00,ZB-16ddbd0996b75e927ed1,dry-run,sell,MNQ,5,logged,
+2026-06-29T20:59:07.773582+00:00,ZB-99bbb682a8ceaf4daba0,dry-run,buy,MNQ,1,logged,
+2026-06-29T20:59:07.773975+00:00,ZB-2d023efcfd9d5f561705,dry-run,buy,MNQ,1,logged,
+2026-06-29T20:59:07.774516+00:00,ZB-d3bef9f2f88d318ccb0c,dry-run,buy,MNQ,3,logged,
+2026-06-29T20:59:07.774871+00:00,ZB-ddd28b7b33f38bce40fe,dry-run,buy,MNQ,2,logged,
+2026-06-29T20:59:07.785237+00:00,ZB-8738b4fef164e121f6aa,dry-run,sell,MNQ,2,logged,
+2026-06-29T20:59:07.785630+00:00,ZB-97111d06005c5c298df2,dry-run,sell,MNQ,2,logged,
+2026-06-29T20:59:07.791178+00:00,ZB-5bd9f2f57db427c77f14,dry-run,exit,MNQ,,logged,
+2026-06-29T20:59:08.232545+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,2,logged,
+2026-06-29T20:59:08.232994+00:00,ZB-e78cb3a40aff486c1bfb,dry-run,sell,MNQ,1,logged,
+2026-06-29T20:59:08.244256+00:00,ZB-f2071f5f1c64df2fc985,dry-run,sell,MNQ,1,logged,
+2026-06-29T20:59:08.254736+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T20:59:08.255143+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T20:59:08.302409+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T20:59:08.302930+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T20:59:08.313459+00:00,ZB-2775ddeda0d352bf2e55,dry-run,buy,MNQ,1,logged,
+2026-06-29T20:59:08.313860+00:00,ZB-e12878b37811c3d163be,dry-run,buy,MNQ,1,logged,
+2026-06-29T21:00:47.484203+00:00,ZB-fbeabb939366cb094367,live,cancel,MNQ,,confirmed,http 200
+2026-06-29T21:00:47.861877+00:00,ZB-52130bc9f29bba45ab98,live,exit,MNQ,,confirmed,http 200
+2026-06-29T21:09:43.041701+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T21:09:43.068823+00:00,ZB-269951c269e69ad081fb,live,sell,MNQ,3,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T21:11:03.067163+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned
+2026-06-29T21:11:03.110051+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,duplicate-blocked,
+2026-06-29T21:11:03.110438+00:00,ZB-bd28e7fea057e35d02b9,live,sell,MNQ,1,duplicate-blocked,
+2026-06-29T21:11:03.116776+00:00,ZB-6aad7a2e01a864fbde03,dry-run,cancel,MNQ,,logged,
+2026-06-29T21:11:03.117201+00:00,ZB-96d4de44eae845f50c26,dry-run,exit,MNQ,,logged,
+2026-06-29T21:11:03.126419+00:00,ZB-54cb1fe45af0dff8aac2,live,sell,MNQ,2,refused,LIVE BLOCKED: exit model not approved/aligned

@@ -1,0 +1,5 @@
+date,mode,account,strategy,direction,contracts,pnl,note
+2026-06-16,paper,MFFU-50K-1,A,short,3,1400,HYPOTHETICAL · unverified single-target full-qty@2R (no fill in paper.db; bridge log shows EOD flatten not TP) · EXITLOCK 2026-06-21
+2026-06-22,live,MFFU-50K-1,B,long,2,-228.64,HYPOTHETICAL · paper · Profile B ORB · stop · -1.00R modeled
+2026-06-24,live,MFFU-50K-1,B,short,2,-249.14,HYPOTHETICAL · paper · Profile B ORB · stop · -1.00R modeled
+2026-06-25,live,MFFU-50K-1,B,short,2,369,broker-confirmed · CONFIRMED (operator/Tradovate) · Profile B ORB · target ~29653 filled · +1.5R · entry 29747 short into 855pt NQ crash · FIRST CONFIRMED LIVE WIN · broker bracket verified working

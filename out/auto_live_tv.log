@@ -1,0 +1,10 @@
+INFO:DUKASCRIPT:current timestamp :2026-06-03T21:05:00
+=== ARES AUTO LIVE · PAPER · MFFU-50K-1 · tier 50K-conservative (A=3 MNQ) ===
+  data: TradingView CDP · REAL CME · CME_MINI:NQ1! @ 1m->5m DUAL (engine 5m + D1c 1m) · warmup=dukascopy 45d · Profile A only · D1c ACTIVE_EVAL_FILTER (real DriftGate, validated 1m — running on 5m feed)
+  SAFETY: paper unless --live + both flags · SUPERVISE (MFFU semi-auto) · Ctrl+C to stop
+  PAPER — webhooks are dry-run LOGGED, NO orders placed.
+  warmup: 8547 bars · span 44d · warmup_ok=True · basis +27.72 · DATA_READY=False
+  DATA NOT READY: RED: stale 29337s
+  flatten guardian armed (wall-clock EOD 14:30 + kill, feed-independent, dry-run)
+  entry gate armed (block entries unless data GREEN + dead-man alive)
+  warmed up · going live · watching the NY-AM window…
