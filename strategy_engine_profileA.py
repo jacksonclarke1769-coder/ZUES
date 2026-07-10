@@ -69,12 +69,26 @@ def _derive_fill_instant(feats_index, fill_bar):
     return ny_ets
 
 
+# EMIT-001 (prereg/EMIT-001.md, DEC-20260711-EMIT-001): the emission-path repair. DEFAULT
+# mode is byte-identical to certified current behaviour; the new mode is inert until an
+# operator explicitly constructs ProfileAEngine(..., emission_mode="emit_at_fill") -- no
+# existing call site (bot.py, auto_live.py, every tools_*/apex_*/replay_* harness) passes
+# this kwarg, so every one of them is completely unaffected by this change.
+EMISSION_MODE_CERTIFIED_GATE = "certified_gate"   # DEFAULT — unchanged: tail(3) + <=10min freshness
+EMISSION_MODE_EMIT_AT_FILL = "emit_at_fill"        # new — drops the poll-time freshness gate only
+EMISSION_MODES = {EMISSION_MODE_CERTIFIED_GATE, EMISSION_MODE_EMIT_AT_FILL}
+
+
 class ProfileAEngine:
-    def __init__(self, strat_cfg):
+    def __init__(self, strat_cfg, emission_mode=None):
         self.c = strat_cfg
         self.buf = pd.DataFrame(columns=["Open", "High", "Low", "Close", "Volume"])
         self.buf.index = pd.DatetimeIndex([], tz=NY)
         self.acted_ts = set()        # fill timestamps already turned into orders
+        mode = emission_mode or EMISSION_MODE_CERTIFIED_GATE
+        if mode not in EMISSION_MODES:      # fail closed on an unknown mode, never silently trade
+            raise ValueError(f"unknown EMISSION_MODE={mode!r}; must be one of {EMISSION_MODES}")
+        self.emission_mode = mode
 
     def add_bar(self, ts, o, h, l, c, v=0):
         """ts: tz-aware ET (or UTC) timestamp of the CLOSED 5m bar."""
@@ -117,12 +131,24 @@ class ProfileAEngine:
             key = ets.isoformat()
             if key in self.acted_ts:
                 continue
-            if (recent - ets) <= pd.Timedelta(minutes=10):    # filled now (this bar or last)
+            if ets > recent:
+                continue    # unreachable by model01's own construction; causal safety net, not a gate
+            # EMIT-001: certified_gate (DEFAULT) keeps the ORIGINAL <=10min poll-time freshness
+            # requirement byte-for-byte. emit_at_fill drops ONLY that poll-time staleness check —
+            # every other condition above (ny_am session, acted_ts dedup, ets<=recent causal
+            # guard, tail(3) scan window) is untouched, so a signal is emitted the moment it is
+            # discovered fresh OR the moment the (unchanged, frozen) model01 scan finally surfaces
+            # it in tail(3) — never gated on how much wall-clock time elapsed since its true fill.
+            if self.emission_mode == EMISSION_MODE_CERTIFIED_GATE:
+                emit = (recent - ets) <= pd.Timedelta(minutes=10)
+            else:
+                emit = True
+            if emit:
                 self.acted_ts.add(key)
                 d = 1 if t["direction"] == "long" else -1
                 return dict(side=t["direction"], entry=float(t["entry"]), stop=float(t["stop"]),
                             target=float(t["target"]), rr=float(t["rr"]), liq=t["liq_swept"],
-                            ts_signal=key)
+                            ts_signal=key, emission_mode=self.emission_mode)
         return None
 
     def in_entry_window(self, ts):
