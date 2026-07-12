@@ -247,3 +247,102 @@ aggregation, conflict-policy DEC, kill-vs-in-flight-trail semantics, real-broker
 mapping / readback integration, causal-reachability split, ARM-B over real 408 slices, watchdog
 paper-shadow acceptance) still gate ARMING and are unaffected by this pass. Certifiable as a build;
 NOT yet arm-eligible until those operator-gated Phase-4 items clear `go-live-recert.sh`.
+
+---
+
+# Round 3 — Phase-4 deferral closeout re-verification (auditor, 2026-07-12)
+
+Re-audited `d3ab74f..e8024b8` (D6+D3 `aaa3a35`, D1 `1e3a65b`, D2 `8658fe5`, D4 `3774b36`, D5
+`e8024b8`). Read every diff + `02_reachability.md` + the updated build report. Method: my own attack
+code / independent comparisons, not the builder's tests.
+
+## 1. D6 single-call bundled cancel-replace — SOUND
+- **Valid actions only.** The stop-replace payload's `action` is the exit-side `sell` (long) / `buy`
+  (short) — both in the docs-verified set (buy/sell/exit/reverse/breakeven/cancel/add). `"stop"` is
+  now an *orderType* only; the old `elif action == "stop"` branch is **removed** (grep-confirmed), so
+  no payload ever sends `action:"stop"`. Entry uses buy/sell, cancel uses cancel. The branch is keyed
+  on the explicit `stop_replace=True` kwarg (not the action string), so A/B (`stop_replace` defaults
+  False) hit the unchanged `elif action in (buy,sell,add)` path — byte-inert (existing-builder tests
+  green).
+- **Eager client-cancel path GONE** (grep: no `cancel_payload`, no `send_fn(...cancel...)` in the
+  manager). One `send_fn` call per ratchet.
+- **Never-naked under all four modes — reproduced against the NEW model (my code, not the suite's):**
+  send-success → 1 payload, `cancel:True` bundled, `live_stops()=={resting}`, `cancelled_stops==[]`;
+  send-failure (HTTP error) → `hold`, old stop unchanged, nothing cancelled; readback timeout-no-confirm
+  → stand down, keep OLD (uncancelled), one live stop, belief==reality; kill during pending confirm →
+  pending abandoned WITHOUT cancel, market-flatten issued, OLD stop left working, cleanup deferred to
+  `on_flat_confirmed` (no naked window; `resting ∈ cancelled_stops` only AFTER flat-confirm).
+- **NO-DOUBLE-STOP invariant test EXISTS** (`test_no_two_live_stops_invariant_across_ratchet` +
+  `live_stops()` always one level). The timeout-fails-whole belief matches reality because the manager
+  cancels nothing itself — the old stop genuinely still rests.
+- WIRE STATUS: `cancel:true` scope / partial-fill races / rate ceiling on the Tradovate BETA remain
+  CONFIRM-pending (flagged in code + report item 1) — correctly NOT armed on docs alone.
+
+## 2. D2 auto_live wiring — SOUND (armed branch fail-closed & isolated)
+- **Unreachability grep/test-proven.** `on_v_signal`'s armed branch is gated by
+  `if self.v_emission != EMISSION_MODE_ARM_LIVE: return`; `v_emission = resolve_vpc_emission_mode()`
+  reads `config_defaults.VPC_LANE_EMISSION_MODE`, which does **not exist** (grep), so it resolves
+  SHADOW. No live code assigns `arm_live` (grep + `test_no_repo_code_constructs_arm_live`).
+- **SHADOW byte-equivalence holds.** Equivalence tests + full suite green; `on_v_signal` in SHADOW
+  only journals to a separate JSONL tree and returns (no sender/risk-book/counter/ledger touch); `_dp`
+  (`day_entered_pnl`) is strategy-agnostic so A+B+V share the daily stop with zero A/B behavior change.
+- **Armed-branch failure mode — RULED fail-closed, NOT a loop-kill.** I forced `v_emission=arm_live`:
+  with a valid engine sig the branch routes (proving the resolver is the *sole* gate, branch
+  functional, no crash — `spec.get("vm", spec.get("am",1))` and `sig.get("ref_close")` are safe/
+  present, so the coordinator's "would KeyError" premise does not bite for real engine sigs). With a
+  degenerate sig missing `ref_close` it raises `TypeError` **loudly**, and the `_engine_bar` V block
+  wraps the whole thing in `try/except … "V never breaks A/B"` — so any V exception is isolated (A/B
+  loop survives, no silent/malformed order). Fail-closed on both axes.
+
+## 3. D1 staged config — SOUND
+- Schema-compat test is REAL and, verified independently, **COMPLETE**: `config_eval_locked` exposes
+  exactly 6 public names, ALL present in `config_relock_v2_staged` with matching types (0 dropped on a
+  mechanical swap). Staged additively adds the two-lane names.
+- Encodes the signed C1 exactly: `A_RISK_BUDGET_USD=900`, `LANE_CAPS={A:6,V:3}`,
+  `LANE_BUDGET_USD={A:900,V:600}`, `am=6`, `COMBINED_OPEN_RISK_CEILING_USD=550`, daily_stop unchanged
+  (550). `VPC_LANE_EMISSION_MODE="shadow"` even in the proposal (applying sizing ≠ arming), and the
+  file is imported by NO live path (grep + test).
+
+## 4. D4 ARM-B 408/408 — SOUND (independently spot-verified)
+`arm_b_over_certified_slices()` → n_total=408, n_filled=408, **n_match=408, 0 mismatches**. My own
+independent cross-check of **5 random trades** (129/166/101/123/98): for each, the live
+`VpcTrailManager`-driven stop_path == my freshly-computed `VT.walk_1m_trail` path == the certified
+`stop_path_new`, exit reasons agree. Bit-for-bit live/sim parity on real data confirmed.
+
+## 5. D5 reachability doc — SOUND, no-suppression claim holds
+- `on_v_signal` **never** consults `self.gate`/`DriftGate`/D1c (grep) — A's D1c surface-lag veto has
+  no VPC analog, as the doc claims. The classes VPC shares (feed-RED/entry-gate, feed-gap) are
+  fail-closed infra gates that suppress all lanes identically.
+- The warmup "steady-state zero-suppression" claim is consistent with the replay evidence: default
+  `WARMUP_BARS=120` blocks emission until warm; `replay_5m_native` legitimately uses `warmup_bars=0`
+  because it starts at true (equally-cold) history start and reproduces the certified n=408 exactly —
+  an apples-to-apples comparison, not a weakening of the live default. Only real VPC-specific
+  suppression = a mid-session cold restart (bounded, non-systematic, runbook item). Verdict fair.
+
+## 6. Full suite — 962 passed, 1 skipped (matches expected). The slow ARM-B-408 test runs by default
+(no `-m` filter) and passes; the 1 skip is the intended superseded stub.
+
+## Report correction — conflict-policy DEC is NO LONGER a remaining blocker
+Build report §"What REMAINS before ARMING" item 3 lists the conflict-policy DEC as BLOCKS-ARMING
+("whether to block is an explicit operator DEC, not improvised"). That DEC is now **RULED**:
+DEC-20260712-VPC-CONFLICT-POLICY = observe-only, no-veto. The code already matches it exactly —
+`flag_opposite_direction()` returns an observational set and NEVER blocks; `admit()` has no
+direction veto (re-confirmed). So item 3 is **RESOLVED (code already compliant)**, not remaining;
+the stale "until such a DEC exists" comment in `vpc_lane_gate.py` (lines 12-19) and report item 3
+should be updated to cite the DEC. This is a doc/bookkeeping correction — no code change needed.
+
+The genuinely-remaining operator-gated externals (report items 1, 2, 4) stand and are legitimately
+outside this build: D6 TradersPost wire-field ticket + paper-shadow, watchdog trail-churn acceptance
+run, and the go-live-recert.sh locked-config promotion.
+
+## FINAL VERDICT: PHASE-4-BUILD-CERTIFIABLE (pending operator-gated externals)
+
+All six deferral closeouts (D1–D6) verified against the auditor's own reproductions and independent
+comparisons. Round-1/2 defects remain killed. The lane is byte-equivalent for A/B in SHADOW
+(962/1), sim/live trail parity is exact and bit-for-bit (408/408, independently spot-checked), the
+disarmed chain is airtight (single resolver gate, no code arms it), the single-call cancel-replace is
+never-naked / no-double-stop under every failure mode, kill/flatten is naked-impossible, and no
+VPC-specific suppression class changes the certified expectations in steady state. The lane remains
+DISARMED and unwired-to-live. Arming is blocked ONLY on the three operator-gated externals above
+(TradersPost wire-field ticket + paper-shadow, watchdog acceptance run, go-live-recert.sh config
+promotion) — none of which are improvisable in this build. Certifiable as a Phase-4 build.
