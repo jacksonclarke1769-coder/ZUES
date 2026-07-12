@@ -61,6 +61,27 @@ EMISSION_MODE_ARM_LIVE = "arm_live"    # ONLY a live router may act — set ONLY
 EMISSION_MODES = {EMISSION_MODE_SHADOW, EMISSION_MODE_PAPER, EMISSION_MODE_ARM_LIVE}
 
 
+def resolve_vpc_emission_mode():
+    """DISARMED-BY-DEFAULT resolver (D2). Returns the VPC lane's emission mode by reading a SINGLE
+    config field — `VPC_LANE_EMISSION_MODE` — from the LIVE config authority (`config_defaults`).
+
+    The current live/locked config does NOT define that name (only `config_relock_v2_staged.py`, the
+    STAGED re-lock proposal, does), so this ALWAYS resolves SHADOW today: there is no value for it to
+    read. Only the operator's go-live-recert.sh, promoting the staged block into the live config, can
+    make the field exist with value "arm_live". Any unknown/missing value fails safe to SHADOW; an
+    explicitly-present but invalid value ALSO resolves SHADOW (never silently arms). This is the one
+    place the live path decides SHADOW vs armed — every VPC call site guards on the result being
+    EMISSION_MODE_ARM_LIVE before it can reach a broker."""
+    try:
+        import config_defaults as CD
+        mode = getattr(CD, "VPC_LANE_EMISSION_MODE", None)
+    except Exception:                    # noqa: BLE001 — a broken config must not arm
+        mode = None
+    if mode in (EMISSION_MODE_ARM_LIVE, EMISSION_MODE_PAPER):
+        return mode
+    return EMISSION_MODE_SHADOW          # missing / unknown / "shadow" -> disarmed
+
+
 class VpcTimestampReconstructionError(Exception):
     """BROKEN-PLUMBING invariant (NOT an ordinary no-signal), same class as
     strategy_engine_profileA.TimestampReconstructionError: it must escape latest_signal() uncaught

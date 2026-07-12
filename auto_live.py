@@ -60,11 +60,22 @@ def et_date():
 def _on_missing_cancel_is_safe(auto_inst):
     """Cancel-all-working-MNQ is SAFE only when A is the sole open lane (single-lane A-only machine).
     Returns (safe:bool, reason:str). Called by the on_missing handler before sending cancel.
-    Exported at module level so test_fill_confirm_ttl can import it directly."""
+    Exported at module level so test_fill_confirm_ttl can import it directly.
+
+    D2: the VPC (Profile V) lane is folded in additively — a cancel-all is unsafe if the V lane holds
+    open risk too. In SHADOW the V lane never opens (v_book has no 'V' entry), so this is
+    byte-equivalent for the A/B machine; the check only ever binds once the lane is armed."""
     b_open = bool(getattr(auto_inst, "b_tracker", None) and auto_inst.b_tracker.open)
     b_risk = bool(getattr(auto_inst, "open_risk", {}).get("B"))
+    v_book = getattr(auto_inst, "v_book", None)
+    v_open = bool(v_book is not None and getattr(v_book, "open_risk", {}).get("V"))
+    reasons = []
     if b_open or b_risk:
-        return False, f"B lane open (b_tracker={b_open}, open_risk_B={b_risk})"
+        reasons.append(f"B lane open (b_tracker={b_open}, open_risk_B={b_risk})")
+    if v_open:
+        reasons.append("V lane open (open_risk_V=True)")
+    if reasons:
+        return False, "; ".join(reasons)
     return True, "single-lane A-only (selected machine)"
 
 
@@ -145,6 +156,32 @@ class LiveAuto:
         self.b_sent = self.b_blocked = 0
         # Profile MOMENTUM lane (OFF unless main() wires it behind --profile-momentum) + shared overlap gate
         self.m_engine = None; self.m_executor = None; self.overlap = None
+        # --- VPC (Profile V) lane — ADDITIVE, DISARMED-by-default (D2) ---------------------------------
+        # Constructed in SHADOW unless the go-live-recert.sh-gated config field arms it. The current
+        # locked config defines NO such field, so resolve_vpc_emission_mode() returns SHADOW today and
+        # every V call site guards on `v_emission == arm_live` — so with the lane wired, auto_live is
+        # byte-equivalent for A/B. Fail-open: if the VPC modules cannot construct, the lane is simply
+        # absent (v_engine=None) and A/B are wholly untouched.
+        self.v_engine = self.v_gate = self.v_book = self.v_journal = None
+        self.v_emission = "shadow"
+        self.v_sent = self.v_blocked = 0
+        try:
+            import strategy_engine_vpc as _EV
+            self.v_emission = _EV.resolve_vpc_emission_mode()          # SHADOW today (no arming field)
+            self.v_engine = _EV.ProfileVEngine(emission_mode=self.v_emission)
+            self.v_gate = _EV.VpcDayGate()
+            from vpc_journal import VpcJournal
+            self.v_journal = VpcJournal(account, mode)
+            from vpc_lane_gate import VpcLaneRiskBook
+            import config_defaults as _CD
+            # caps/budget default to the C1 target constants inside VpcLaneRiskBook; at ARM time the
+            # locked config (once go-live-recert promotes the staged block) supplies them as params —
+            # never a live-read authority here. daily budget = the account's $ daily stop.
+            self.v_book = VpcLaneRiskBook(daily_budget_usd=abs(float(daily_stop)) or 550.0,
+                                          point_value=getattr(_CD, "POINT_VALUE_MNQ", 2.0))
+        except Exception as _ve:                                       # noqa: BLE001 — A/B unaffected
+            print(f"[auto-live] VPC lane not constructed (A/B unaffected): {_ve!r}", flush=True)
+            self.v_engine = None
         self.books = []                # fan-out: secondary account books (e.g. Apex) fed the SAME signals
         self.account, self.tier, self.mode = account, tier, mode
         self.store, self.j, self.sender = store, journal, sender
@@ -588,6 +625,96 @@ class LiveAuto:
                        tp2_qty=_bl.get("tp2_qty", b_size), tp2_target=_bl.get("tp2_target", float(sig["target"])),
                        signal_id_base=sig["ts_signal"], webhook_sent=bool(ok),
                        traderspost_status=_reason, live=(self.mode == "live"), profile="B")
+
+    def v_new_day(self):
+        """Roll the VPC lane's per-day gates on each ET day (no-op if the lane is absent)."""
+        if self.v_gate is not None:
+            self.v_gate.new_day()
+        if self.v_book is not None:
+            self.v_book.new_day()
+
+    def on_v_signal(self, sig, ts, bar_i=None):
+        """Profile V (VPC — VWAP-Pullback Continuation) entry. ADDITIVE + DISARMED-by-default (D2).
+
+        In SHADOW — today's ONLY reachable mode, because resolve_vpc_emission_mode() returns SHADOW
+        while the locked config defines no arming field — this ONLY journals the raw trigger + a
+        missed_fill row (a SEPARATE JSONL tree, never the A/B P&L ledger) and returns WITHOUT touching
+        the sender, the risk book, the readback sentinel, the daily-P&L ledger, or ANY A/B state. So
+        with the lane wired, auto_live is byte-equivalent for A/B (proved by the full suite + the
+        equivalence test). The armed branch below is structurally present (Profile-B-shaped) but
+        UNREACHABLE until an operator arms the lane via go-live-recert.sh."""
+        if self.v_engine is None:
+            return
+        import strategy_engine_vpc as _EV
+        if self.v_journal is not None:                     # observe-only (fail-open, separate tree)
+            self.v_journal.signal(sig)
+        if self.v_emission != _EV.EMISSION_MODE_ARM_LIVE:
+            # DISARMED (shadow/paper): NEVER route live from auto_live. Record the missed fill + return.
+            self.v_blocked += 1
+            if self.v_journal is not None:
+                self.v_journal.missed_fill(ts_signal=sig.get("ts_signal"), side=sig.get("side"),
+                                           reason=f"disarmed_{self.v_emission}")
+            return
+        # ==== ARMED branch — UNREACHABLE today (gated by go-live-recert.sh) ============================
+        # Structurally mirrors on_b_signal: kill/entry-gate guards, two-lane risk-book admission, the
+        # additive market-entry builder, send, book the open risk, and record the fill intent. Resolved
+        # P&L reaches the daily-stop `_dp` sum automatically because the ledger is strategy-agnostic
+        # (day_entered_pnl sums ALL rows for the account/day, incl. strategy="V") — see the _dp site.
+        kill = self.killed()
+        if kill:
+            self.v_blocked += 1
+            if self.v_journal is not None:
+                self.v_journal.missed_fill(ts_signal=sig.get("ts_signal"), side=sig.get("side"),
+                                           reason=f"kill:{kill}")
+            return
+        if self.entry_gate is not None:
+            ready, why = self.entry_gate()
+            if not ready:
+                self.v_blocked += 1
+                if self.v_journal is not None:
+                    self.v_journal.missed_fill(ts_signal=sig.get("ts_signal"), side=sig.get("side"),
+                                               reason=f"entry_gate:{why}")
+                return
+        spec = _tier_spec(self.tier)
+        req_qty = int(spec.get("vm", spec.get("am", 1)))   # 'vm' arrives with the promoted locked config
+        entry = float(sig.get("ref_close")) + self.basis_offset
+        d = int(sig.get("direction", 0))
+        stop = entry - d * float(sig["stop_dist"])
+        stop_pts = abs(entry - stop)
+        ok_admit, v_qty, why = self.v_book.admit("V", stop_pts=stop_pts, requested_qty=req_qty,
+                                                 side=sig.get("side"))
+        if not ok_admit:
+            self.v_blocked += 1
+            if self.v_journal is not None:
+                self.v_journal.missed_fill(ts_signal=sig.get("ts_signal"), side=sig.get("side"),
+                                           reason=f"risk_book:{why}")
+            return
+        payload, err = BP.build_vpc_entry(account=self.account, signal_ts=sig["ts_signal"],
+                                          side=sig["side"], qty=v_qty, ref_price=entry, stop_price=stop,
+                                          root="MNQ", mode_meta=dict(mode="ARES", tier=self.tier, profile="V"))
+        if err:
+            self.v_book.release("V")                       # free the reservation — no double-book
+            self.v_blocked += 1
+            if self.v_journal is not None:
+                self.v_journal.rejection(ts_signal=sig.get("ts_signal"), side=sig.get("side"),
+                                         stage="build_vpc_entry", error=err)
+            return
+        res = self.sender.send(payload)
+        ok = res.get("sent")
+        if ok or self.mode != "live":
+            self.v_sent += 1
+            self.v_book.on_open("V", stop_pts=stop_pts, qty=v_qty, side=sig["side"])
+            if self.readback is not None:
+                self.readback.on_entry(sig["side"], v_qty)
+            if self.v_journal is not None:
+                self.v_journal.fill_intent(ts_signal=sig["ts_signal"], side=sig["side"], qty=v_qty,
+                                           entry=entry, stop=stop,
+                                           signal_id=payload["extras"]["signalId"], why=why)
+        else:
+            self.v_book.release("V")
+            if self.v_journal is not None:
+                self.v_journal.rejection(ts_signal=sig.get("ts_signal"), side=sig.get("side"),
+                                         stage="send", error=res.get("reason", "not sent"))
 
     def on_m_bar(self, ts, o, h, l, c):
         """Profile MOMENTUM: feed the engine a completed 5m bar, route any position change. OFF unless wired.
@@ -1223,6 +1350,17 @@ def main(argv=None):
                 auto.b_tracker.on_bar(_bar["i"], bts, bo, bh, bl, bc)   # fills/exits -> calendar
             except Exception as _be:                               # noqa: BLE001 — B never breaks A
                 print(f"[auto-live] B engine error (ignored): {_be!r}", flush=True)
+            # Profile V (VPC) runs on the same closed 5m bars — DISARMED (SHADOW) by default. The
+            # engine is pure (no I/O/orders) and on_v_signal is SHADOW-inert (journals + returns), so
+            # this leaves A/B byte-equivalent. Wrapped like B so V can NEVER break A/B.
+            try:
+                if auto.v_engine is not None:
+                    auto.v_engine.add_bar(bts, bo, bh, bl, bc)
+                    _vsig = auto.v_engine.latest_signal()
+                    if _vsig is not None:
+                        auto.on_v_signal(_vsig, bts, _bar["i"])
+            except Exception as _ve:                               # noqa: BLE001 — V never breaks A/B
+                print(f"[auto-live] V engine error (ignored): {_ve!r}", flush=True)
             _msig = auto.on_m_bar(bts, bo, bh, bl, bc)             # Profile MOMENTUM lane (no-op unless wired)
             # ARGUS: an in-window decision bar with NO signal must still be logged (zero-trade proof)
             try:
@@ -1277,10 +1415,14 @@ def main(argv=None):
             #     every bar (idempotent — a restart re-reads the same total, never double-counts),
             #     EXCLUDING rejected/blocked rows (trades never entered). Trips the persistent DailyGuard
             #     -> killed()='daily loss stop hit' blocks new entries + the flatten guardian flattens. ---
+            #     D2: day_entered_pnl is STRATEGY-AGNOSTIC — it sums EVERY entered row for the account/day,
+            #     so it already aggregates A + B + V (a resolved VPC trade records with strategy="V" and is
+            #     summed here automatically). In SHADOW the V lane records NO ledger rows, so _dp is
+            #     byte-equivalent for the A/B machine; when armed, V's realized P&L shares this daily stop.
             try:
                 import trade_results as _tr
                 _ed = et_date()
-                _dp = _tr.day_entered_pnl(auto.account, _ed)
+                _dp = _tr.day_entered_pnl(auto.account, _ed)          # A + B + V (strategy-agnostic sum)
                 if _dp <= -abs(auto.daily_stop) and not auto.guard.is_stopped(auto.account, _ed):
                     auto.guard.stop_now(auto.account, _ed,
                                         reason=f"daily loss ${_dp:.0f} <= -${auto.daily_stop} (modeled)")
@@ -1295,6 +1437,13 @@ def main(argv=None):
                 _d2 = pd.Timestamp(ts).tz_convert(NY).date() if pd.Timestamp(ts).tzinfo else pd.Timestamp(ts).date()
                 if _md["d"] != _d2:
                     _md["d"] = _d2; auto.overlap_new_day()
+            # VPC lane day-roll (D2): reset the V gate + risk book each ET day (no-op in SHADOW — the
+            # gate/book are only consulted on the armed admit path). Independent of the overlap gate.
+            if auto.v_engine is not None:
+                _ved = et_date()
+                if getattr(auto, "_v_rolled_day", None) != _ved:
+                    auto._v_rolled_day = _ved
+                    auto.v_new_day()
             # --- Stage B: read-back reconcile (rate-limited; bot starts each ET day flat) ---
             if readback is not None and _rb_broker is not None:
                 _d = pd.Timestamp(ts).tz_convert(NY).date() if pd.Timestamp(ts).tzinfo else pd.Timestamp(ts).date()
@@ -1436,14 +1585,25 @@ def main(argv=None):
 
         print("  going live · watching the NY-AM window…", flush=True)
 
+        def _v_lane_status():                            # D2: surface the VPC lane posture (disarmed today)
+            if auto.v_engine is None:
+                return "V off"
+            return (f"V {auto.v_emission.upper()}" +
+                    ("" if auto.v_emission != "arm_live" else " ⚡LIVE") +
+                    f" · sent {auto.v_sent}/blk {auto.v_blocked}")
+
         def _health_fields():                            # shared by the go-live card AND /health command
             _ds = (feed.data_state()[0] if hasattr(feed, "data_state") else "GREEN")
+            _profiles = "A + B (ORB)" if not getattr(a, "no_profile_b", False) else "A only"
+            if auto.v_engine is not None:                # V lane wired -> reflect it (disarmed in shadow)
+                _profiles += f" + V (VPC, {auto.v_emission})"
             return {
                 "Sizing": f"A {spec['am']} MNQ + B {spec['bm']} MNQ",
                 "D1c": d1c_mode + (" ✅" if d1c_mode == "ACTIVE_EVAL_FILTER" else " ⚠️ SHADOW"),
                 "Data": f"{'✅' if _ds == 'GREEN' else '🔴'} {_ds} · {a.feed}",
                 "Daily stop": f"-${spec['daily_stop']:,}",
-                "Profiles": "A + B (ORB)" if not getattr(a, "no_profile_b", False) else "A only",
+                "Profiles": _profiles,
+                "VPC lane": _v_lane_status(),
                 "Read-back": ("on" if readback is not None else "off") + " · Journal: on · Guardian+gate: armed",
             }
 
@@ -1459,9 +1619,11 @@ def main(argv=None):
             def _h_status(_a):
                 _ds = (feed.data_state()[0] if hasattr(feed, "data_state") else "GREEN")
                 halt = "🛑 HALTED" if auto.killed() else "🟢 active"
+                _vln = f" V:{auto.v_sent}" if auto.v_engine is not None else ""
                 return (f"{halt} · {a.account}\n"
                         f"• Data: {'✅' if _ds == 'GREEN' else '🔴'} {_ds} · D1c {auto.gate.heimdall_status()}\n"
-                        f"• Trades: {auto.sent + auto.b_sent} (A:{auto.sent} B:{auto.b_sent}) · blocked {auto.blocked}")
+                        f"• Trades: {auto.sent + auto.b_sent} (A:{auto.sent} B:{auto.b_sent}{_vln}) · blocked {auto.blocked}\n"
+                        f"• VPC lane: {_v_lane_status()}")
 
             def _h_journal(_a):
                 es = getattr(journal, "entries", []) if journal is not None else []
