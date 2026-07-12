@@ -97,16 +97,22 @@ def test_cancel_replace_timeout_stands_down_and_keeps_last_resting():
                         clock_fn=lambda: clock["t"], confirm_fn=lambda stop: False, timeout_s=5.0)
     res, level = m.on_1m_bar(1, 99.0, 101.0, 100.5, 1.0, now_ts=0.0)
     assert res == "replace"
-    resting_at_replace = m.resting_stop        # with confirm_fn set, this is NOT yet advanced
+    resting_at_replace = m.resting_stop        # readback path: resting stays at the OLD (working) stop
     assert m.pending is not None
+    # F1: the OLD stop must NOT have been cancelled — no cancel payload sent while unconfirmed
+    assert m.cancelled_stops == []
+    assert [p.get("action") for p in sender.sent] == ["stop"]
     # advance the clock past the timeout; next bar's timeout check must stand down
     clock["t"] = 10.0
     res2, level2 = m.on_1m_bar(2, 100.0, 104.0, 103.5, 1.0, now_ts=10.0)
     assert m.stood_down is True
     assert any(ev == "vpc_trail_timeout" for ev, _ in alerts)
-    # stood down -> no further replaces; resting stop is the LAST CONFIRMED (never the phantom)
+    # stood down -> no further replaces; resting stop is the OLD stop, which was NEVER cancelled ->
+    # genuinely still working (the F1 fix: not a cancelled order held under a false belief)
     assert res2 == "hold"
     assert m.resting_stop == resting_at_replace
+    assert m.resting_stop not in m.cancelled_stops
+    assert m.cancelled_stops == []             # old stop never cancelled on timeout
     assert m.pending is None
 
 
@@ -120,11 +126,86 @@ def test_confirm_advances_resting_stop():
                         confirm_fn=lambda stop: confirmed["stop"] == stop, timeout_s=5.0)
     res, level = m.on_1m_bar(1, 99.0, 101.0, 100.5, 1.0)
     assert res == "replace"
+    # F1: BEFORE confirmation, the old stop is NOT cancelled (confirm-then-cancel)
+    assert m.cancelled_stops == []
+    old_resting = m.resting_stop               # still the OLD stop while unconfirmed
     confirmed["stop"] = level                  # readback now sees the new stop resting
-    # next bar's timeout check confirms it -> resting advances, no stand-down
+    # next bar's timeout check confirms it -> old stop cancelled, THEN resting advances, no stand-down
     m.on_1m_bar(2, 100.0, 100.6, 100.2, 1.0)   # small bar, no new ratchet
     assert m.stood_down is False
     assert m.resting_stop == level
+    assert m.cancelled_stops == [old_resting]  # old stop cancelled ONLY after confirmation
+    assert m.resting_stop not in m.cancelled_stops
+
+
+def test_readback_confirm_rejection_keeps_old_and_stands_down():
+    """F1: if confirm_fn reports the new stop was REJECTED downstream, the manager keeps the OLD
+    (never-cancelled, still-working) stop, alerts, and stands down — never naked, never a phantom."""
+    alerts = []
+    sender = FakeSender(accept=True)
+    m = VpcTrailManager(account="T", signal_ts="ts", side="long", qty=1, entry=100.0,
+                        init_stop_dist=5.0, trail_atr=2.0, send_fn=sender.send,
+                        alert_fn=lambda ev, **k: alerts.append(ev),
+                        clock_fn=lambda: 0.0, confirm_fn=lambda stop: "rejected", timeout_s=5.0)
+    res, level = m.on_1m_bar(1, 99.0, 101.0, 100.5, 1.0)
+    assert res == "replace"
+    old_resting = m.resting_stop
+    m.on_1m_bar(2, 100.0, 100.6, 100.2, 1.0)   # confirm check sees "rejected"
+    assert m.stood_down is True
+    assert "vpc_trail_replace_rejected" in alerts
+    assert m.resting_stop == old_resting
+    assert m.cancelled_stops == []             # old stop never cancelled -> genuinely protected
+    assert m.pending is None
+
+
+def test_resting_stop_never_cancelled_invariant():
+    """F1 core invariant across a ratcheting sequence (readback path, always confirming): at EVERY
+    step the manager's believed-resting stop is never an order it has already cancelled."""
+    confirmed = {"stop": None}
+    sender = FakeSender(accept=True)
+    m = VpcTrailManager(account="T", signal_ts="ts", side="long", qty=1, entry=100.0,
+                        init_stop_dist=5.0, trail_atr=2.0, send_fn=sender.send,
+                        clock_fn=lambda: 0.0,
+                        confirm_fn=lambda stop: confirmed["stop"] == stop, timeout_s=5.0)
+    # a rising sequence -> repeated ratchets; confirm each replace on the following bar
+    bars = [(99.0, 101.0, 100.6), (100.0, 102.0, 101.6), (101.0, 103.0, 102.6),
+            (102.0, 104.0, 103.6), (103.0, 105.0, 104.6)]
+    for i, (lo, hi, cl) in enumerate(bars, start=1):
+        res, level = m.on_1m_bar(i, lo, hi, cl, 1.0)
+        assert m.resting_stop not in m.cancelled_stops     # invariant holds at every step
+        if res == "replace":
+            confirmed["stop"] = level                       # readback confirms it before the next bar
+    assert m.replaces_sent >= 2                              # the sequence actually ratcheted
+    assert m.resting_stop not in m.cancelled_stops
+
+
+def test_out_of_order_stale_bar_rejected():
+    """F2: a reconnect-replayed / out-of-order stale bar (bar_id <= last processed) must NOT re-step
+    the trail — the audit's reproduced phantom exit must no longer reproduce."""
+    sender = FakeSender(accept=True)
+    m = _mgr(send_fn=sender.send)
+    r1, _ = m.on_1m_bar(1, 99.0, 101.0, 100.5, 1.0)
+    assert r1 == "replace"
+    r2, _ = m.on_1m_bar(2, 100.0, 103.0, 102.5, 1.0)       # ratchets internal trail toward 100.5
+    assert r2 == "replace"
+    # AUDIT REPRODUCTION: re-deliver stale bar id 1 (low 99 < the ratcheted internal stop) — under
+    # the old == guard this fired a PHANTOM exit. Monotonic guard now rejects it as a no-op hold.
+    r3, level3 = m.on_1m_bar(1, 99.0, 101.0, 100.5, 1.0)
+    assert r3 == "hold"
+    assert not m.exited
+    assert level3 == m.resting_stop
+
+
+def test_same_timestamp_repoll_rejected():
+    """F2: a same-timestamp re-poll (bar_id == last processed) is a no-op hold, no re-step."""
+    sender = FakeSender(accept=True)
+    m = _mgr(send_fn=sender.send)
+    r1, _ = m.on_1m_bar(5, 99.0, 101.0, 100.5, 1.0)
+    assert r1 == "replace"
+    before = m.trail.stop
+    r2, _ = m.on_1m_bar(5, 100.0, 103.0, 102.5, 1.0)       # same id re-poll
+    assert r2 == "hold"
+    assert m.trail.stop == before                           # canonical trail did NOT advance
 
 
 def test_stop_hit_exits_at_resting_stop():
