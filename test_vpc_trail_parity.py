@@ -94,6 +94,15 @@ SAMPLE_SNAPSHOTS = {
 
 PNL_STREAM_HASH = "445964f62be16f0033adffa3bdf58a9285201caf1463ab4b71ad74fb90ddcc26"
 
+# ---- 5m-native convention (the conservative signed economic basis, DEC-20260712 §4) --------------
+# The parity canary must cover BOTH exit conventions with their respective certified signatures.
+# 5m-native = simulate_day's high/low-referenced trail (VS.vpc_trades_rich); 1m-truth = the
+# close-referenced VpcTrail walk above. The DEC pins 5m-native as the signed numeric basis and
+# 1m-truth as the live lane's parity TARGET.
+FROZEN_N_5M = 408
+FROZEN_NET_5M = 4919.17857142856
+PF_TOL_5M = 0.002
+
 
 def _hash_stop_path(stop_path):
     """Deterministic SHA-256 content hash of a trade's full stop_path (list of (old, new) stop
@@ -194,6 +203,122 @@ def test_arm_a_ratchet_never_loosens():
         prev_stop = level
 
 
+@pytest.fixture(scope="module")
+def df5m():
+    """The certified 5m-native VPC ledger (VS.vpc_trades_rich) over the real Databento history."""
+    import vpc_apex_eval_sim as VS
+    feats = VR.v.features(VS.real_rth_5m())
+    feats = feats[feats.date >= VR.WINDOW_START]
+    return VS.vpc_trades_rich(feats)
+
+
+def test_5m_native_aggregate_signature(df5m):
+    """SECOND convention canary: n=408, net=+4919.178571pt (6-dp exact) — the conservative
+    5m-native ledger the signed DEC pins as the numeric basis. Complements the 1m-truth canary
+    above so BOTH certified conventions are guarded permanently."""
+    assert len(df5m) == FROZEN_N_5M
+    net = float(df5m["pnl_pts"].sum())
+    assert abs(net - FROZEN_NET_5M) < 1e-6, f"5m-native net={net} vs frozen {FROZEN_NET_5M}"
+
+
+def test_5m_native_streaming_engine_reproduces_signature():
+    """The STREAMING ProfileVEngine + VpcDayGate, walked over a bounded real-data window with the
+    certified 5m-native exit, reproduces the certified taken-trade ledger EXACTLY on that window
+    (n + net + per-trade entry ts). The FULL-history exact reproduction (n=408, net=4919.178571)
+    was verified offline and is guarded by test_vpc_signal_parity's windowed exact-match; this
+    canary keeps a fast in-suite proof that the streaming engine == batch backtest on real data."""
+    import pandas as pd
+    import vpc_apex_eval_sim as VS
+    import vpc_paper_harness as PH
+    feats = VR.v.features(VS.real_rth_5m())
+    w0 = pd.Timestamp("2022-01-01", tz="America/New_York")
+    w1 = pd.Timestamp("2022-04-01", tz="America/New_York")
+    feats = feats[(feats.date >= w0) & (feats.date < w1)]
+    led = PH.replay_5m_native(feats=feats)
+    cert = VS.vpc_trades_rich(feats)
+    assert len(led) == len(cert), f"window trade count {len(led)} vs certified {len(cert)}"
+    assert abs(float(led.pnl_pts.sum()) - float(cert.pnl_pts.sum())) < 1e-6
+    # per-trade entry timestamps identical (proves the streaming state machine picks the SAME entries)
+    assert [pd.Timestamp(t).isoformat() for t in led.ts] == \
+           [pd.Timestamp(t).isoformat() for t in cert.ts]
+
+
+def _live_shaped_stop_series(bars_1m, atr_5m, idx1_ts, idx5_ts, ei, entry, direction,
+                             init_stop_dist, trail_atr):
+    """ARM B driver: reconstruct atr_now per 1m bar via an INDEPENDENT streaming j5 mapping (as the
+    live lane must) and feed the LIVE VpcTrailManager one bar at a time. Returns (stop_path, exit).
+    This is the live path; ARM B asserts it equals the sim walk_1m_trail for the same inputs."""
+    from vpc_trail_manager import VpcTrailManager
+    sender_log = []
+    mgr = VpcTrailManager(account="ARMB", signal_ts="t", side=("long" if direction == 1 else "short"),
+                          qty=1, entry=entry, init_stop_dist=init_stop_dist, trail_atr=trail_atr,
+                          send_fn=lambda p: (sender_log.append(p) or {"sent": True}))
+    n5 = len(idx5_ts)
+    j5 = ei
+    exit_level = None
+    for x in range(len(bars_1m)):
+        lo, hi, cl = bars_1m[x]
+        while j5 + 1 < n5 and idx1_ts[x] >= idx5_ts[j5 + 1]:
+            j5 += 1
+        atr_prev = atr_5m[j5 - 1] if j5 - 1 >= 0 else np.nan
+        atr_now = atr_prev if not np.isnan(atr_prev) else atr_5m[ei - 1]
+        res, level = mgr.on_1m_bar(x, lo, hi, cl, atr_now)
+        if res == "exit":
+            exit_level = level
+            break
+    return mgr.trail.stop_path, exit_level
+
+
+def test_live_shaped_parity_arm_B():
+    """ARM B (was REQUIRED-BEFORE-ARM STUB, now BUILT): feed the LIVE VpcTrailManager the SAME
+    inputs as the sim's walk_1m_trail but delivered one bar at a time with atr_now reconstructed by
+    an independent streaming j5 mapping, and assert the resulting stop series + exit are identical.
+    This proves live/sim parity of the trail MANAGER, not just that the refactor is
+    behavior-preserving (ARM A). Three deterministic scenarios: a long that ratchets then stops, a
+    short that ratchets then stops, and a runner that reaches EOD without stopping."""
+    trail_atr = 2.0
+    # 5m ATR series (constant here) + 5m timestamps at 5-min spacing; 1m bars at 1-min spacing.
+    base5 = pd.Timestamp("2024-03-01 10:00:00", tz="America/New_York")
+    idx5_ts = np.array([base5 + pd.Timedelta(minutes=5 * k) for k in range(40)])
+    atr_5m = np.full(40, 1.0)
+    ei = 2
+
+    def one_min_index(nbars):
+        start = idx5_ts[ei]
+        return np.array([start + pd.Timedelta(minutes=k) for k in range(nbars)])
+
+    scenarios = []
+    # (1) long runner that ratchets up then stops out
+    entry = 100.0
+    long_bars = [(99.5, 101.0, 100.8), (100.0, 102.0, 101.9), (101.0, 103.0, 102.8),
+                 (99.0, 102.5, 100.0), (95.0, 100.0, 96.0)]   # last bar takes out the trailed stop
+    scenarios.append((long_bars, 1, entry, 5.0))
+    # (2) short runner that ratchets down then stops out
+    short_entry = 100.0
+    short_bars = [(99.0, 100.5, 99.2), (97.0, 99.5, 97.5), (95.0, 97.0, 95.5),
+                  (95.0, 101.0, 100.0)]                       # last bar takes out the trailed stop
+    scenarios.append((short_bars, -1, short_entry, 5.0))
+    # (3) long that never stops -> runs to end of feed (no exit)
+    run_bars = [(99.6, 100.5, 100.3), (100.1, 101.0, 100.8), (100.5, 101.5, 101.3)]
+    scenarios.append((run_bars, 1, 100.0, 5.0))
+
+    for bars_1m, d, entry_px, init_stop_dist in scenarios:
+        idx1_ts = one_min_index(len(bars_1m))
+        H1 = np.array([b[1] for b in bars_1m]); L1 = np.array([b[0] for b in bars_1m])
+        C1 = np.array([b[2] for b in bars_1m])
+        # SIM path (canonical historical wrapper)
+        sim_exit, sim_reason, sim_path = VT.walk_1m_trail(
+            idx1_ts, H1, L1, C1, atr_5m, idx5_ts, ei, entry_px, d, init_stop_dist, trail_atr)
+        # LIVE path (VpcTrailManager fed one bar at a time)
+        live_path, live_exit = _live_shaped_stop_series(
+            bars_1m, atr_5m, idx1_ts, idx5_ts, ei, entry_px, d, init_stop_dist, trail_atr)
+        assert live_path == sim_path, f"ARM B stop-series mismatch (dir={d})"
+        if sim_reason == "stop":
+            assert live_exit == sim_exit, f"ARM B exit mismatch (dir={d})"
+        else:
+            assert live_exit is None, "ARM B: sim ran to EOD but live reported a stop exit"
+
+
 def test_live_shaped_parity_arm_STUB():
     """ARM B (REQUIRED-BEFORE-ARM, NOT BUILT): would feed a mock live bar-close stream into the
     SAME `VpcTrail` stepper used by ARM A's historical replay and assert the resulting stop_path
@@ -227,6 +352,9 @@ def test_live_shaped_parity_arm_STUB():
         # assert sim_path == live_path  # sim/live parity -- THE claim ARM A cannot make
     """
     pytest.skip(
-        "REQUIRED-BEFORE-ARM: live-shaped bar-close feed arm not built; Phase-0 proves refactor "
-        "clean, NOT that live matches sim"
+        "SUPERSEDED by test_live_shaped_parity_arm_B (built in Phase 3): the live-shaped bar-close "
+        "feed arm now drives VpcTrailManager one bar at a time and asserts stop-series parity with "
+        "the sim walk. This stub remains only as the historical scaffold; the REAL-DATA extension "
+        "(driving arm_B over the certified 408-trade 1m slices, not just synthetic scenarios) is a "
+        "MUST-AUDIT follow-up recorded in the build report."
     )
