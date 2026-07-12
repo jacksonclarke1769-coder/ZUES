@@ -29,8 +29,8 @@ Scope: DEC-20260712-RELOCK-V2-SIGNED Phase 3 — build + certification-prep of t
 | File | Role |
 |---|---|
 | `strategy_engine_vpc.py` (new) | `ProfileVEngine` streaming signal engine (reuses certified `vpc_signals` on a rolling buffer) + `VpcDayGate` (reproduces `simulate_day` taken-trade admission) + fail-closed EMISSION_MODE + `VpcTimestampReconstructionError`/`_derive_vpc_instant`. |
-| `vpc_trail_manager.py` (new) | `VpcTrailManager`: live cancel-replace trail order management driving the CANONICAL `vpc_trail.VpcTrail`; never-naked ordering, cancel-replace timeout fail-safe, one-step/replace-per-1m-bar. |
-| `vpc_lane_gate.py` (new) | `VpcLaneRiskBook`: two-lane (A+VPC) risk accounting — per-lane caps (A 6 / VPC 3), per-lane size-to-risk budgets, shared combined-open-risk ceiling; observational opposite-direction flag. |
+| `vpc_trail_manager.py` (new) | `VpcTrailManager`: live cancel-replace trail order management driving the CANONICAL `vpc_trail.VpcTrail`. Readback path uses CONFIRM-THEN-CANCEL ordering (the old stop is cancelled only after `confirm_fn` confirms the new one resting — F1 fix); cancel-replace timeout/rejection keeps the OLD, never-cancelled, still-working stop; MONOTONIC bar-id guard rejects stale/out-of-order re-delivered bars (F2 fix). Optimistic (default, no-ACK) path carries the inherent webhook-only gap (Phase-4 wire item). |
+| `vpc_lane_gate.py` (new) | `VpcLaneRiskBook`: two-lane (A+VPC) risk accounting — per-lane caps (A 6 / VPC 3), per-lane size-to-risk budgets, shared combined-open-risk ceiling with ATOMIC reserve-on-admit (F3 fix: same-bar A+V admits cannot both pass against the same headroom) + `release()`; observational opposite-direction flag. |
 | `vpc_journal.py` (new) | `VpcJournal`: four fail-open JSONL journals (signal / fill_intent / missed_fill / rejection). |
 | `vpc_paper_harness.py` (new) | `replay_5m_native` (streaming sim-parity harness) + `PaperVpcLane` (end-to-end SimBot paper lane). |
 | `bridge_traderspost.py` (edited, ADDITIVE) | `build_vpc_entry`, `build_vpc_stop_replace`, and an additive `_wire` `"stop"` branch. |
@@ -55,10 +55,41 @@ Scope: DEC-20260712-RELOCK-V2-SIGNED Phase 3 — build + certification-prep of t
 ## Suite counts (before → after)
 
 - Before (baseline on branch point): **885 passed, 1 skipped** (886 collected).
-- After: see `reports/vpc_lane_build/full_suite.txt` — VPC adds 40 fast unit tests + the parity
-  tests; the pre-existing 885 remain green (Profile A unaffected). The single pre-existing skip
-  (ARM B stub) is retained as a superseded historical scaffold; ARM B itself now runs as a passing
-  test.
+- After (initial build): 931 passed, 1 skipped.
+- After (cross-audit remediation F1/F2/F3 + hardening): **942 passed, 1 skipped** (see
+  `reports/vpc_lane_build/full_suite.txt`). VPC adds 51 fast unit tests + the parity/ARM tests; the
+  pre-existing 885 remain green (Profile A unaffected). The single pre-existing skip (ARM B stub) is
+  retained as a superseded historical scaffold; ARM B itself runs as a passing test.
+
+## Cross-audit remediation (see `reports/vpc_lane_build/01_CROSS_AUDIT.md`)
+
+The independent adversarial cross-audit returned FIX-REQUIRED with three reproduced defects in the
+(disarmed) order-management layer; all three are now fixed on this branch, plus the two hardening
+notes. This corrects two previously over-claimed lines in this report (the unqualified "never leaves
+naked" and "one step per bar … test-covered" claims):
+
+- **F1 — readback cancel-before-confirm (naked + false belief).** The `confirm_fn` path previously
+  cancelled the OLD stop eagerly in `_issue_replace`, then on timeout "kept the last resting stop" —
+  an order already cancelled. FIXED: confirm-then-cancel — the old stop is cancelled ONLY after
+  `confirm_fn` confirms the new one resting; on timeout OR rejection the OLD (never-cancelled, still
+  working) stop is kept, alerted, and the position stands down. New invariant test asserts the
+  believed-resting stop is never in `cancelled_stops`. (The default optimistic no-ACK path was
+  audited SOUND under its own model; its inherent webhook gap remains a Phase-4 wire item.)
+- **F2 — idempotency guard bypassed by out-of-order bars (phantom exit).** The guard was
+  `bar_id == last_bar_processed` (blocks only the immediately-preceding id). FIXED: monotonic guard
+  rejects any `bar_id <= last_bar_processed`, so a reconnect-replayed / out-of-order stale bar cannot
+  re-step the trail. The audit's exact phantom-exit reproduction now returns `hold`.
+- **F3 — admit checked but did not reserve (same-bar overbook).** `admit()` read live headroom and
+  booked nothing, so same-bar A+V both passed against the same ceiling ($1400 vs $1000). FIXED:
+  atomic reserve-on-admit (`reserved` ledger counted in `combined_open_risk`) + `release()`;
+  `on_open` converts the reservation without double-booking. New same-bar dual-admission test asserts
+  the ceiling holds.
+- **Hardening — `round_tick` NaN.** Now raises on non-finite prices; VPC builders fail closed
+  (no `stopPrice: nan` payload).
+- **Hardening — cold-start warmup gate.** `ProfileVEngine` refuses emission until its buffer holds
+  `WARMUP_BARS` (≥1 RTH session) continuous bars, mirroring tv_feed's warmup discipline — closing the
+  audit's diagnosed cold-buffer artifact. Parity/replay harnesses (which start from a genuine cold
+  history start, matched against an equally-cold batch) construct with `warmup_bars=0`.
 
 ## doc-2 (07_...requirements.md) checklist coverage
 

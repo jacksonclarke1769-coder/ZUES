@@ -1,6 +1,4 @@
-test_vulcan.py::test_timestamp_gap_session_roll_does_not_crash
-  /Users/jacksonclarke/trading-team/bot/nq-liq-bot/store.py:95: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
     (dt.datetime.utcnow().isoformat(timespec="seconds"), level, msg))
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-931 passed, 1 skipped, 3 warnings in 160.64s (0:02:40)
+942 passed, 1 skipped, 3 warnings in 159.99s (0:02:39)
