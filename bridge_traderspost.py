@@ -78,6 +78,20 @@ def _wire(root, action, qty=0, order_type="market", limit_price=None, stop_price
             p["stopLoss"] = {"type": "stop", "stopPrice": stop_price}   # VERIFIED
         if target_price is not None:
             p["takeProfit"] = {"limitPrice": target_price}             # VERIFIED
+    elif action == "stop":
+        # ADDITIVE (VPC lane): a standalone protective-stop order carrying the new resting stop
+        # level for an already-open position. Purely additive branch — every pre-existing action
+        # (buy/sell/add/exit/cancel) takes an untouched path above/below. The exact TradersPost
+        # wire field for a bare protective-stop-replace is CONFIRM-pending (same status as
+        # build_cancel's cancel support): the audit records that TradersPost exposes only cancel +
+        # re-send, so the VPC trail manager pairs this with a cancel (build_vpc_stop_replace). The
+        # SAFETY logic (deterministic sid, side/level validation) is final; only the key mapping is
+        # provisional and confined to this one branch.
+        if qty:
+            p["quantity"] = int(qty)
+        p["orderType"] = "stop"
+        if stop_price is not None:
+            p["stopLoss"] = {"type": "stop", "stopPrice": stop_price}   # CONFIRM key for bare-stop
     extras = dict(meta or {})
     extras["signalId"] = sid          # dedup key lives in extras (no native TP dedup)
     p["extras"] = extras
@@ -190,3 +204,78 @@ def build_cancel(*, account, strategy, signal_ts, root="MNQ"):
     return _wire(root, "cancel", 0, "market", sid=sid,
                  meta=dict(strategy=strategy, account=account,
                            note="cancel support CONFIRM", source="zeus_bridge")), None
+
+
+# =================================================================================================
+# VPC lane (ADDITIVE) — VWAP-Pullback Continuation. Market entry + a client-side MANAGED trailing
+# stop (2.5xATR initial, 5.0xATR trail). NO fixed target (position runs to stop or EOD). These are
+# additive builders following build_entry()/build_momentum_entry()'s fail-closed style; they touch
+# no existing builder and no send path. The lane is DISARMED by default — nothing calls these
+# until an operator arms the lane via the go-live-recert.sh-gated config flag (Phase 4).
+# =================================================================================================
+def build_vpc_entry(*, account, signal_ts, side, qty, ref_price, stop_price,
+                    root="MNQ", mode_meta=None):
+    """VPC market entry carrying ONLY its initial 2.5xATR protective stop — no fixed target (the
+    5.0xATR trailing stop, managed client-side bar-by-bar, is the exit). Modelled on
+    build_momentum_entry (market entry + protective stop) but the stop is an ABSOLUTE price the
+    caller already computed from the certified 2.5xATR distance, and the deterministic signalId is
+    keyed to strategy "V". Returns (payload, None) or (None, error) — fail-closed."""
+    try:
+        if int(qty) <= 0:
+            return None, "quantity <= 0"
+        d = 1 if side == "long" else -1 if side == "short" else 0
+        if d == 0:
+            return None, f"unknown side '{side}'"
+        ref = round_tick(ref_price, root)
+        stop = round_tick(stop_price, root)
+        if stop == ref:
+            return None, "stop equals ref after rounding"
+        # protective stop must sit on the losing side of entry (long -> below, short -> above)
+        if d == 1 and not (stop < ref):
+            return None, f"long VPC stop wrong side: need stop<ref, got {stop}<{ref}"
+        if d == -1 and not (stop > ref):
+            return None, f"short VPC stop wrong side: need stop>ref, got {stop}>{ref}"
+    except Exception as ex:                                   # noqa: BLE001
+        return None, f"vpc entry build failed: {ex}"
+    action = "buy" if side == "long" else "sell"
+    sid = signal_id(account, "V", signal_ts, "entry")
+    meta = dict(strategy="V", setup="vpc", side=side, role="entry",
+                risk_points=round(abs(ref - stop), 2),
+                risk_usd=round(abs(ref - stop) * PT_VALUE[root] * int(qty), 2),
+                account=account, **(mode_meta or {}), source="zeus_bridge")
+    return _wire(root, action, int(qty), "market", stop_price=stop, sid=sid, meta=meta, price=ref), None
+
+
+def build_vpc_stop_replace(*, account, signal_ts, side, qty, new_stop, root="MNQ", seq=0,
+                           mode_meta=None):
+    """Cancel-replace a VPC protective stop as the 5.0xATR trail ratchets. Returns
+    ((cancel_payload, stop_payload), None) or (None, error) — the ORDERING the caller MUST honour
+    is REPLACE-THEN-CONFIRM / never-naked: the trail manager places the NEW stop and only then
+    cancels the stale one, with the cancel-replace timeout fail-safe (keep the LAST resting stop,
+    alert, never naked) enforced in vpc_trail_manager. `seq` (monotone per trade) makes each
+    replacement's signalId unique+deterministic so re-sends dedup correctly. `new_stop` is the
+    absolute ratcheted stop price; side is the POSITION side (long position -> sell-stop below).
+    Fail-closed: an inverted/degenerate stop returns (None, error) so no payload is emitted."""
+    try:
+        d = 1 if side == "long" else -1 if side == "short" else 0
+        if d == 0:
+            return None, f"unknown side '{side}'"
+        if int(qty) <= 0:
+            return None, "quantity <= 0"
+        ns = round_tick(new_stop, root)
+    except Exception as ex:                                   # noqa: BLE001
+        return None, f"vpc stop-replace build failed: {ex}"
+    # a protective stop for a LONG position is a resting SELL below; for a SHORT, a BUY above.
+    stop_side = "sell" if d == 1 else "buy"
+    role = f"stop_replace_{int(seq)}"
+    cancel_sid = signal_id(account, "V", signal_ts, f"stop_cancel_{int(seq)}")
+    stop_sid = signal_id(account, "V", signal_ts, role)
+    common = dict(strategy="V", setup="vpc", account=account, side=side,
+                  **(mode_meta or {}), source="zeus_bridge")
+    cancel_payload = _wire(root, "cancel", 0, "market", sid=cancel_sid,
+                           meta=dict(common, role=f"stop_cancel_{int(seq)}", seq=int(seq),
+                                     note="cancel prior VPC protective stop (CONFIRM)"))
+    stop_payload = _wire(root, "stop", int(qty), "stop", stop_price=ns, sid=stop_sid,
+                         meta=dict(common, role=role, seq=int(seq), stop_side=stop_side,
+                                   new_stop=ns))
+    return (cancel_payload, stop_payload), None
