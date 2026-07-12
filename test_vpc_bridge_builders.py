@@ -1,6 +1,7 @@
 """test_vpc_bridge_builders.py — the ADDITIVE VPC bridge payload builders (build_vpc_entry,
 build_vpc_stop_replace) follow build_entry()'s fail-closed style, and — critically — do NOT alter
-any pre-existing builder's output (the additive '_wire' stop-branch is proven inert for A/B)."""
+any pre-existing builder's output (the additive '_wire' stop_replace branch, keyed on an explicit
+flag, is proven inert for A/B: buy/sell/add/exit/cancel never set stop_replace=True)."""
 import os
 import sys
 
@@ -64,21 +65,23 @@ def test_deterministic_entry_signal_id():
     assert a["extras"]["signalId"] != c["extras"]["signalId"]     # different ts -> different id
 
 
-# ---- build_vpc_stop_replace: cancel-replace pair -------------------------------------------------
-def test_stop_replace_pair_ok():
-    pair, err = BP.build_vpc_stop_replace(account="ACC", signal_ts="t", side="long", qty=2,
-                                          new_stop=97.13, seq=3)
+# ---- build_vpc_stop_replace: D6 SINGLE-CALL bundled cancel-replace -------------------------------
+def test_stop_replace_single_call_ok():
+    """D6: ONE payload — a valid exit-side action + orderType 'stop' + stopPrice + cancel:true (the
+    bundled server-side cancel-replace). 'stop' is NOT a valid action; it is only the orderType."""
+    payload, err = BP.build_vpc_stop_replace(account="ACC", signal_ts="t", side="long", qty=2,
+                                             new_stop=97.13, seq=3)
     assert err is None
-    cancel_payload, stop_payload = pair
-    assert cancel_payload["action"] == "cancel"
-    assert stop_payload["action"] == "stop"
-    assert stop_payload["orderType"] == "stop"
-    assert stop_payload["quantity"] == 2
-    assert stop_payload["stopLoss"]["stopPrice"] == 97.25         # 97.13 rounded to tick
-    assert stop_payload["extras"]["stop_side"] == "sell"          # protective stop for a long
-    assert stop_payload["extras"]["seq"] == 3
-    # cancel and stop have DISTINCT deterministic ids
-    assert cancel_payload["extras"]["signalId"] != stop_payload["extras"]["signalId"]
+    assert payload["action"] == "sell"                # protective stop for a LONG = a resting SELL
+    assert payload["orderType"] == "stop"
+    assert payload["quantity"] == 2
+    assert payload["stopPrice"] == 97.25              # 97.13 rounded to tick
+    assert payload["price"] == 97.25                  # Tradovate needs an explicit price
+    assert payload["cancel"] is True                  # bundled server-side cancel of the prior stop
+    assert payload["extras"]["stop_side"] == "sell"
+    assert payload["extras"]["seq"] == 3
+    assert payload["extras"]["cancel_bundled"] is True
+    assert payload["extras"]["signalId"].startswith("ZB-")
 
 
 def test_stop_replace_seq_makes_unique_ids():
@@ -86,14 +89,26 @@ def test_stop_replace_seq_makes_unique_ids():
                                       new_stop=97.0, seq=0)
     p1, _ = BP.build_vpc_stop_replace(account="A", signal_ts="t", side="long", qty=1,
                                       new_stop=97.5, seq=1)
-    assert p0[1]["extras"]["signalId"] != p1[1]["extras"]["signalId"]   # seq distinguishes replaces
+    assert p0["extras"]["signalId"] != p1["extras"]["signalId"]   # seq distinguishes replaces
 
 
 def test_stop_replace_short_side():
-    pair, err = BP.build_vpc_stop_replace(account="A", signal_ts="t", side="short", qty=1,
-                                          new_stop=103.0, seq=0)
+    payload, err = BP.build_vpc_stop_replace(account="A", signal_ts="t", side="short", qty=1,
+                                             new_stop=103.0, seq=0)
     assert err is None
-    assert pair[1]["extras"]["stop_side"] == "buy"                # protective stop for a short
+    assert payload["action"] == "buy"                            # protective stop for a SHORT = BUY
+    assert payload["extras"]["stop_side"] == "buy"
+
+
+def test_stop_replace_action_is_never_the_string_stop():
+    """Guard against regressing to the invalid action:'stop' (an orderType, not an action — it 400s
+    or, on Tradovate BETA, silently falls back to the strategy default)."""
+    for side in ("long", "short"):
+        payload, err = BP.build_vpc_stop_replace(account="A", signal_ts="t", side=side, qty=1,
+                                                 new_stop=97.0 if side == "long" else 103.0, seq=0)
+        assert err is None
+        assert payload["action"] in ("buy", "sell")
+        assert payload["action"] != "stop"
 
 
 def test_stop_replace_fail_closed():

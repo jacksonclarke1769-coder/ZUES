@@ -61,18 +61,47 @@ def _validate_bracket(side, entry, stop, target, root):
 
 
 def _wire(root, action, qty=0, order_type="market", limit_price=None, stop_price=None,
-          target_price=None, sid=None, meta=None, price=None):
+          target_price=None, sid=None, meta=None, price=None, cancel=False, stop_replace=False):
     """Top level = ONLY documented TradersPost fields (a live 400 proved strict-ish schema).
     All ZEUS context + our dedup signalId go in `extras` (the documented passthrough).
     Entry: ticker/action/quantity/orderType/price/limitPrice/stopLoss/takeProfit.
     Exit/cancel: minimal {ticker, action} — quantity OMITTED = full close (per docs).
     Bracket keys VERIFIED: takeProfit.limitPrice + stopLoss{type:stop,stopPrice}.
-    `price` MANDATORY on Tradovate (no market data) or it becomes a market order."""
+    `price` MANDATORY on Tradovate (no market data) or it becomes a market order.
+
+    VALID TradersPost actions (docs.traderspost.io, verbatim-verified 2026-07-12):
+    buy / sell / exit / reverse / breakeven / cancel / add. NOTE: "stop" is an *orderType*, NOT an
+    action — sending action:"stop" is invalid (400, or on the Tradovate BETA integration an
+    unsupported value SILENTLY FALLS BACK to the strategy default). The VPC stop-replace therefore
+    routes through this branch with a VALID action (the exit-side buy/sell) + orderType "stop"."""
     # TP_SYMBOL_MNQ: env override to pin to a specific contract month during quarterly roll.
     # Read at call time (not import time) so tests can monkeypatch os.environ.
     ticker = (os.environ.get("TP_SYMBOL_MNQ") if root == "MNQ" else None) or TP_SYMBOL[root]
     p = {"ticker": ticker, "action": action}
-    if action in ("buy", "sell", "add"):
+    if stop_replace:
+        # ADDITIVE (VPC lane) — D6 single-call bundled cancel-replace. Keyed on the explicit
+        # `stop_replace=True` flag (NOT the action string), so every pre-existing action path
+        # (buy/sell/add/exit/cancel) is byte-untouched: A/B never pass stop_replace=True. `action`
+        # here is a VALID exit-side action (sell to protect a long, buy to protect a short); the
+        # order is a standalone protective STOP (orderType "stop") carrying the new resting level,
+        # and `cancel: true` asks TradersPost to cancel the prior working stop AND place the new one
+        # in ONE server-sequenced call. That is the documented never-naked primitive: on a
+        # cancel/timeout it FAILS THE WHOLE trade (old stop stands, nothing changed) rather than
+        # orphaning — so there is never a window with two un-linked live stops.
+        # UNKNOWN (Tradovate BETA, pending the operator's TradersPost support ticket): whether
+        # `cancel: true` targets ONLY the stop leg vs the whole position, partial-fill races, and any
+        # rate ceiling. The SAFETY logic (deterministic sid, side/level validation, single-send
+        # never-naked) is final; these wire specifics are CONFIRM-pending — the lane cannot arm on
+        # docs alone.
+        p["orderType"] = "stop"
+        if qty:
+            p["quantity"] = int(qty)
+        if stop_price is not None:
+            p["stopPrice"] = stop_price          # CONFIRM (Tradovate BETA): standalone stop trigger
+            p["price"] = stop_price              # Tradovate has no market data -> explicit price
+        if cancel:
+            p["cancel"] = True                   # BUNDLED server-side cancel-replace (never-naked)
+    elif action in ("buy", "sell", "add"):
         p["quantity"] = int(qty)
         p["orderType"] = order_type
         if price is not None:
@@ -83,20 +112,6 @@ def _wire(root, action, qty=0, order_type="market", limit_price=None, stop_price
             p["stopLoss"] = {"type": "stop", "stopPrice": stop_price}   # VERIFIED
         if target_price is not None:
             p["takeProfit"] = {"limitPrice": target_price}             # VERIFIED
-    elif action == "stop":
-        # ADDITIVE (VPC lane): a standalone protective-stop order carrying the new resting stop
-        # level for an already-open position. Purely additive branch — every pre-existing action
-        # (buy/sell/add/exit/cancel) takes an untouched path above/below. The exact TradersPost
-        # wire field for a bare protective-stop-replace is CONFIRM-pending (same status as
-        # build_cancel's cancel support): the audit records that TradersPost exposes only cancel +
-        # re-send, so the VPC trail manager pairs this with a cancel (build_vpc_stop_replace). The
-        # SAFETY logic (deterministic sid, side/level validation) is final; only the key mapping is
-        # provisional and confined to this one branch.
-        if qty:
-            p["quantity"] = int(qty)
-        p["orderType"] = "stop"
-        if stop_price is not None:
-            p["stopLoss"] = {"type": "stop", "stopPrice": stop_price}   # CONFIRM key for bare-stop
     extras = dict(meta or {})
     extras["signalId"] = sid          # dedup key lives in extras (no native TP dedup)
     p["extras"] = extras
@@ -253,14 +268,27 @@ def build_vpc_entry(*, account, signal_ts, side, qty, ref_price, stop_price,
 
 def build_vpc_stop_replace(*, account, signal_ts, side, qty, new_stop, root="MNQ", seq=0,
                            mode_meta=None):
-    """Cancel-replace a VPC protective stop as the 5.0xATR trail ratchets. Returns
-    ((cancel_payload, stop_payload), None) or (None, error) — the ORDERING the caller MUST honour
-    is REPLACE-THEN-CONFIRM / never-naked: the trail manager places the NEW stop and only then
-    cancels the stale one, with the cancel-replace timeout fail-safe (keep the LAST resting stop,
-    alert, never naked) enforced in vpc_trail_manager. `seq` (monotone per trade) makes each
-    replacement's signalId unique+deterministic so re-sends dedup correctly. `new_stop` is the
-    absolute ratcheted stop price; side is the POSITION side (long position -> sell-stop below).
-    Fail-closed: an inverted/degenerate stop returns (None, error) so no payload is emitted."""
+    """Cancel-replace a VPC protective stop as the 5.0xATR trail ratchets — D6 SINGLE-CALL model.
+    Returns (payload, None) or (None, error).
+
+    ONE webhook call carries the NEW standalone protective-stop order AND `cancel: true` (bundled):
+    TradersPost sequences the cancel-of-old + place-new server-side, and on any cancel/timeout FAILS
+    THE WHOLE trade (the old stop stands, nothing changed) instead of orphaning. This maps exactly
+    onto the never-naked invariant — a failed replace leaves the position protected by its unchanged
+    old stop — and, unlike the previous two-payload (place-then-cancel) design, NEVER opens a window
+    with two un-linked live stops (TradersPost does NOT OCO-link stops added to an open position, so
+    two separate calls would risk a double-fill). The trail manager therefore sends this ONCE per
+    ratchet: outcome is confirmed-replaced OR failed-whole (see vpc_trail_manager).
+
+    `seq` (monotone per trade) makes each replacement's signalId unique+deterministic so re-sends
+    dedup correctly. `new_stop` is the absolute ratcheted stop price; `side` is the POSITION side
+    (long position -> a resting SELL-stop below; short -> a BUY-stop above). `action` is that valid
+    exit-side action ("stop" is only an orderType, never a valid action). Fail-closed: an
+    inverted/degenerate/NaN stop returns (None, error) so no payload is emitted.
+
+    WIRE STATUS: the single-call bundled-cancel primitive is docs-verified (docs.traderspost.io);
+    the Tradovate-BETA specifics (cancel:true scope, partial-fill races, rate ceiling) are UNKNOWN
+    pending the operator's TradersPost support ticket — do NOT arm on docs alone."""
     try:
         d = 1 if side == "long" else -1 if side == "short" else 0
         if d == 0:
@@ -273,14 +301,10 @@ def build_vpc_stop_replace(*, account, signal_ts, side, qty, new_stop, root="MNQ
     # a protective stop for a LONG position is a resting SELL below; for a SHORT, a BUY above.
     stop_side = "sell" if d == 1 else "buy"
     role = f"stop_replace_{int(seq)}"
-    cancel_sid = signal_id(account, "V", signal_ts, f"stop_cancel_{int(seq)}")
     stop_sid = signal_id(account, "V", signal_ts, role)
-    common = dict(strategy="V", setup="vpc", account=account, side=side,
-                  **(mode_meta or {}), source="zeus_bridge")
-    cancel_payload = _wire(root, "cancel", 0, "market", sid=cancel_sid,
-                           meta=dict(common, role=f"stop_cancel_{int(seq)}", seq=int(seq),
-                                     note="cancel prior VPC protective stop (CONFIRM)"))
-    stop_payload = _wire(root, "stop", int(qty), "stop", stop_price=ns, sid=stop_sid,
-                         meta=dict(common, role=role, seq=int(seq), stop_side=stop_side,
-                                   new_stop=ns))
-    return (cancel_payload, stop_payload), None
+    meta = dict(strategy="V", setup="vpc", account=account, side=side, role=role, seq=int(seq),
+                stop_side=stop_side, new_stop=ns, cancel_bundled=True,
+                **(mode_meta or {}), source="zeus_bridge")
+    payload = _wire(root, stop_side, int(qty), "stop", stop_price=ns, sid=stop_sid, meta=meta,
+                    price=ns, cancel=True, stop_replace=True)
+    return payload, None

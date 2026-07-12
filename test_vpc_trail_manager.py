@@ -39,9 +39,9 @@ def test_construction_fail_closed():
         _mgr(init_stop_dist=0)
 
 
-def test_ratchet_issues_replace_and_advances_resting_stop():
-    """A profitable long ratchets the trail; the manager issues a cancel-replace and the resting
-    stop moves toward price. The initial resting stop = entry - init_stop_dist."""
+def test_ratchet_issues_single_call_replace_and_advances_resting_stop():
+    """D6: a profitable long ratchets the trail; the manager issues ONE bundled cancel-replace call
+    (new stop + cancel:true) and the resting stop moves toward price. No separate client cancel."""
     sender = FakeSender(accept=True)
     m = _mgr(send_fn=sender.send)
     assert m.resting_stop == 95.0
@@ -50,23 +50,29 @@ def test_ratchet_issues_replace_and_advances_resting_stop():
     assert res == "replace"
     assert level > 95.0
     assert m.resting_stop == level
-    # payloads: a stop order + a cancel (never-naked pair). Stop sent BEFORE cancel.
-    kinds = [p.get("action") for p in sender.sent]
-    assert kinds == ["stop", "cancel"], f"expected stop-then-cancel, got {kinds}"
+    # EXACTLY ONE payload — the bundled cancel-replace. No client-side cancel action is ever sent.
+    assert len(sender.sent) == 1, f"expected a single bundled call, got {len(sender.sent)}"
+    only = sender.sent[0]
+    assert only["action"] == "sell"            # protective stop for a long = a resting sell-stop
+    assert only["orderType"] == "stop"
+    assert only["cancel"] is True              # bundled server-side cancel of the prior stop
+    assert m.cancelled_stops == []             # the manager issued NO client-side cancel
+    assert m.live_stops() == {m.resting_stop}  # never two live stops
 
 
-def test_never_naked_on_failed_new_stop():
-    """If the NEW stop send is rejected, the manager keeps the LAST resting stop and does NOT send
-    the cancel — the position is never left without protection."""
+def test_never_naked_on_failed_bundled_replace():
+    """D6: if the bundled cancel-replace send is rejected, it FAILS-WHOLE — the manager keeps the
+    LAST resting stop unchanged (old stop stands). The position is never left without protection,
+    and there is never a two-stops window."""
     sender = FakeSender(accept=False)          # broker rejects every send
     m = _mgr(send_fn=sender.send)
     start = m.resting_stop
     res, level = m.on_1m_bar(1, 99.0, 101.0, 100.5, 1.0)
     assert res == "hold"
     assert m.resting_stop == start             # unchanged — old stop still working
-    # only the (failed) new-stop send was attempted; NO cancel of the still-needed old stop
-    kinds = [p.get("action") for p in sender.sent]
-    assert kinds == ["stop"], f"cancel must NOT be sent when new stop failed, got {kinds}"
+    assert len(sender.sent) == 1               # ONE attempt (the bundled call); nothing else sent
+    assert m.cancelled_stops == []             # nothing cancelled -> old stop genuinely still working
+    assert m.live_stops() == {start}
     assert m.replaces_failed == 1
 
 
@@ -99,9 +105,11 @@ def test_cancel_replace_timeout_stands_down_and_keeps_last_resting():
     assert res == "replace"
     resting_at_replace = m.resting_stop        # readback path: resting stays at the OLD (working) stop
     assert m.pending is not None
-    # F1: the OLD stop must NOT have been cancelled — no cancel payload sent while unconfirmed
+    # D6: the OLD stop is NOT cancelled by us — the bundled replace is one server-sequenced call.
     assert m.cancelled_stops == []
-    assert [p.get("action") for p in sender.sent] == ["stop"]
+    assert len(sender.sent) == 1               # a single bundled cancel-replace call
+    assert sender.sent[0]["cancel"] is True
+    assert m.live_stops() == {resting_at_replace}   # still exactly one live stop while in flight
     # advance the clock past the timeout; next bar's timeout check must stand down
     clock["t"] = 10.0
     res2, level2 = m.on_1m_bar(2, 100.0, 104.0, 103.5, 1.0, now_ts=10.0)
@@ -117,7 +125,8 @@ def test_cancel_replace_timeout_stands_down_and_keeps_last_resting():
 
 
 def test_confirm_advances_resting_stop():
-    """With a readback that confirms, the resting stop advances to the confirmed level."""
+    """With a readback that confirms the bundled replace landed, the resting stop advances to the
+    confirmed level — with NO separate client-side cancel (the cancel was bundled server-side)."""
     confirmed = {"stop": None}
     sender = FakeSender(accept=True)
     m = VpcTrailManager(account="T", signal_ts="ts", side="long", qty=1, entry=100.0,
@@ -126,21 +135,22 @@ def test_confirm_advances_resting_stop():
                         confirm_fn=lambda stop: confirmed["stop"] == stop, timeout_s=5.0)
     res, level = m.on_1m_bar(1, 99.0, 101.0, 100.5, 1.0)
     assert res == "replace"
-    # F1: BEFORE confirmation, the old stop is NOT cancelled (confirm-then-cancel)
+    # BEFORE confirmation, resting stays OLD and nothing is client-cancelled
     assert m.cancelled_stops == []
     old_resting = m.resting_stop               # still the OLD stop while unconfirmed
+    assert m.live_stops() == {old_resting}
     confirmed["stop"] = level                  # readback now sees the new stop resting
-    # next bar's timeout check confirms it -> old stop cancelled, THEN resting advances, no stand-down
+    # next bar's timeout check confirms it -> resting advances; STILL no client-side cancel
     m.on_1m_bar(2, 100.0, 100.6, 100.2, 1.0)   # small bar, no new ratchet
     assert m.stood_down is False
     assert m.resting_stop == level
-    assert m.cancelled_stops == [old_resting]  # old stop cancelled ONLY after confirmation
-    assert m.resting_stop not in m.cancelled_stops
+    assert m.cancelled_stops == []             # single-call model: no client cancel, ever
+    assert m.live_stops() == {level}
 
 
 def test_readback_confirm_rejection_keeps_old_and_stands_down():
-    """F1: if confirm_fn reports the new stop was REJECTED downstream, the manager keeps the OLD
-    (never-cancelled, still-working) stop, alerts, and stands down — never naked, never a phantom."""
+    """D6: if confirm_fn reports the bundled replace failed-whole (REJECTED), the manager keeps the
+    OLD (unchanged, working) stop, alerts, and stands down — never naked, never two live stops."""
     alerts = []
     sender = FakeSender(accept=True)
     m = VpcTrailManager(account="T", signal_ts="ts", side="long", qty=1, entry=100.0,
@@ -158,16 +168,37 @@ def test_readback_confirm_rejection_keeps_old_and_stands_down():
     assert m.pending is None
 
 
-def test_resting_stop_never_cancelled_invariant():
-    """F1 core invariant across a ratcheting sequence (readback path, always confirming): at EVERY
-    step the manager's believed-resting stop is never an order it has already cancelled."""
+def test_no_two_live_stops_invariant_across_ratchet():
+    """D6 core invariant: at NO point does the manager's model contain two live protective stops.
+    Across a ratcheting sequence with an in-flight readback confirm, live_stops() is always exactly
+    one level (the bundled replace either fully lands or fully fails)."""
     confirmed = {"stop": None}
     sender = FakeSender(accept=True)
     m = VpcTrailManager(account="T", signal_ts="ts", side="long", qty=1, entry=100.0,
                         init_stop_dist=5.0, trail_atr=2.0, send_fn=sender.send,
                         clock_fn=lambda: 0.0,
                         confirm_fn=lambda stop: confirmed["stop"] == stop, timeout_s=5.0)
-    # a rising sequence -> repeated ratchets; confirm each replace on the following bar
+    bars = [(99.0, 101.0, 100.6), (100.0, 102.0, 101.6), (101.0, 103.0, 102.6),
+            (102.0, 104.0, 103.6), (103.0, 105.0, 104.6)]
+    for i, (lo, hi, cl) in enumerate(bars, start=1):
+        res, level = m.on_1m_bar(i, lo, hi, cl, 1.0)
+        assert len(m.live_stops()) == 1                     # NEVER two live stops — even mid-confirm
+        assert m.cancelled_stops == []                      # no client-side cancel is ever issued
+        if res == "replace":
+            confirmed["stop"] = level                       # readback confirms it before the next bar
+    assert m.replaces_sent >= 2                              # the sequence actually ratcheted
+
+
+def test_resting_stop_never_cancelled_invariant():
+    """Core never-naked invariant across a ratcheting sequence: at EVERY step the manager's
+    believed-resting stop is never an order it has already cancelled (in the single-call model it
+    cancels nothing client-side while the position is open, so this holds trivially)."""
+    confirmed = {"stop": None}
+    sender = FakeSender(accept=True)
+    m = VpcTrailManager(account="T", signal_ts="ts", side="long", qty=1, entry=100.0,
+                        init_stop_dist=5.0, trail_atr=2.0, send_fn=sender.send,
+                        clock_fn=lambda: 0.0,
+                        confirm_fn=lambda stop: confirmed["stop"] == stop, timeout_s=5.0)
     bars = [(99.0, 101.0, 100.6), (100.0, 102.0, 101.6), (101.0, 103.0, 102.6),
             (102.0, 104.0, 103.6), (103.0, 105.0, 104.6)]
     for i, (lo, hi, cl) in enumerate(bars, start=1):
@@ -218,3 +249,92 @@ def test_stop_hit_exits_at_resting_stop():
     # once exited, further bars keep reporting exit (idempotent)
     res2, _ = m.on_1m_bar(2, 90.0, 92.0, 91.0, 1.0)
     assert res2 == "exit"
+
+
+# ==================================================================================================
+# D3 — KILL/FLATTEN semantics for an in-flight trail (Phase-4 DEC, single-call model)
+# ==================================================================================================
+def test_kill_during_pending_confirm_never_cancels_resting_stop():
+    """D3: a kill arriving WHILE a cancel-replace readback confirm is pending must NOT cancel the
+    believed-resting stop first. It market-flattens and leaves the OLD stop working; the resting
+    stop is cleaned up only after flat is confirmed."""
+    flat_calls = []
+    sender = FakeSender(accept=True)
+    m = VpcTrailManager(account="T", signal_ts="ts", side="long", qty=1, entry=100.0,
+                        init_stop_dist=5.0, trail_atr=2.0, send_fn=sender.send,
+                        clock_fn=lambda: 0.0, confirm_fn=lambda stop: False, timeout_s=99.0)
+    res, level = m.on_1m_bar(1, 99.0, 101.0, 100.5, 1.0, now_ts=0.0)
+    assert res == "replace"
+    assert m.pending is not None               # a readback replace is in flight
+    old_resting = m.resting_stop
+    # KILL arrives mid-confirm
+    out = m.kill_flatten("operator kill", flatten_fn=lambda r: flat_calls.append(r) or {"flat": True})
+    assert out == {"flat": True}               # a MARKET-FLATTEN was issued
+    assert flat_calls == ["operator kill"]
+    assert m.killed is True
+    assert m.pending is None                   # in-flight replace abandoned (nothing cancelled)
+    assert m.resting_stop == old_resting       # OLD stop UNCHANGED and still working (never naked)
+    assert m.cancelled_stops == []             # nothing cancelled while still holding the position
+    assert m.awaiting_flat is True
+    assert m.live_stops() == {old_resting}     # position still protected by exactly one stop
+    # further bars issue NO replaces while killed
+    r2, _ = m.on_1m_bar(2, 101.0, 103.0, 102.5, 1.0)
+    assert r2 == "hold"
+    assert m.replaces_sent == 1                # no new replace after kill
+    # NOW confirm the position is flat -> only now is the resting stop cleaned up
+    cancel_calls = []
+    m.on_flat_confirmed(cancel_fn=lambda lvl: cancel_calls.append(lvl))
+    assert cancel_calls == [old_resting]       # resting stop cancelled ONLY after flat-confirm
+    assert m.cancelled_stops == [old_resting]
+    assert m.awaiting_flat is False
+    assert m.live_stops() == set()             # flat + cleaned up -> no live stops
+
+
+def test_kill_during_ratchet_market_flattens_and_halts_replaces():
+    """D3: a kill during a normal holding/ratcheting trail market-flattens, keeps the resting stop
+    working, and stops all further replaces."""
+    flat_calls = []
+    sender = FakeSender(accept=True)
+    m = _mgr(send_fn=sender.send)
+    r1, _ = m.on_1m_bar(1, 99.0, 101.0, 100.5, 1.0)   # ratchet -> resting advanced
+    assert r1 == "replace"
+    resting = m.resting_stop
+    m.kill_flatten("EOD flatten", flatten_fn=lambda r: flat_calls.append(r) or {"flat": True})
+    assert flat_calls == ["EOD flatten"]
+    assert m.killed is True
+    assert m.resting_stop == resting           # resting stop unchanged, still working
+    assert m.cancelled_stops == []             # not cancelled while position open
+    # subsequent ratchet-worthy bars do nothing
+    r2, _ = m.on_1m_bar(2, 101.0, 104.0, 103.5, 1.0)
+    assert r2 == "hold"
+    assert m.replaces_sent == 1
+
+
+def test_kill_naked_impossible_no_cancel_before_flat_confirm():
+    """D3 naked-impossible assertion: between kill and flat-confirm there is NEVER a moment where the
+    position is open AND its protective stop has been cancelled. The resting stop appears in
+    cancelled_stops only AFTER on_flat_confirmed() (position already flat)."""
+    sender = FakeSender(accept=True)
+    m = _mgr(send_fn=sender.send)
+    m.on_1m_bar(1, 99.0, 101.0, 100.5, 1.0)
+    resting = m.resting_stop
+    m.kill_flatten("kill", flatten_fn=lambda r: {"flat": True})
+    # position is being flattened but NOT yet confirmed flat -> stop must still be live/uncancelled
+    assert m.awaiting_flat is True
+    assert resting not in m.cancelled_stops     # NOT cancelled while open (naked-impossible)
+    assert m.live_stops() == {resting}
+    # idempotent flat-confirm cleanup
+    m.on_flat_confirmed(cancel_fn=lambda lvl: None)
+    assert resting in m.cancelled_stops
+    assert m.on_flat_confirmed(cancel_fn=lambda lvl: None) is None   # idempotent no-op
+
+
+def test_kill_flatten_idempotent():
+    """A second kill_flatten does not re-issue the market-flatten."""
+    n = {"c": 0}
+    sender = FakeSender(accept=True)
+    m = _mgr(send_fn=sender.send)
+    m.on_1m_bar(1, 99.0, 101.0, 100.5, 1.0)
+    m.kill_flatten("kill", flatten_fn=lambda r: n.__setitem__("c", n["c"] + 1))
+    m.kill_flatten("kill again", flatten_fn=lambda r: n.__setitem__("c", n["c"] + 1))
+    assert n["c"] == 1                          # flatten issued exactly once
