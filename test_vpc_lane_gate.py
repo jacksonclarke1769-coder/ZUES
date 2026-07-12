@@ -125,3 +125,49 @@ def test_zero_fit_blocks():
     b = _book(daily=50.0)                    # $50 total budget
     ok, q, why = b.admit("V", stop_pts=100.0, requested_qty=3)   # $200/ct > budget
     assert not ok and q == 0 and "no size fits" in why
+
+
+def test_same_bar_dual_admission_holds_ceiling():
+    """F3 (audit reproduction): two same-bar admissions (A then V) BEFORE either on_open must not
+    both pass against the same headroom. admit reserves atomically, so the combined ceiling holds.
+    Audit case: daily $1000, A stop100 q4 = $800, V stop100 q3 = $600 -> $1400 > $1000 must NOT
+    both admit at full size."""
+    b = _book(daily=1000.0)
+    okA, qA, _ = b.admit("A", stop_pts=100.0, requested_qty=4)   # $200/ct -> $800 reserved
+    assert okA and qA == 4
+    assert b.combined_open_risk() == 800.0                        # reserved immediately
+    okV, qV, whyV = b.admit("V", stop_pts=100.0, requested_qty=3)
+    # remaining after A's reservation = $200 -> at $200/ct only 1 V fits (or block); NOT 3
+    booked = 800.0 + qV * 200.0 if okV else 800.0
+    assert booked <= 1000.0, (qV, whyV)
+    assert qV <= 1
+
+
+def test_reservation_released_frees_budget():
+    """F3: release() frees a reservation (e.g. payload/send failed after admit) so the headroom
+    returns and a subsequent admit can use it."""
+    b = _book(daily=1000.0)
+    okA, qA, _ = b.admit("A", stop_pts=100.0, requested_qty=4)
+    assert b.combined_open_risk() == 800.0
+    b.release("A")
+    assert b.combined_open_risk() == 0.0
+    okV, qV, _ = b.admit("V", stop_pts=100.0, requested_qty=3)   # full headroom back
+    assert okV and qV == 3                                        # cap 3 binds, budget now allows it
+
+
+def test_on_open_converts_reservation_no_double_book():
+    """admit reserves; on_open converts the reservation to open risk without double-counting."""
+    b = _book(daily=100000.0)
+    okA, qA, _ = b.admit("A", stop_pts=10.0, requested_qty=6)     # $20/ct * 6 = $120 reserved
+    assert b.combined_open_risk() == 120.0
+    b.on_open("A", stop_pts=10.0, qty=qA, side="long")
+    assert b.combined_open_risk() == 120.0                        # not $240 — reservation converted
+    assert b.reserved == {}
+
+
+def test_admit_reserve_false_does_not_book():
+    """reserve=False lets a caller size-check without committing headroom (e.g. a dry-run)."""
+    b = _book(daily=1000.0)
+    ok, q, _ = b.admit("A", stop_pts=100.0, requested_qty=4, reserve=False)
+    assert ok and q == 4
+    assert b.combined_open_risk() == 0.0                          # nothing reserved

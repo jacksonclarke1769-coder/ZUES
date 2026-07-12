@@ -47,13 +47,18 @@ class VpcLaneRiskBook:
         self.cushion_frac = float(cushion_frac)
         self.open_risk = {}                  # lane -> open bracket risk $ (one entry per lane held)
         self.open_side = {}                  # lane -> "long"/"short" (observational, for conflict flag)
+        self.reserved = {}                   # lane -> RESERVED risk $ (admitted, not yet opened) — F3
 
     def new_day(self):
         self.open_risk.clear()
         self.open_side.clear()
+        self.reserved.clear()
 
     def combined_open_risk(self):
-        return sum(self.open_risk.values())
+        """Open PLUS reserved risk (F3): the combined-ceiling must count risk that a same-bar admit
+        has already committed to, even before on_open lands — otherwise two same-bar admissions both
+        pass against the same headroom and silently overbook the ceiling."""
+        return sum(self.open_risk.values()) + sum(self.reserved.values())
 
     def remaining_daily_budget(self):
         return max(0.0, self.daily_budget_usd * self.cushion_frac - self.combined_open_risk())
@@ -65,13 +70,16 @@ class VpcLaneRiskBook:
         return {ln: s for ln, s in self.open_side.items()
                 if ln != lane and s is not None and s != side}
 
-    def admit(self, lane, *, stop_pts, requested_qty, side=None):
-        """Pre-trade admission. Returns (ok: bool, sized_qty: int, why: str).
+    def admit(self, lane, *, stop_pts, requested_qty, side=None, reserve=True):
+        """ATOMIC CHECK-AND-RESERVE pre-trade admission (F3). Returns (ok, sized_qty, why).
         Sizes DOWN to fit (never up). Order of constraints:
           1. per-lane contract cap
           2. per-lane size-to-risk $ budget (qty <= budget / risk_per_contract)
-          3. shared combined-open-risk ceiling (qty s.t. combined_open + new_risk <= daily budget)
-        Fail-closed on any error or zero-fit."""
+          3. shared combined-open-risk ceiling (qty s.t. combined(open+reserved) + new <= daily budget)
+        On success it RESERVES the sized risk immediately (unless reserve=False), so a second same-bar
+        admit sees the reduced headroom and the combined ceiling holds even before on_open lands. The
+        caller MUST either on_open (converts the reservation to open risk) or release(lane) (frees it,
+        e.g. if the payload/send fails after admit). Fail-closed on any error or zero-fit."""
         try:
             sp = abs(float(stop_pts))
             if sp <= 0:
@@ -79,8 +87,8 @@ class VpcLaneRiskBook:
             req = int(requested_qty)
             if req <= 0:
                 return False, 0, "requested_qty <= 0"
-            if lane in self.open_risk:
-                return False, 0, f"lane {lane} already holds an open position"
+            if lane in self.open_risk or lane in self.reserved:
+                return False, 0, f"lane {lane} already holds/reserved a position"
             risk1 = sp * self.point_value               # $ risk per contract
             q = req
             cap = self.lane_caps.get(lane)
@@ -95,6 +103,9 @@ class VpcLaneRiskBook:
                 return (False, 0,
                         f"no size fits: risk ${risk1:,.0f}/ct vs lane_budget "
                         f"${(lbud or 0):,.0f}, remaining_daily ${rem:,.0f}, cap {cap}")
+            if reserve:
+                self.reserved[lane] = risk1 * q         # ATOMIC: commit the headroom now
+                self.open_side.setdefault(lane, side)   # observational (for the conflict flag)
             why = "" if q == req else (
                 f"sized {req}->{q} (risk ${risk1:,.0f}/ct, lane_budget ${(lbud or 0):,.0f}, "
                 f"remaining_daily ${rem:,.0f}, cap {cap})")
@@ -102,12 +113,21 @@ class VpcLaneRiskBook:
         except Exception as e:                          # noqa: BLE001 — a broken gate must not trade
             return False, 0, f"lane risk book error: {e!r}"
 
+    def release(self, lane):
+        """Free a reservation without opening (e.g. the payload/send failed after admit)."""
+        self.reserved.pop(lane, None)
+        if lane not in self.open_risk:
+            self.open_side.pop(lane, None)
+
     def on_open(self, lane, *, stop_pts, qty, side=None):
-        """Book an opened position's open risk (call AFTER a successful admit + send)."""
+        """Book an opened position's open risk (call AFTER a successful admit + send). Converts any
+        reservation for the lane into realized open risk (idempotent w.r.t. the reservation)."""
+        self.reserved.pop(lane, None)
         self.open_risk[lane] = abs(float(stop_pts)) * self.point_value * int(qty)
         self.open_side[lane] = side
 
     def on_close(self, lane):
-        """Release a lane's open risk when its position resolves."""
+        """Release a lane's open risk (and any stray reservation) when its position resolves."""
         self.open_risk.pop(lane, None)
+        self.reserved.pop(lane, None)
         self.open_side.pop(lane, None)
