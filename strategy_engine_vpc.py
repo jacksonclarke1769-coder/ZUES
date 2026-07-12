@@ -40,6 +40,14 @@ import vpc_apex_eval_sim as VS        # VS.CFG  (frozen certified config — nev
 
 NY = "America/New_York"
 BUFFER_BARS = 220        # ~2.5 RTH sessions: enough for continuous ATR warmup + same-day VWAP/vwap6
+# COLD-START WARMUP GATE (mirrors tv_feed's warmup discipline): the engine REFUSES to emit a signal
+# until its buffer holds at least this many CONTINUOUS bars (~1.5 RTH sessions). A fresh-process
+# intraday cold-start recomputes rolling(14) ATR on an incomplete buffer, so its early-session
+# signals can diverge from the continuously-computed certified batch until the buffer is warm (the
+# cross-audit's diagnosed "cold-buffer artifact"). Live construction uses this default; parity/replay
+# harnesses that start from TRUE history start (where batch is equally cold — an apples-to-apples
+# comparison) pass warmup_bars=0.
+WARMUP_BARS = 120
 
 # Frozen signal-side kwargs, taken verbatim from the certified CFG (no local copy of the numbers).
 _SIG_KW = {k: VS.CFG[k] for k in ("atr_stop", "slot_min", "slot_max", "slope_mult", "trend_mult")
@@ -92,11 +100,12 @@ class ProfileVEngine:
     """Streaming VPC signal engine. add_bar() every closed 5m RTH bar; latest_signal() returns a
     raw VPC entry trigger dict once, at the bar it fires, or None. Pure (no I/O, no orders)."""
 
-    def __init__(self, emission_mode=None):
+    def __init__(self, emission_mode=None, warmup_bars=None):
         mode = emission_mode or EMISSION_MODE_SHADOW
         if mode not in EMISSION_MODES:          # fail closed on an unknown mode — never silently trade
             raise ValueError(f"unknown VPC EMISSION_MODE={mode!r}; must be one of {EMISSION_MODES}")
         self.emission_mode = mode
+        self.warmup_bars = WARMUP_BARS if warmup_bars is None else int(warmup_bars)
         self.buf = pd.DataFrame(columns=["Open", "High", "Low", "Close", "Volume"])
         self.buf.index = pd.DatetimeIndex([], tz=NY)
         # armed state machine — identical semantics to vpc_signals' per-day loop
@@ -137,7 +146,7 @@ class ProfileVEngine:
         bar's open is the fill), ts_signal (signal-bar ISO instant), atr, vwap. The caller sizes,
         builds the market-entry payload (bridge.build_vpc_entry), and hands the trail manager the
         stop_dist. Raw emission only — day admission (max 2/day etc.) is VpcDayGate's job."""
-        if len(self.buf) < 2:
+        if len(self.buf) < max(2, self.warmup_bars):   # COLD-START WARMUP GATE — refuse until warm
             return None
         g, day = self._day_features()
         if day != self.cur_day:               # new RTH day -> reset the armed state machine

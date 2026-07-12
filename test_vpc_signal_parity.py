@@ -45,7 +45,9 @@ def _stream_raw_triggers(feats):
     """Stream one engine over `feats`; return {day -> [(entry_slot, direction, stopdist), ...]} of
     the engine's emitted triggers that have a valid next-bar entry (slot+1 < bars_that_day)."""
     day_len = {day: len(g) for day, g in feats.groupby("date")}
-    eng = EV.ProfileVEngine(emission_mode=EV.EMISSION_MODE_SHADOW)
+    # warmup_bars=0: cold-start comparison vs the equally-cold batch from true window start (the live
+    # warmup gate is validated separately in test_vpc_engine_failclosed, not here).
+    eng = EV.ProfileVEngine(emission_mode=EV.EMISSION_MODE_SHADOW, warmup_bars=0)
     out = {}
     for ts, r in feats.sort_index().iterrows():
         eng.add_bar(ts, r.Open, r.High, r.Low, r.Close, r.Volume)
@@ -88,7 +90,7 @@ def test_causality_truncation_canary(window_feats):
     feats = window_feats.sort_index()
     rows = list(feats.iterrows())
     # find the positional indices where the streaming engine emits a signal
-    eng = EV.ProfileVEngine(emission_mode=EV.EMISSION_MODE_SHADOW)
+    eng = EV.ProfileVEngine(emission_mode=EV.EMISSION_MODE_SHADOW, warmup_bars=0)
     emit_positions = []
     for pos, (ts, r) in enumerate(rows):
         eng.add_bar(ts, r.Open, r.High, r.Low, r.Close, r.Volume)
@@ -97,7 +99,7 @@ def test_causality_truncation_canary(window_feats):
     assert emit_positions, "no signals in window to test causality"
     # re-derive each emitting signal from a fresh engine fed ONLY bars[0..pos] (truncated)
     for pos in emit_positions[:8]:              # a representative sample keeps this fast
-        trunc = EV.ProfileVEngine(emission_mode=EV.EMISSION_MODE_SHADOW)
+        trunc = EV.ProfileVEngine(emission_mode=EV.EMISSION_MODE_SHADOW, warmup_bars=0)
         sig = None
         for ts, r in rows[:pos + 1]:
             trunc.add_bar(ts, r.Open, r.High, r.Low, r.Close, r.Volume)

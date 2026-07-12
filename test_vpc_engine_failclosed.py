@@ -86,6 +86,29 @@ def test_timestamp_reconstruction_fails_closed():
         EV._derive_vpc_instant(off, 0)
 
 
+def test_cold_start_warmup_gate():
+    """The engine REFUSES to emit until its buffer is warm (>= warmup_bars) — a fresh-process
+    intraday cold-start must not surface off-parity signals (the cross-audit's cold-buffer artifact).
+    Isolated: below warmup the gate short-circuits BEFORE any feature computation."""
+    eng = EV.ProfileVEngine()
+    assert eng.warmup_bars == EV.WARMUP_BARS and EV.WARMUP_BARS >= 78   # >= ~1 RTH session
+    # tripwire: _day_features must NOT be reached below warmup
+    def _boom():
+        raise AssertionError("_day_features called below warmup gate")
+    eng._day_features = _boom
+    idx = pd.date_range("2024-03-01 09:30", periods=eng.warmup_bars - 1, freq="5min", tz=NY)
+    for ts in idx:
+        eng.add_bar(ts, 100, 100.5, 99.5, 100.1, 1000)
+        assert eng.latest_signal() is None      # gated: returns None without computing features
+    # warmup_bars=0 reaches feature computation (proves the gate — not something else — was blocking)
+    eng0 = EV.ProfileVEngine(warmup_bars=0)
+    eng0._day_features = _boom
+    eng0.add_bar(idx[0], 100, 100.5, 99.5, 100.1, 1000)
+    eng0.add_bar(idx[1], 100, 100.5, 99.5, 100.1, 1000)
+    with pytest.raises(AssertionError):
+        eng0.latest_signal()                    # warmup 0 -> proceeds to _day_features (our tripwire)
+
+
 def test_signal_dedup_emits_once_per_bar():
     """A signal instant already surfaced is never re-emitted (deterministic dedup discipline)."""
     eng = EV.ProfileVEngine()

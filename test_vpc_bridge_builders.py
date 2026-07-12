@@ -124,3 +124,20 @@ def test_existing_build_cancel_unaffected():
     assert err is None
     assert p["action"] == "cancel"
     assert "quantity" not in p            # cancel stays minimal — the stop-branch didn't touch it
+
+
+# ---- HARDENING: round_tick rejects non-finite prices --------------------------------------------
+def test_round_tick_rejects_nan_inf():
+    for bad in (float("nan"), float("inf"), float("-inf"), None):
+        with pytest.raises(ValueError):
+            BP.round_tick(bad, "MNQ")
+
+
+def test_vpc_builders_fail_closed_on_nan():
+    """A NaN stop must never emit a `stopPrice: nan` payload — the builders fail closed."""
+    _, err = BP.build_vpc_entry(account="A", signal_ts="t", side="long", qty=1,
+                                ref_price=100.0, stop_price=float("nan"))
+    assert err is not None
+    _, err = BP.build_vpc_stop_replace(account="A", signal_ts="t", side="long", qty=1,
+                                       new_stop=float("nan"), seq=0)
+    assert err is not None

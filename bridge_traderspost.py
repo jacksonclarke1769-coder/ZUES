@@ -12,6 +12,7 @@ NOTE: TradersPost field names marked CONFIRM are pending the docs review
 keys can be adjusted in one place once confirmed — the safety logic above it is final.
 """
 import hashlib
+import math
 import os
 
 TICK = {"MNQ": 0.25, "NQ": 0.25}
@@ -29,6 +30,10 @@ def signal_id(account, strategy, signal_ts, role):
 
 
 def round_tick(px, root):
+    # HARDENING: reject non-finite prices (NaN/inf) instead of silently emitting a `stopPrice: nan`
+    # payload. Callers wrap round_tick in try/except and fail closed (None, error).
+    if px is None or not math.isfinite(float(px)):
+        raise ValueError(f"non-finite price {px!r} for root {root!r}")
     t = TICK[root]
     return round(round(px / t) * t, 2)
 

@@ -82,7 +82,10 @@ def replay_5m_native(window_start=WINDOW_START, feats=None):
         g = g.sort_values("slot")
         day_arrays[day] = dict(idx=list(g.index), O=g.Open.values, H=g.High.values,
                                L=g.Low.values, C=g.Close.values, A=g.atr.values)
-    eng = EV.ProfileVEngine(emission_mode=EV.EMISSION_MODE_PAPER)
+    # warmup_bars=0: this replay starts from TRUE history start, where the certified batch is equally
+    # cold, so the comparison is apples-to-apples (the live cold-start warmup gate is a live safety,
+    # not a parity property — see strategy_engine_vpc.WARMUP_BARS).
+    eng = EV.ProfileVEngine(emission_mode=EV.EMISSION_MODE_PAPER, warmup_bars=0)
     gate = EV.VpcDayGate()
     cur_day = None
     rows = []
