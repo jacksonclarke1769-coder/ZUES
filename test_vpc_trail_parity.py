@@ -319,6 +319,25 @@ def test_live_shaped_parity_arm_B():
             assert live_exit is None, "ARM B: sim ran to EOD but live reported a stop exit"
 
 
+@pytest.mark.slow
+def test_arm_b_over_certified_408_slices():
+    """ARM B over the REAL certified data (D4): drive the LIVE VpcTrailManager over ALL 408 certified
+    trades' real 1m slices and assert its stop series + exits match the certified sim
+    `vpc_trail.walk_1m_trail` (the 1m-truth ledger's stop_path_new / exit_reason_new) BIT-FOR-BIT on
+    every trade. This is the REAL-DATA extension the ARM B stub flagged as a MUST-AUDIT follow-up —
+    it closes the gap between the synthetic ARM B scenarios and the full certified set. Recorded
+    result: 408/408 match, 0 mismatches (see reports/vpc_lane_build/00_BUILD_REPORT.md)."""
+    import vpc_paper_harness as PH
+    r = PH.arm_b_over_certified_slices()
+    assert r["n_total"] == 408, f"expected 408 certified trades, got {r['n_total']}"
+    assert r["n_filled"] == 408, f"expected all 408 filled on 1m, got {r['n_filled']}"
+    assert r["n_skipped"] == 0
+    assert r["n_match"] == r["n_filled"], (
+        f"ARM B live/sim parity broke on {r['n_filled'] - r['n_match']} trade(s): "
+        f"{r['mismatches'][:5]}")
+    assert r["n_match"] == 408, f"expected 408/408 bit-for-bit, got {r['n_match']}/408"
+
+
 def test_live_shaped_parity_arm_STUB():
     """ARM B (REQUIRED-BEFORE-ARM, NOT BUILT): would feed a mock live bar-close stream into the
     SAME `VpcTrail` stepper used by ARM A's historical replay and assert the resulting stop_path
@@ -352,9 +371,8 @@ def test_live_shaped_parity_arm_STUB():
         # assert sim_path == live_path  # sim/live parity -- THE claim ARM A cannot make
     """
     pytest.skip(
-        "SUPERSEDED by test_live_shaped_parity_arm_B (built in Phase 3): the live-shaped bar-close "
-        "feed arm now drives VpcTrailManager one bar at a time and asserts stop-series parity with "
-        "the sim walk. This stub remains only as the historical scaffold; the REAL-DATA extension "
-        "(driving arm_B over the certified 408-trade 1m slices, not just synthetic scenarios) is a "
-        "MUST-AUDIT follow-up recorded in the build report."
+        "SUPERSEDED by test_live_shaped_parity_arm_B (synthetic scenarios) AND "
+        "test_arm_b_over_certified_408_slices (D4: the REAL-DATA extension driving the manager over "
+        "ALL 408 certified 1m slices, 408/408 bit-for-bit). This stub remains only as the historical "
+        "scaffold."
     )

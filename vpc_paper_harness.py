@@ -118,6 +118,108 @@ def replay_5m_native(window_start=WINDOW_START, feats=None):
     return df
 
 
+def _drive_manager_1m(bars_1m, atr_5m, idx1_ts, idx5_ts, ei, entry, direction,
+                      init_stop_dist, trail_atr):
+    """Drive the LIVE VpcTrailManager over a trade's real 1m bars, reconstructing atr_now per bar via
+    the SAME independent streaming j5 mapping the live lane must use (identical to vpc_trail's
+    walk_1m_trail selection). Returns (stop_path, exit_level) — exit_level is None if it never stopped
+    (ran to EOD). This is the live path ARM B asserts equals the certified sim walk bit-for-bit."""
+    from vpc_trail_manager import VpcTrailManager
+    mgr = VpcTrailManager(account="ARMB", signal_ts="t",
+                          side=("long" if direction == 1 else "short"), qty=1, entry=entry,
+                          init_stop_dist=init_stop_dist, trail_atr=trail_atr,
+                          send_fn=lambda p: {"sent": True})
+    n5 = len(idx5_ts)
+    j5 = ei
+    exit_level = None
+    for x in range(len(bars_1m)):
+        lo, hi, cl = bars_1m[x]
+        while j5 + 1 < n5 and idx1_ts[x] >= idx5_ts[j5 + 1]:
+            j5 += 1
+        atr_prev = atr_5m[j5 - 1] if j5 - 1 >= 0 else np.nan
+        atr_now = atr_prev if not np.isnan(atr_prev) else atr_5m[ei - 1]
+        res, level = mgr.on_1m_bar(x, lo, hi, cl, atr_now)
+        if res == "exit":
+            exit_level = level
+            break
+    return mgr.trail.stop_path, exit_level
+
+
+def arm_b_over_certified_slices(feats=None, d1rth=None):
+    """D4: run the ARM B canary (the LIVE VpcTrailManager fed one 1m bar at a time) over ALL of the
+    certified 408 trades' REAL 1m slices, and check the manager's stop series + exit match the
+    certified sim `vpc_trail.walk_1m_trail` (the `stop_path_new` / `exit_reason_new` in the 1m-truth
+    ledger) BIT-FOR-BIT on every trade. Returns a dict:
+        {n_total, n_filled, n_match, mismatches:[...]}
+    where a MATCH means the manager's stop_path == the certified stop_path_new AND (for a stop exit)
+    the manager exit level == the certified exit, or (for an EOD trade) the manager never exited.
+
+    This extends ARM B from deterministic synthetic scenarios to the certified real-data set, using
+    the CANONICAL 408 trades from tools_vpc_1m_truth.vpc_1m_truth_trades (no re-implementation of the
+    admission logic — only the deterministic per-trade 1m-slice geometry is re-derived to feed the
+    live manager)."""
+    import tools_vpc_1m_truth as T
+    if feats is None:
+        feats = v.features(VS.real_rth_5m())
+        feats = feats[feats.date >= WINDOW_START]
+    if d1rth is None:
+        d1rth = T.load_1m_rth()
+    trail_atr = VS.CFG["trail_atr"]
+    trades, n_skipped = T.vpc_1m_truth_trades(feats, d1rth)
+    d1_by_day = {d: g for d, g in d1rth.groupby("date")}
+    # per-day 5m arrays keyed by date, matching vpc_1m_truth_trades' grouping
+    day5 = {}
+    for day, g in feats.groupby("date"):
+        g = g.sort_values("slot")
+        day5[day] = dict(idx=g.index.values, A=g.atr.values)
+    mismatches = []
+    n_match = 0
+    n_filled = 0
+    for _, tr in trades.iterrows():
+        if not tr["filled_1m"]:
+            continue
+        n_filled += 1
+        # trades['ts'] is a UTC-naive datetime64 (it came from a tz-aware index via `.values`, exactly
+        # as tools_vpc_1m_truth stores it). The day arrays are keyed by the NY-tz normalized `date`
+        # column, so derive the day key by re-localizing UTC -> NY (never a naive re-parse).
+        ts = pd.Timestamp(tr["ts"])                       # UTC-naive instant
+        ts64 = np.datetime64(ts)
+        day = ts.tz_localize("UTC").tz_convert(NY).normalize()
+        d5 = day5.get(day)
+        g1 = d1_by_day.get(day)
+        if d5 is None or g1 is None:
+            mismatches.append(dict(ts=str(ts), reason="missing day arrays"))
+            continue
+        idx5 = d5["idx"]; A5 = d5["A"]
+        pos = np.where(idx5 == ts64)[0]
+        if len(pos) == 0:
+            mismatches.append(dict(ts=str(ts), reason="entry ts not in 5m index"))
+            continue
+        ei = int(pos[0])
+        idx1 = g1.index.values; H1 = g1.high.values; L1 = g1.low.values; C1 = g1.close.values
+        a1 = int(np.searchsorted(idx1, ts64, side="left"))
+        idx1_s = idx1[a1:]; H1_s = H1[a1:]; L1_s = L1[a1:]; C1_s = C1[a1:]
+        bars_1m = list(zip(L1_s, H1_s, C1_s))
+        entry = float(tr["entry"]); direction = int(tr["d"]); stopdist = float(tr["stop_pts"])
+        live_path, live_exit = _drive_manager_1m(bars_1m, A5, idx1_s, idx5, ei, entry, direction,
+                                                 stopdist, trail_atr)
+        sim_path = [tuple(x) for x in tr["stop_path_new"]]
+        live_path = [tuple(x) for x in live_path]
+        ok = (live_path == sim_path)
+        if tr["exit_reason_new"] == "stop":
+            # the certified sim exit price is the resting stop it stopped on (last old_stop before exit)
+            ok = ok and (live_exit is not None)
+        else:                                            # EOD: sim never stopped -> manager must not exit
+            ok = ok and (live_exit is None)
+        if ok:
+            n_match += 1
+        else:
+            mismatches.append(dict(ts=str(ts), sim_steps=len(sim_path), live_steps=len(live_path),
+                                   sim_reason=tr["exit_reason_new"], live_exit=live_exit))
+    return dict(n_total=len(trades), n_filled=n_filled, n_match=n_match,
+                n_skipped=int(n_skipped), mismatches=mismatches)
+
+
 class _SimBotSender:
     """In-memory sender: records every payload, always 'sent'. No broker, no network."""
     def __init__(self):
