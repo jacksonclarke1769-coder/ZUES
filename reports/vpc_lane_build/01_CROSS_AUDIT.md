@@ -185,3 +185,65 @@ DEC; kill-switch-vs-in-flight-trail semantics; causal-reachability split; real-b
 wire field (item 6); ARM B over real 408-trade 1m slices; watchdog trail-churn paper-shadow
 acceptance. Add to that list: the engine cold-start **buffer-warmup gate** (§4) and the readback
 integration with a real broker read-back source (§1).
+
+---
+
+# Round 2 — Remediation re-verification (auditor, 2026-07-12)
+
+Re-audited `4945dd2..bc81cf6` (fixes `76961c0` F1/F2, `b6117f8` F3, `2369d9e` hardenings,
+`bc81cf6` docs). Method: re-ran the auditor's OWN round-1 attack code (not the builder's new tests)
+against the fixed code, plus one new variant per defect.
+
+## Per-defect kill-confirmation (original repros re-run)
+
+- **F1 (readback never-naked) — KILLED.** `_issue_replace` no longer sends the old-stop cancel in
+  the readback path; the cancel is deferred into `_check_timeout` and fires ONLY after `confirm_fn`
+  confirms the new stop resting (confirm-then-cancel). Round-1 repro: during the in-flight replace
+  sends are `['stop']` only (no cancel); on timeout `stood_down=True`, `resting=95.0`,
+  `cancelled_stops=[]` → the kept stop was never cancelled. Invariant `resting_stop ∉ cancelled_stops`
+  holds. **New variant** (explicit `"rejected"` mid-ratchet + kill/flatten during a pending confirm):
+  old stop kept uncancelled and working in every branch → never naked.
+- **F2 (idempotency) — KILLED.** Guard is now `bar_id <= last_bar_processed → hold`. Round-1 repro
+  (replay stale `bar_id=1` after bar 2): returns `hold`, resting unchanged at 100.5, `exited=False`
+  — the phantom exit is gone. **New variant** (same `bar_id` with a corrupt crash-low payload that
+  would phantom-exit if re-stepped): rejected as `hold`, no exit; a genuinely-higher `bar_id` still
+  processes and ratchets. Monotonic ordering enforced.
+- **F3 (same-bar dual admission) — KILLED.** `admit` now atomically reserves sized risk; a second
+  same-bar admit sees reduced headroom via `combined_open_risk = open + reserved`. Round-1 repro
+  ($1000 ceiling): `admit A`→4 ($800) then `admit V` sizes 3→**1** ($200); combined **$1000 ≤
+  ceiling** (was $1400). **New variant (reserve-leak on rejection):** `release(lane)` fully frees the
+  reservation and `open_side` (remaining budget back to $1000, no leak); dup-admit of a
+  reserved/held lane is blocked; `admit→on_open` converts the reservation with no double-count.
+
+## New-variant results — all pass (no residual naked/overbook path found)
+
+## Hardenings
+
+- **NaN/inf payload — impossible.** `round_tick` raises on non-finite input; `build_vpc_stop_replace`
+  and `build_vpc_entry` fail-closed `(None, error)` on NaN/inf stop or ref; a valid payload's
+  `stopPrice` is provably finite. Verified directly.
+- **Cold-start warmup gate — works and does not weaken the live default.** `ProfileVEngine` default
+  `warmup_bars=120`; `latest_signal` returns `None` while `len(buf) < 120` (verified blocked at
+  buf=119; the `< max(2, warmup_bars)` guard admits computation at 120). Parity/replay harnesses pass
+  `warmup_bars=0` (legitimate: they start at TRUE history start where the batch is equally cold —
+  apples-to-apples), so the live default is untouched. `replay_5m_native` uses `warmup_bars=0`;
+  `PaperVpcLane` retains the live default 120.
+
+## Regression status
+
+- Full suite: **942 passed, 1 skipped** (matches expected 942; +11 over round-1's 931). The 1 skip is
+  the intended superseded ARM-B stub.
+- Parity independently re-verified on the fixed code: streaming `replay_5m_native` vs certified
+  `vpc_trades_rich`, full history = **n=408, net 4919.178571 == 4919.178571, 0 per-trade mismatches.**
+  Both canaries (1m-truth + 5m-native) remain green in-suite.
+
+## FINAL VERDICT: BUILD-COMPLETE-CERTIFIABLE (as a disarmed Phase-3 build)
+
+All three round-1 defects (F1/F2/F3) are killed against the auditor's own reproductions and one new
+variant each; both hardenings do what they claim without weakening the live defaults; no regression
+(942/1) and parity remains exact. The lane remains DISARMED and unwired — the legitimately-Phase-4
+deferrals from round 1 (locked-config `vm` sizing, `auto_live` registration + `_dp` A+B+V
+aggregation, conflict-policy DEC, kill-vs-in-flight-trail semantics, real-broker stop-replace wire
+mapping / readback integration, causal-reachability split, ARM-B over real 408 slices, watchdog
+paper-shadow acceptance) still gate ARMING and are unaffected by this pass. Certifiable as a build;
+NOT yet arm-eligible until those operator-gated Phase-4 items clear `go-live-recert.sh`.
