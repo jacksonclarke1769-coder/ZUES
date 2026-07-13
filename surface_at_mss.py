@@ -131,11 +131,20 @@ def _detect_at(pre, i):
     return setup
 
 
-def latest_mss_emission(feats, params=None):
+def latest_mss_emission(feats, params=None, start_bar=None):
     """REALTIME surface-at-MSS emit. Given the rolling 5m feature buffer whose LAST row is the
     just-closed bar, return the OTE resting-limit emission (entry/stop/target/direction) for a
     Profile-A setup whose MSS confirms on THAT last bar, or None. Uses only bars <= the last bar
-    (== <= mss_bar); no post-MSS information anywhere. emit-bar = mss_bar (k)."""
+    (== <= mss_bar); no post-MSS information anywhere. emit-bar = mss_bar (k).
+
+    `start_bar` (optional) = the earliest sweep bar to consider, i.e. the bar the bot became FLAT
+    (one bar after its last position's exit). This reproduces model01.run()'s no-overlap
+    sweep-pairing: run() only evaluates sweeps at/after the bar it is free, so when several sweeps
+    co-confirm an MSS at `last`, the certified backtest pairs the first one at/after `start_bar`.
+    It uses only PAST position state (the prior trade has already exited by `last`) -- no future
+    information. Default None = stateless (consider the whole W_MSS window); the live bot passes its
+    real flat-since bar. See reports/fork_a/03_build_report.md for why stateless diverges on ~4% of
+    signals (run()'s no-overlap is invisible to a stateless scan)."""
     pre = _preamble(feats, params)
     n = pre["n"]
     if n < 3:
@@ -143,7 +152,10 @@ def latest_mss_emission(feats, params=None):
     last = n - 1
     # Sweep can precede MSS by 1..W_MSS bars; scan candidate sweep bars ascending so we pick the
     # SAME (smallest-index) sweep model01.run() would pair with an MSS confirming at `last`.
-    i_start = max(2, last - M1.W_MSS)
+    lo = max(2, last - M1.W_MSS)
+    if start_bar is not None:
+        lo = max(lo, int(start_bar))
+    i_start = lo
     for i in range(i_start, last):
         if not _allowed_trigger(pre, i):
             continue

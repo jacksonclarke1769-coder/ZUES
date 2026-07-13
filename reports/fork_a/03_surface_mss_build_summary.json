@@ -1,0 +1,85 @@
+{
+  "mode": "SAMPLE(20)",
+  "n_verified": 20,
+  "n_match_at_k": 20,
+  "n_mismatch": 0,
+  "n_no_emit": 0,
+  "n_emit_is_k": 20,
+  "all_emit_at_k": true,
+  "parity_all_match": true,
+  "gap1_matched": 15,
+  "gap_ge2_matched": 5,
+  "honest_fill": {
+    "n": 20,
+    "sumR": 5.121,
+    "PF": 1.6956,
+    "WR": 0.5
+  },
+  "contrast": [
+    {
+      "signal_id": "A-0001-20210701T0955",
+      "gap_sm": 1,
+      "gap_mf": 4,
+      "new_scan_emits_at_k": true,
+      "certified_surfaces_at_k": false,
+      "certified_surfaces_at_fill": true
+    },
+    {
+      "signal_id": "A-0032-20210924T1030",
+      "gap_sm": 4,
+      "gap_mf": 2,
+      "new_scan_emits_at_k": true,
+      "certified_surfaces_at_k": false,
+      "certified_surfaces_at_fill": true
+    },
+    {
+      "signal_id": "A-0062-20211216T0950",
+      "gap_sm": 1,
+      "gap_mf": 1,
+      "new_scan_emits_at_k": true,
+      "certified_surfaces_at_k": false,
+      "certified_surfaces_at_fill": false
+    },
+    {
+      "signal_id": "A-0093-20220302T1025",
+      "gap_sm": 7,
+      "gap_mf": 4,
+      "new_scan_emits_at_k": true,
+      "certified_surfaces_at_k": false,
+      "certified_surfaces_at_fill": true
+    },
+    {
+      "signal_id": "A-0123-20220614T1000",
+      "gap_sm": 1,
+      "gap_mf": 5,
+      "new_scan_emits_at_k": true,
+      "certified_surfaces_at_k": false,
+      "certified_surfaces_at_fill": true
+    },
+    {
+      "signal_id": "A-0154-20220914T1035",
+      "gap_sm": 11,
+      "gap_mf": 2,
+      "new_scan_emits_at_k": true,
+      "certified_surfaces_at_k": false,
+      "certified_surfaces_at_fill": true
+    },
+    {
+      "signal_id": "A-0184-20230112T1010",
+      "gap_sm": 2,
+      "gap_mf": 6,
+      "new_scan_emits_at_k": true,
+      "certified_surfaces_at_k": false,
+      "certified_surfaces_at_fill": true
+    },
+    {
+      "signal_id": "A-0215-20230406T1020",
+      "gap_sm": 1,
+      "gap_mf": 1,
+      "new_scan_emits_at_k": true,
+      "certified_surfaces_at_k": false,
+      "certified_surfaces_at_fill": false
+    }
+  ],
+  "verdict": "BUILD-CLEAN: emits at k, causally <=mss, parity holds"
+}
