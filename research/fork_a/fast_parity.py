@@ -36,6 +36,19 @@ eng = ProfileAEngine(STRAT); eng.buf = DB.load_databento_5m()
 feats = eng._features(); n = len(feats)
 print(f"[fast] full feats bars = {n}", flush=True)
 
+# No-overlap anchor lookup: model01.run()'s free bar (one past the prior trade's exit) keyed by the
+# current trade's mss_bar. This is the SAME value surface_at_mss._anchor_from_run() computes on the
+# truncated slice (proven identical: prior trades are all left of the edge; run(realtime True) on a
+# slice reserves only the current setup). Precomputed once here so the 581-slice sweep is fast; the
+# stateless self-contained path (start_bar=None -> internal run) is validated by the canary.
+print("[fast] building no-overlap anchor timeline (one backtest run) ...", flush=True)
+alltr = M1.run(feats, "NQ", PARAMS)           # realtime=False backtest, all sessions
+alltr = alltr.sort_values("sweep_bar").reset_index(drop=True)
+free_by_mss = {}; prev_exit = -1
+for _, t in alltr.iterrows():
+    free_by_mss[int(t["mss_bar"])] = prev_exit + 1
+    prev_exit = int(t["exit_bar"])
+
 rows = []
 for _, r in tp.iterrows():
     mss_bar = int(r["mss_bar"]); fill_bar = int(r["fill_bar"]); sweep_bar = int(r["sweep_bar"])
@@ -43,7 +56,7 @@ for _, r in tp.iterrows():
         rows.append(dict(signal_id=r["signal_id"], status="BAD-INDEX", R=float(r["R"]),
                          gap_sm=mss_bar - sweep_bar)); continue
     sl = feats.iloc[:mss_bar + 1]            # buffer ending exactly at mss_bar close (n=mss_bar+1)
-    emis = SM.latest_mss_emission(sl, PARAMS)
+    emis = SM.latest_mss_emission(sl, PARAMS, start_bar=free_by_mss.get(mss_bar))
     if emis is None:
         rows.append(dict(signal_id=r["signal_id"], status="NO-EMIT-AT-K", R=float(r["R"]),
                          gap_sm=mss_bar - sweep_bar, gap_mf=fill_bar - mss_bar)); continue

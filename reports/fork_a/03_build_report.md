@@ -2,6 +2,19 @@
 
 **Branch:** `model01-surface-mss` (bot repo). **Status:** BUILT + verified, DEFAULT-OFF, NOT armed,
 NOT pushed. **Date:** 2026-07-13.
+
+> **UPDATE 2026-07-13 — sweep-selection parity defect FIXED → full 581/581.** The realtime-selection
+> gap below (556/581 stateless) is resolved. `latest_mss_emission` now REPLAYS `run()`'s exact
+> sequential scan — it resumes at the no-overlap free bar and advances past earlier setups with
+> `run()`'s own reject-jumps (`i = mss_bar+1` on no-fill, `i = fill+1` on the risk guards) — so it
+> pairs the SAME liquidity sweep `run()` does. The free bar is self-derived from the frozen
+> `model01.run()` trade timeline (`_anchor_from_run`), so the stateless live path and the truncation
+> canary both reproduce it with no caller state. **Full 581 parity = 581/581 match-at-k, sweep_ok all
+> true, all emit at k** (`reports/fork_a/03_fast_parity_summary.json`). Own look-ahead canary stays
+> CLEAN (20/20 emit-at-k, causally ≤ mss, via the self-contained internal path). Suite 968 passed / 1
+> skipped; default-off path unchanged. **Honest fillable PF on the now-matched 581 = 1.3507
+> (+86.78R, WR 44.8%).** The k-vs-k+1 timing held: every setup still emits at k (no k+1 regression).
+> Detection math (`model01_sweep_mss_fvg.py`/`primitives.py`) and all protected files untouched.
 **Scope guarantee:** the change moves WHEN/HOW the signal is emitted. It does NOT touch the detection
 math — `model01_sweep_mss_fvg.py`, `primitives.py`, `config_*_locked.py`, EXITLOCK, watchdog,
 bridge send path are all unmodified. Sweep/MSS/displacement/OTE detection is delegated **verbatim**
@@ -25,18 +38,20 @@ surfaced a second, **benign** finding: a stateless emit scan diverges from `run(
 - **Real emit bar = k (mss_bar close), for all gaps** — including the 446/581 (77%) gap==1 setups.
 - **Emission-math parity: 581/581 EXACT** — given `run()`'s sweep, the built formulas reproduce every
   certified entry/stop/target/direction to the cent (`refsweep_reproducible = 581`).
-- **Realtime-selection parity: 556/581 stateless → 568/581** when the bot's flat-since bar is threaded
-  (the no-overlap rule). Residual 13 (2.2%) are multi-sweep co-confirmation ordering differences vs
-  `run()`'s backtest loop — causally clean, benign.
-- **Honest fillable PF (BUILT path, emit-at-k):** 1.30 on the reproduced population (568, no-overlap;
-  1.2965 stateless), vs the 1.35 selection-perfected sim ceiling; durable **IS ≈ 1.18** unchanged.
+- **Realtime-selection parity: 581/581 (FIXED 2026-07-13).** Was 556 stateless / 568 with flat-since;
+  the scanner now replays `run()`'s exact scan (no-overlap free bar + `run()`'s reject-jumps), pairing
+  `run()`'s sweep for all 581 — `sweep_ok` true on every signal, `mismatch = 0`, `all_emit_at_k = true`.
+- **Honest fillable PF (BUILT path, emit-at-k):** **1.3507 (+86.78R, WR 44.8%) on the matched 581**
+  (= the selection-perfected certified stream, now reproduced end-to-end); durable **IS ≈ 1.18**
+  unchanged. (Pre-fix: 1.2965 on the 556-matched subset.)
 - **Suite:** 968 passed, 1 skipped (962 baseline + 6 new surface-mode guards) — all green.
 
 **Blunt verdict:** the rebuild WORKS — causally clean, emits at k before the fill, and delivers the
-rescued edge (1.18 durable / ~1.30–1.35 sim) into a live-emittable form. The build revealed a benign
-selection nuance (which liquidity sweep is paired when several co-confirm the same MSS bar), fixable
-by threading the bot's flat-since bar; it is not look-ahead and does not change the causality verdict.
-The one true unresolved gate remains **N≥30 live OTE-limit fills** (out of scope, unchanged).
+rescued edge (1.18 durable / 1.35 sim) into a live-emittable form. The selection nuance (which
+liquidity sweep is paired when several co-confirm the same MSS bar) is now RESOLVED by replaying
+`run()`'s exact scan — full parity is 581/581 with sweep_ok on every signal; it was never look-ahead
+and the causality verdict is unchanged. The one true unresolved gate remains **N≥30 live OTE-limit
+fills** (out of scope, unchanged).
 
 ---
 
@@ -44,7 +59,7 @@ The one true unresolved gate remains **N≥30 live OTE-limit fills** (out of sco
 
 | File | Change |
 |---|---|
-| `surface_at_mss.py` (new) | `latest_mss_emission(feats, params)` — realtime emit: on the rolling buffer whose last row is the just-closed bar, detect a Profile-A OTE setup whose MSS confirms on THAT bar and return its resting-limit entry/stop/target. Delegates detection to frozen `model01._detect`; copies run()'s fixed_rr entry/stop/target + risk guards + ny_am session filter (matching how the 581 were selected in `classify_signals.py:94`). Also `scan_all_mss_emissions` (offline image of the stream). |
+| `surface_at_mss.py` (new) | `latest_mss_emission(feats, params, start_bar=None)` — realtime emit: on the rolling buffer whose last row is the just-closed bar, detect a Profile-A OTE setup whose MSS confirms on THAT bar and return its resting-limit entry/stop/target. Delegates detection to frozen `model01._detect`; copies run()'s fixed_rr entry/stop/target + risk guards + ny_am session filter (matching how the 581 were selected in `classify_signals.py:94`). **Sweep pairing replays run()'s sequential scan** — `_anchor_from_run` reads the no-overlap free bar from the frozen `run()` trade timeline and `_reject_jump` advances past earlier setups with run()'s verbatim reject-jumps (lines 229-250), so it pairs run()'s sweep for all 581. Also `scan_all_mss_emissions` (offline image of the stream). |
 | `strategy_engine_profileA.py` | Added `EMISSION_MODE_SURFACE_AT_MSS` + `_latest_signal_surface_mss()`. `latest_signal()` gains ONE early-return guard at the top; every non-surface mode falls through to the **byte-identical** certified_gate / emit_at_fill path. Lazy import of `surface_at_mss` — never touched on the default path. Fail-closed on detection error; broken emit-bar instant escapes via the existing `_derive_fill_instant` invariant. |
 | `test_surface_at_mss_canary.py` (new) | 6 regression guards (default never routes to surface; surface emits at mss bar; dedup; no-setup→None; warmup guard; detection-error→fail-closed). |
 | `research/fork_a/build_surface_mss_verify.py` (new) | Real-Databento canary/parity harness driving the BUILT realtime path on data truncated at each signal's mss_bar. |
@@ -103,27 +118,34 @@ built entry/stop/target/direction formulas reproduces every one of the 581 to th
 (`refsweep_reproducible = 581/581`). There is no arithmetic error and no post-MSS dependency; this is
 the same result Fork A's verify harness got, now reproduced through the *engine's* code path.
 
-**(b) Realtime selection — 556/581 stateless, 568/581 no-overlap.** When several liquidity sweeps
-co-confirm the SAME MSS bar, which one gets emitted depends on scan ordering:
+**(b) Realtime selection — 581/581 (FIXED 2026-07-13; was 556 stateless / 568 no-overlap).** When
+several liquidity sweeps co-confirm the SAME MSS bar, which one `run()` records depends on its
+sequential scan. The evolution of the fix:
 
 | Selection rule | Match vs 581 | PF (matched) | sumR |
 |---|---|---|---|
-| stateless (scan whole W_MSS window, first sweep with MSS==last) — current default | **556** (95.7%) | 1.2965 | 72.27 |
-| no-overlap (scan from the bot's flat-since bar = `start_bar`) | **568** (97.8%) | 1.3036 | 75.12 |
-| selection-perfected ceiling (certified stream, all 581) | 581 | 1.3507 | 86.78 |
+| stateless (first sweep with MSS==last in the W_MSS window) — original build | 556 (95.7%) | 1.2965 | 72.27 |
+| no-overlap flat-since only (`start_bar`, ascending-first) | 568 (97.8%) | 1.3036 | 75.12 |
+| **run()-scan replay (free bar + reject-jumps) — current** | **581 (100%)** | **1.3507** | **86.78** |
 
-**Why the gap, and why it is benign.** `model01.run()` pairs a sweep with an MSS via its ascending
-scan **plus no-overlap** — it advances `i` past each taken trade's *realized exit bar*, so it never
-evaluates sweeps that fell inside a prior open position. That exit bar is FUTURE information relative
-to the MSS instant, so **no realtime emitter can reproduce run()'s pairing from price alone.** The
-fix that IS realtime-valid: pass the bar the bot became FLAT (one past its last position's exit — a
-PAST fact the bot knows) as `start_bar`. That recovers 12 of the 25 divergences (556→568). The
-residual 13 (2.2%, gaps mostly ==1) are finer ordering interactions with run()'s reject-and-jump
-sequence; reproducing them exactly would require mirroring run()'s full loop and is not worth the
-coupling. Every divergence is a *different valid Profile-A OTE setup at the same bar* (correct
-direction, causally clean, emit-at-k) — a choice of which liquidity level's OTE to rest, **not** a
-look-ahead or a phantom. `latest_mss_emission` now accepts `start_bar` so the live bot can thread its
-flat-since bar; default (stateless) is the conservative 556-parity behaviour.
+**Root cause and the fix.** `model01.run()` pairs a sweep with an MSS by a *sequential* scan: it
+resumes at the no-overlap free bar (one past the last taken trade's realized exit) and then advances
+`i` past EARLIER setups with its own reject-jumps (`i = mss_bar+1` when the FVG never fills within
+`W_FILL`; `i = fill+1` when the stop is degenerate or > 1.2% of price). The original stateless scan
+("first sweep whose MSS==last") ignored both, so on 25/581 it locked onto an EARLIER phantom sweep
+`run()` had actually skipped — a different impulse leg → wrong entry/target (e.g. A-0029 entry off
+34.7pt). Threading the flat-since free bar alone recovered 12 (the clean no-overlap cases); the other
+13 needed the reject-jumps (a rejected setup right before the true sweep jumps `run()`'s `i` past the
+phantom). The scanner now **replays `run()`'s scan exactly**: `_anchor_from_run` reads the free bar
+from the frozen `run()` trade timeline, and `latest_mss_emission` marches from there applying
+`run()`'s verbatim reject-jumps until the first sweep whose MSS confirms at `last` — which IS `run()`'s
+pick. This is fully **causal** (every completed prior trade exits strictly before `last`; the current
+setup's fill is after `last`, so `run(realtime=True)` reserves it and it is never consulted) and
+preserves **emit-at-k** (the march stops AT the MSS-at-`last` detection and emits, never waiting for
+the fill). The only active reject-jumps for the Profile-A config are the fill-window and the two risk
+guards (all other gates — tier/first-presented/smt/daily-fvg/wdraw/dbias/pd/liquidity-target/
+require-draw — are off), so the replay is a small verbatim copy of `run()` lines 229-250, not a fork
+of the detection math.
 
 ## 4. Honest fillable PF (BUILT path, actual emit bar = k)
 
@@ -132,12 +154,12 @@ Emit-at-k rests the OTE limit at the mss_bar close, so the first fillable bar is
 therefore fills at the identical historical fill bars, and the certified 8-tick-honest, 1m-truth
 `R` stream **is** the fillable stream for the emitted signals:
 
-- **Reproduced population (no-overlap, 568 signals): PF 1.3036, +75.12R.** Stateless (556): PF 1.2965,
-  +72.27R. Selection-perfected ceiling (all 581): PF **1.3507**, +86.78R.
-- The real emit-bar timing (k) does **not** erode the edge — the erosion vs 1.35 is the ~2–4% of
-  signals where the built path emits a *different* (unscored-here) valid setup, not a lost or degraded
-  fill. The k+1 counterfactual (naive `run()` reuse) would be the real eroder — losing the 184
-  gap==1/fill==mss+1 fills — and the build specifically avoids it by emitting at k.
+- **Matched population (581/581 after the parity fix): PF 1.3507, +86.78R, WR 44.8%.** The built path
+  now reproduces the full certified stream end-to-end, so its fillable PF equals the selection-perfected
+  ceiling. (Pre-fix: 1.2965/+72.27R on the 556 matched; 1.3036/+75.12R on the 568 no-overlap subset.)
+- The real emit-bar timing (k) does **not** erode the edge. The k+1 counterfactual (naive `run()`
+  reuse) would be the real eroder — losing the gap==1/fill==mss+1 fills — and the build specifically
+  avoids it by emitting at k (confirmed: `all_emit_at_k = true` on all 581).
 
 **Durability (from the Fork A verifier, reports/fork_a/02):** the 1.35 is the honest *sim ceiling*,
 not a live claim. In-sample (2021-24) PF ≈ **1.18** (the conservative planning number); holdout
@@ -152,9 +174,9 @@ remains the decisive out-of-scope arming gate.
   the surface mode; for `certified_gate`/`emit_at_fill` the guard is skipped and the original code
   runs unchanged (`git show` confirms the diff is purely additive above the original body). The
   surface module is lazy-imported only inside the surface branch.
-- **Full suite green: 968 passed, 1 skipped** (`python3 -m pytest -q`; 962 pre-existing tests
-  unchanged + 6 new surface-mode canaries). The 962 originals exercise only the certified path and
-  stay green → A-detection parity is preserved and default-off behaviour is unchanged.
+- **Full suite green: 968 passed, 1 skipped** (`python3 -m pytest -q`, re-run after the parity fix;
+  962 pre-existing tests unchanged + 6 surface-mode canaries). The 962 originals exercise only the
+  certified path and stay green → A-detection parity is preserved and default-off behaviour is unchanged.
 
 ## BLOCKED / out of scope (unchanged from Fork A)
 
@@ -166,10 +188,11 @@ remains the decisive out-of-scope arming gate.
 - **No-overlap / one-position gating** is enforced by the bot (position guard + `acted_ts`), not by
   the emit scan; the raw surface stream can propose a setup while a prior limit still rests — the bot
   suppresses it, exactly as today.
-- **Flat-since threading (follow-up integration, not blocking):** to lift realtime-selection parity
-  556→568/581, the bot should pass its flat-since bar as `latest_mss_emission(..., start_bar=…)`. The
-  hook is built and defaults off (stateless). This is a benign selection improvement, not a causality
-  or arming prerequisite.
+- **Flat-since threading — RESOLVED 2026-07-13.** Realtime-selection parity is now 581/581 with no
+  caller state required: `latest_mss_emission` self-derives the no-overlap free bar from the frozen
+  `run()` trade timeline (`_anchor_from_run`) and replays `run()`'s reject-jumps. The `start_bar`
+  argument is retained as an optional fast-path override (the live bot may pass its real flat-since
+  bar, and the `fast_parity` harness precomputes it), but is no longer needed for correctness.
 
 **Nothing armed. Nothing pushed. Branch `model01-surface-mss` only.**
 
