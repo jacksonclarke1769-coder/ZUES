@@ -1,0 +1,33 @@
+{
+  "oracle_count": 581,
+  "v2_count": 581,
+  "matched": 581,
+  "mismatched": [],
+  "param_versions": {
+    "ict_v2": "ICT_V2_PARAMS_V0",
+    "oracle": "A_PARAMS[exit3]"
+  },
+  "data_range": {
+    "start": "2021-06-22T20:00:00-04:00",
+    "end": "2026-06-22T19:55:00-04:00",
+    "n_bars_5m": 353952
+  },
+  "store_hash": "5715c30ae346829cb5048c6c1aed57f28699aa39a405106ee203dbd1f3cb9a7a",
+  "store_hash_definition": "sha256 over the ordered event_id sequence of every SWING_HIGH_A/SWING_LOW_A (5m 3/3 and 1h 2/2) and DISPLACEMENT_QUALIFIED/COMPONENTS/WARMUP event emitted by the reused V2 sub-engines while building this canary's level/swing/displacement series; the sweep/MSS/OTE signal values themselves are hand-composed parity-layer values, not CausalEvents -- see module docstring.",
+  "oracle_raw_candidate_count": 2359,
+  "v2_raw_candidate_count": 2359,
+  "building_block_selfcheck_mismatches": {
+    "pdh": 0,
+    "pdl": 0,
+    "pwh": 0,
+    "pwl": 0,
+    "asia_high": 0,
+    "asia_low": 0,
+    "london_high": 0,
+    "london_low": 0,
+    "h1_sh": 0,
+    "h1_sl": 0,
+    "sh_at_5m_3_3": 0,
+    "sl_at_5m_3_3": 0
+  }
+}

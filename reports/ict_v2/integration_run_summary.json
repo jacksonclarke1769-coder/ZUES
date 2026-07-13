@@ -1,0 +1,218 @@
+{
+  "month": "2025-03",
+  "n_bars_5m": 5868,
+  "data_range": {
+    "start": "2025-03-02T18:00:00-05:00",
+    "end": "2025-03-31T23:55:00-04:00"
+  },
+  "engines": [
+    "swings_a",
+    "swings_b",
+    "swings_c",
+    "structure",
+    "displacement",
+    "levels",
+    "opening_range",
+    "overnight",
+    "sweeps",
+    "zones",
+    "ranges",
+    "amd"
+  ],
+  "per_engine": {
+    "swings_a": {
+      "total_events": 1106,
+      "by_event_type": {
+        "SWING_LOW_A": 565,
+        "SWING_HIGH_A": 541
+      }
+    },
+    "swings_b": {
+      "total_events": 5818,
+      "by_event_type": {
+        "SWING_HIGH_B": 2909,
+        "SWING_LOW_B": 2909
+      }
+    },
+    "swings_c": {
+      "total_events": 5849,
+      "by_event_type": {
+        "TRAILING_EXTREME_C": 5849
+      }
+    },
+    "structure": {
+      "total_events": 1701,
+      "by_event_type": {
+        "STRUCTURE_INITIALIZED": 1,
+        "BOS": 1340,
+        "CHOCH": 180,
+        "MSS": 127,
+        "MSS_WINDOW_EXPIRED": 53
+      }
+    },
+    "displacement": {
+      "total_events": 7259,
+      "by_event_type": {
+        "DISPLACEMENT_WARMUP": 5520,
+        "DISPLACEMENT_QUALIFIED": 1391,
+        "DISPLACEMENT_COMPONENTS": 348
+      }
+    },
+    "levels": {
+      "total_events": 14502,
+      "by_event_type": {
+        "LEVEL_CREATED": 1498,
+        "LEVEL_TESTED": 11534,
+        "LEVEL_EXPIRED": 1470
+      }
+    },
+    "opening_range": {
+      "total_events": 63,
+      "by_event_type": {
+        "OR_DEVELOPING": 42,
+        "OR_COMPLETED": 21
+      }
+    },
+    "overnight": {
+      "total_events": 21,
+      "by_event_type": {
+        "OVERNIGHT_WARMUP": 1,
+        "OVERNIGHT_COMPLETED": 20
+      }
+    },
+    "sweeps": {
+      "total_events": 58275,
+      "by_event_type": {
+        "EXCURSION_OPEN": 29138,
+        "SWEEP_CONFIRMED": 5552,
+        "ACCEPTED_BREAKOUT": 23585
+      }
+    },
+    "zones": {
+      "total_events": 14835,
+      "by_event_type": {
+        "FVG_CREATED": 1235,
+        "FVG_QUALIFIED": 1115,
+        "FVG_TESTED": 3489,
+        "FVG_INVALIDATED": 812,
+        "IFVG_CREATED": 812,
+        "IFVG_TESTED": 2083,
+        "IFVG_INVALIDATED": 566,
+        "OB_CREATED": 477,
+        "OB_TESTED": 1813,
+        "IFVG_EXPIRED": 241,
+        "FVG_EXPIRED": 416,
+        "OB_INVALIDATED": 218,
+        "BREAKER_CREATED": 218,
+        "BREAKER_TESTED": 871,
+        "BREAKER_INVALIDATED": 112,
+        "OB_EXPIRED": 257,
+        "BREAKER_EXPIRED": 100
+      }
+    },
+    "ranges": {
+      "total_events": 1110993,
+      "by_event_type": {
+        "DEALING_RANGE_CREATED": 5939,
+        "BAND_TOUCH": 1105054
+      }
+    },
+    "amd": {
+      "total_events": 0,
+      "by_event_type": {}
+    }
+  },
+  "first_event_confirmed_at": "2025-03-02T18:00:00-05:00",
+  "last_event_confirmed_at": "2025-03-31T23:55:00-04:00",
+  "store_hash": "443ed9c2504160c610060b17dde9077ef9fbe52b8212a9bf4868ae6a44cf191e",
+  "store_hash_definition": "sha256 over '<engine_name>:<event_id>' for every event across all 12 registered engines, in engine-registration order then store insertion order (deterministic; engine_id is itself a sha256 of event identity, core/events.py::compute_event_id).",
+  "prefix_invariance": {
+    "n_cuts": 20,
+    "engines_checked": [
+      "levels",
+      "sweeps",
+      "zones"
+    ],
+    "results": {
+      "levels": {
+        "passed": true,
+        "cuts_checked": [
+          293,
+          587,
+          880,
+          1174,
+          1467,
+          1760,
+          2054,
+          2347,
+          2641,
+          2934,
+          3227,
+          3521,
+          3814,
+          4108,
+          4401,
+          4694,
+          4988,
+          5281,
+          5575,
+          5868
+        ]
+      },
+      "sweeps": {
+        "passed": true,
+        "cuts_checked": [
+          293,
+          587,
+          880,
+          1174,
+          1467,
+          1760,
+          2054,
+          2347,
+          2641,
+          2934,
+          3227,
+          3521,
+          3814,
+          4108,
+          4401,
+          4694,
+          4988,
+          5281,
+          5575,
+          5868
+        ]
+      },
+      "zones": {
+        "passed": true,
+        "cuts_checked": [
+          293,
+          587,
+          880,
+          1174,
+          1467,
+          1760,
+          2054,
+          2347,
+          2641,
+          2934,
+          3227,
+          3521,
+          3814,
+          4108,
+          4401,
+          4694,
+          4988,
+          5281,
+          5575,
+          5868
+        ]
+      }
+    }
+  },
+  "wall_clock_seconds": 86.394,
+  "findings": [
+    "amd: 0 events this month (v0 ACCUMULATION_ACTIVE threshold never reached on real NQ 5m data in this sample; see module docstring FINDING; not a code defect -- engines/amd.py's own synthetic tests confirm the FSM triggers correctly when the threshold IS met)."
+  ]
+}
