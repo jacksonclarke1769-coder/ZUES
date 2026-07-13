@@ -76,7 +76,12 @@ def _derive_fill_instant(feats_index, fill_bar):
 # this kwarg, so every one of them is completely unaffected by this change.
 EMISSION_MODE_CERTIFIED_GATE = "certified_gate"   # DEFAULT — unchanged: tail(3) + <=10min freshness
 EMISSION_MODE_EMIT_AT_FILL = "emit_at_fill"        # new — drops the poll-time freshness gate only
-EMISSION_MODES = {EMISSION_MODE_CERTIFIED_GATE, EMISSION_MODE_EMIT_AT_FILL}
+# FORK-A / reports/fork_a/03_build_report.md: surface the OTE resting-limit at the MSS bar's own
+# close (k) — using the frozen detection math via surface_at_mss (which delegates verbatim to
+# model01._detect) — instead of waiting for model01.run()'s tail(3) scan to surface it ~44 min after
+# the MSS (past the fill). Inert unless an operator explicitly selects it; default path untouched.
+EMISSION_MODE_SURFACE_AT_MSS = "surface_at_mss"
+EMISSION_MODES = {EMISSION_MODE_CERTIFIED_GATE, EMISSION_MODE_EMIT_AT_FILL, EMISSION_MODE_SURFACE_AT_MSS}
 
 
 class ProfileAEngine:
@@ -108,8 +113,42 @@ class ProfileAEngine:
         df.index.name = "timestamp"
         return df
 
+    def _latest_signal_surface_mss(self):
+        """SURFACE-AT-MSS emit (EMISSION_MODE_SURFACE_AT_MSS). Instead of model01.run()'s tail(3)
+        post-fill scan, ask surface_at_mss whether a Profile-A OTE setup's MSS just confirmed on the
+        most-recent CLOSED bar; if so, emit its resting-limit entry/stop/target AT that bar's close
+        (k). surface_at_mss delegates all detection to the frozen model01._detect — the detection
+        math is byte-identical; only the emission instant moves earlier. Fail-closed: any error in
+        detection -> no signal (like the certified path); a broken emit-bar instant escapes via
+        _derive_fill_instant BY DESIGN (broken plumbing must not trade)."""
+        if len(self.buf) < 2000:                 # same warmup as the certified path
+            return None
+        import surface_at_mss as SM              # lazy: never imported on the default path
+        try:
+            feats = self._features()
+            emis = SM.latest_mss_emission(feats, PROFILE_A)   # only bars <= last (== <= mss_bar)
+        except Exception:
+            return None
+        if emis is None:
+            return None
+        # The emit bar is the most-recent closed bar (the MSS bar) by construction. Its true instant
+        # comes ONLY from feats.index[-1] via _derive_fill_instant (same invariant as the fill path).
+        emit_bar = len(feats.index) - 1
+        ets = _derive_fill_instant(feats.index, emit_bar)     # OUTSIDE try/except by design
+        key = ets.isoformat()
+        if key in self.acted_ts:
+            return None
+        if ets > self.buf.index.max():
+            return None                          # causal safety net (unreachable: emit bar == last)
+        self.acted_ts.add(key)
+        return dict(side=emis["direction"], entry=float(emis["entry"]), stop=float(emis["stop"]),
+                    target=float(emis["target"]), rr=float(emis["rr"]), liq=emis["liq_swept"],
+                    ts_signal=key, emission_mode=self.emission_mode)
+
     def latest_signal(self):
         """Return a fresh entry signal dict if Profile A just filled on the last bar."""
+        if self.emission_mode == EMISSION_MODE_SURFACE_AT_MSS:
+            return self._latest_signal_surface_mss()
         if len(self.buf) < 2000:                 # need warmup (~1 week of 5m bars min)
             return None
         try:
