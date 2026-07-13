@@ -1,0 +1,379 @@
+{
+ "meta": {
+  "generated": "2026-07-13",
+  "n_starts": 45,
+  "window": "2022-01-14->2026-06-19",
+  "pass_rolling": 0.379,
+  "pass_monday": 0.419,
+  "eval_fee_promo": 24.5,
+  "eval_fee_list": 137.0,
+  "activation": 130.0,
+  "evals_per_month": 4.333,
+  "account_cap_primary": 20,
+  "account_caps": [
+   10,
+   20,
+   30
+  ],
+  "confidence": "ALL Apex rules help-center-derived, UNVERIFIED vs live contract; eval front-end FROZEN; SIM only; account cap UNVERIFIED",
+  "determinism_md5": "f228866f0480185a870e2755635ee8b9"
+ },
+ "canary": {
+  "pre": {
+   "e_paid_mean": 2893,
+   "e_paid_median": 1500,
+   "bust_pct": 53.3,
+   "life_mean": 16.4
+  },
+  "opt": {
+   "e_paid_mean": 2842,
+   "e_paid_median": 2362,
+   "bust_pct": 0.0,
+   "closed_max_pct": 0.0,
+   "data_end_pct": 100.0,
+   "life_mean": 31.5
+  }
+ },
+ "policy_pre": {
+  "n": 45,
+  "e_paid_mean": 2893,
+  "e_paid_median": 1500,
+  "life_mean": 16.4,
+  "life_median": 12.2,
+  "bust_pct": 53.3,
+  "closed_max_pct": 4.4,
+  "data_end_pct": 42.2,
+  "zero_pct": 33.3
+ },
+ "policy_opt": {
+  "n": 45,
+  "e_paid_mean": 2842,
+  "e_paid_median": 2362,
+  "life_mean": 31.5,
+  "life_median": 31.6,
+  "bust_pct": 0.0,
+  "closed_max_pct": 0.0,
+  "data_end_pct": 100.0,
+  "zero_pct": 0.0
+ },
+ "legA_report04_uncapped_flow": {
+  "pre": {
+   "rolling": {
+    "runrate_mo_mean_promo": 4432,
+    "runrate_mo_median_promo": 2144,
+    "runrate_mo_mean_list": 3944,
+    "runrate_mo_median_list": 1656
+   },
+   "monday": {
+    "runrate_mo_mean_promo": 4911,
+    "runrate_mo_median_promo": 2381,
+    "runrate_mo_mean_list": 4423,
+    "runrate_mo_median_list": 1894
+   }
+  },
+  "opt": {
+   "rolling": {
+    "runrate_mo_mean_promo": 4348,
+    "runrate_mo_median_promo": 3560,
+    "runrate_mo_mean_list": 3860,
+    "runrate_mo_median_list": 3072
+   },
+   "monday": {
+    "runrate_mo_mean_promo": 4818,
+    "runrate_mo_median_promo": 3946,
+    "runrate_mo_mean_list": 4330,
+    "runrate_mo_median_list": 3459
+   }
+  }
+ },
+ "legB_cap_steady_state": {
+  "pre": {
+   "cap10": {
+    "rolling": {
+     "cap": 10,
+     "rate_slot_mean": 176.4,
+     "rate_slot_median": 91.5,
+     "gross_mo_mean": 1764,
+     "gross_mo_median": 915,
+     "throughput_per_mo": 0.61,
+     "cost_per_funded": 194.6,
+     "cost_mo": 119,
+     "net_mo_mean": 1645,
+     "net_mo_median": 796,
+     "xcheck_mean_of_perpa_rate": 121.7,
+     "xcheck_median_of_perpa_rate": 94.3
+    },
+    "monday": {
+     "cap": 10,
+     "rate_slot_mean": 176.4,
+     "rate_slot_median": 91.5,
+     "gross_mo_mean": 1764,
+     "gross_mo_median": 915,
+     "throughput_per_mo": 0.61,
+     "cost_per_funded": 188.5,
+     "cost_mo": 115,
+     "net_mo_mean": 1649,
+     "net_mo_median": 800,
+     "xcheck_mean_of_perpa_rate": 121.7,
+     "xcheck_median_of_perpa_rate": 94.3
+    }
+   },
+   "cap20": {
+    "rolling": {
+     "cap": 20,
+     "rate_slot_mean": 176.4,
+     "rate_slot_median": 91.5,
+     "gross_mo_mean": 3528,
+     "gross_mo_median": 1829,
+     "throughput_per_mo": 1.22,
+     "cost_per_funded": 194.6,
+     "cost_mo": 237,
+     "net_mo_mean": 3291,
+     "net_mo_median": 1592,
+     "xcheck_mean_of_perpa_rate": 121.7,
+     "xcheck_median_of_perpa_rate": 94.3
+    },
+    "monday": {
+     "cap": 20,
+     "rate_slot_mean": 176.4,
+     "rate_slot_median": 91.5,
+     "gross_mo_mean": 3528,
+     "gross_mo_median": 1829,
+     "throughput_per_mo": 1.22,
+     "cost_per_funded": 188.5,
+     "cost_mo": 230,
+     "net_mo_mean": 3298,
+     "net_mo_median": 1599,
+     "xcheck_mean_of_perpa_rate": 121.7,
+     "xcheck_median_of_perpa_rate": 94.3
+    }
+   },
+   "cap30": {
+    "rolling": {
+     "cap": 30,
+     "rate_slot_mean": 176.4,
+     "rate_slot_median": 91.5,
+     "gross_mo_mean": 5292,
+     "gross_mo_median": 2744,
+     "throughput_per_mo": 1.829,
+     "cost_per_funded": 194.6,
+     "cost_mo": 356,
+     "net_mo_mean": 4936,
+     "net_mo_median": 2388,
+     "xcheck_mean_of_perpa_rate": 121.7,
+     "xcheck_median_of_perpa_rate": 94.3
+    },
+    "monday": {
+     "cap": 30,
+     "rate_slot_mean": 176.4,
+     "rate_slot_median": 91.5,
+     "gross_mo_mean": 5292,
+     "gross_mo_median": 2744,
+     "throughput_per_mo": 1.829,
+     "cost_per_funded": 188.5,
+     "cost_mo": 345,
+     "net_mo_mean": 4947,
+     "net_mo_median": 2399,
+     "xcheck_mean_of_perpa_rate": 121.7,
+     "xcheck_median_of_perpa_rate": 94.3
+    }
+   }
+  },
+  "opt": {
+   "cap10": {
+    "rolling": {
+     "cap": 10,
+     "rate_slot_mean": 90.2,
+     "rate_slot_median": 75.0,
+     "gross_mo_mean": 902,
+     "gross_mo_median": 750,
+     "throughput_per_mo": 0.317,
+     "cost_per_funded": 194.6,
+     "cost_mo": 62,
+     "net_mo_mean": 840,
+     "net_mo_median": 688,
+     "xcheck_mean_of_perpa_rate": 90.9,
+     "xcheck_median_of_perpa_rate": 79.9
+    },
+    "monday": {
+     "cap": 10,
+     "rate_slot_mean": 90.2,
+     "rate_slot_median": 75.0,
+     "gross_mo_mean": 902,
+     "gross_mo_median": 750,
+     "throughput_per_mo": 0.317,
+     "cost_per_funded": 188.5,
+     "cost_mo": 60,
+     "net_mo_mean": 842,
+     "net_mo_median": 690,
+     "xcheck_mean_of_perpa_rate": 90.9,
+     "xcheck_median_of_perpa_rate": 79.9
+    }
+   },
+   "cap20": {
+    "rolling": {
+     "cap": 20,
+     "rate_slot_mean": 90.2,
+     "rate_slot_median": 75.0,
+     "gross_mo_mean": 1804,
+     "gross_mo_median": 1500,
+     "throughput_per_mo": 0.635,
+     "cost_per_funded": 194.6,
+     "cost_mo": 124,
+     "net_mo_mean": 1681,
+     "net_mo_median": 1376,
+     "xcheck_mean_of_perpa_rate": 90.9,
+     "xcheck_median_of_perpa_rate": 79.9
+    },
+    "monday": {
+     "cap": 20,
+     "rate_slot_mean": 90.2,
+     "rate_slot_median": 75.0,
+     "gross_mo_mean": 1804,
+     "gross_mo_median": 1500,
+     "throughput_per_mo": 0.635,
+     "cost_per_funded": 188.5,
+     "cost_mo": 120,
+     "net_mo_mean": 1685,
+     "net_mo_median": 1380,
+     "xcheck_mean_of_perpa_rate": 90.9,
+     "xcheck_median_of_perpa_rate": 79.9
+    }
+   },
+   "cap30": {
+    "rolling": {
+     "cap": 30,
+     "rate_slot_mean": 90.2,
+     "rate_slot_median": 75.0,
+     "gross_mo_mean": 2707,
+     "gross_mo_median": 2250,
+     "throughput_per_mo": 0.952,
+     "cost_per_funded": 194.6,
+     "cost_mo": 185,
+     "net_mo_mean": 2521,
+     "net_mo_median": 2064,
+     "xcheck_mean_of_perpa_rate": 90.9,
+     "xcheck_median_of_perpa_rate": 79.9
+    },
+    "monday": {
+     "cap": 30,
+     "rate_slot_mean": 90.2,
+     "rate_slot_median": 75.0,
+     "gross_mo_mean": 2707,
+     "gross_mo_median": 2250,
+     "throughput_per_mo": 0.952,
+     "cost_per_funded": 188.5,
+     "cost_mo": 179,
+     "net_mo_mean": 2527,
+     "net_mo_median": 2070,
+     "xcheck_mean_of_perpa_rate": 90.9,
+     "xcheck_median_of_perpa_rate": 79.9
+    }
+   }
+  }
+ },
+ "ramp": {
+  "pre": {
+   "cap10": {
+    "rolling": {
+     "creation_per_mo": 1.642,
+     "equilibrium_N": 26.9,
+     "saturates": true,
+     "months_to_cap": 7.6,
+     "note": "creation*life > cap: fleet fills to cap then throttles to replacement only"
+    },
+    "monday": {
+     "creation_per_mo": 1.816,
+     "equilibrium_N": 29.8,
+     "saturates": true,
+     "months_to_cap": 6.7,
+     "note": "creation*life > cap: fleet fills to cap then throttles to replacement only"
+    }
+   },
+   "cap20": {
+    "rolling": {
+     "creation_per_mo": 1.642,
+     "equilibrium_N": 26.9,
+     "saturates": true,
+     "months_to_cap": 22.3,
+     "note": "creation*life > cap: fleet fills to cap then throttles to replacement only"
+    },
+    "monday": {
+     "creation_per_mo": 1.816,
+     "equilibrium_N": 29.8,
+     "saturates": true,
+     "months_to_cap": 18.3,
+     "note": "creation*life > cap: fleet fills to cap then throttles to replacement only"
+    }
+   },
+   "cap30": {
+    "rolling": {
+     "creation_per_mo": 1.642,
+     "equilibrium_N": 26.9,
+     "saturates": false,
+     "months_to_cap": null,
+     "months_to_90pct_equilib": 37.8,
+     "note": "creation*life < cap: fleet never fills the cap; equilibrium below cap"
+    },
+    "monday": {
+     "creation_per_mo": 1.816,
+     "equilibrium_N": 29.8,
+     "saturates": false,
+     "months_to_cap": null,
+     "months_to_90pct_equilib": 37.8,
+     "note": "creation*life < cap: fleet never fills the cap; equilibrium below cap"
+    }
+   }
+  },
+  "opt": {
+   "cap10": {
+    "rolling": {
+     "creation_per_mo": 1.642,
+     "equilibrium_N": 51.7,
+     "saturates": true,
+     "months_to_cap": 6.8,
+     "note": "creation*life > cap: fleet fills to cap then throttles to replacement only"
+    },
+    "monday": {
+     "creation_per_mo": 1.816,
+     "equilibrium_N": 57.2,
+     "saturates": true,
+     "months_to_cap": 6.1,
+     "note": "creation*life > cap: fleet fills to cap then throttles to replacement only"
+    }
+   },
+   "cap20": {
+    "rolling": {
+     "creation_per_mo": 1.642,
+     "equilibrium_N": 51.7,
+     "saturates": true,
+     "months_to_cap": 15.4,
+     "note": "creation*life > cap: fleet fills to cap then throttles to replacement only"
+    },
+    "monday": {
+     "creation_per_mo": 1.816,
+     "equilibrium_N": 57.2,
+     "saturates": true,
+     "months_to_cap": 13.6,
+     "note": "creation*life > cap: fleet fills to cap then throttles to replacement only"
+    }
+   },
+   "cap30": {
+    "rolling": {
+     "creation_per_mo": 1.642,
+     "equilibrium_N": 51.7,
+     "saturates": true,
+     "months_to_cap": 27.3,
+     "note": "creation*life > cap: fleet fills to cap then throttles to replacement only"
+    },
+    "monday": {
+     "creation_per_mo": 1.816,
+     "equilibrium_N": 57.2,
+     "saturates": true,
+     "months_to_cap": 23.4,
+     "note": "creation*life > cap: fleet fills to cap then throttles to replacement only"
+    }
+   }
+  }
+ }
+}

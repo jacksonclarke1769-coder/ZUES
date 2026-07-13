@@ -1,0 +1,39 @@
+====================================================================================================
+GAUNTLET — survivor family A_30_comp_breakout (30m ORB, overnight-range COMPRESSED ratio<0.8)
+====================================================================================================
+
+[1] Full-sample family across exit types (base cost 0.75pt, adverse-first, 1m):
+A_30_comp_breakout_1R        n= 324 PF=1.331 WR=0.549 tot=  3510.0 | IS PF=1.411(n199) OOS PF=1.23(n90)
+    per-yr: 2021:1.252(35) 2022:2.018(55) 2023:1.104(81) 2024:1.205(63) 2025:1.287(66) 2026:1.113(24)
+A_30_comp_breakout_2R        n= 324 PF=1.393 WR=0.481 tot=  4637.8 | IS PF=1.556(n199) OOS PF=1.188(n90)
+    per-yr: 2021:1.186(35) 2022:1.712(55) 2023:1.389(81) 2024:1.6(63) 2025:1.223(66) 2026:1.114(24)
+A_30_comp_breakout_close     n= 324 PF=1.361 WR=0.460 tot=  4373.5 | IS PF=1.493(n199) OOS PF=1.207(n90)
+    per-yr: 2021:1.127(35) 2022:1.821(55) 2023:1.197(81) 2024:1.525(63) 2025:1.133(66) 2026:1.368(24)
+A_30_comp_breakout_trail     n= 324 PF=1.351 WR=0.441 tot=  3166.8 | IS PF=1.479(n199) OOS PF=1.088(n90)
+    per-yr: 2021:1.627(35) 2022:1.459(55) 2023:1.344(81) 2024:1.694(63) 2025:1.046(66) 2026:1.167(24)
+
+[2] COST STRESS on the two cleanest exits (2R, close):
+  2R     cost x1 (0.75pt): PF=1.393 WR=0.481 tot=  4637.8 n=324
+  2R     cost x2 (1.5pt): PF=1.368 WR=0.475 tot=  4394.8 n=324
+  2R     cost x3 (2.25pt): PF=1.344 WR=0.475 tot=  4151.8 n=324
+  close  cost x1 (0.75pt): PF=1.361 WR=0.460 tot=  4373.5 n=324
+  close  cost x2 (1.5pt): PF=1.337 WR=0.454 tot=  4130.5 n=324
+  close  cost x3 (2.25pt): PF=1.314 WR=0.454 tot=  3887.5 n=324
+
+[3] +1-bar-shift LOOKAHEAD CANARY (enter 1 min AFTER trigger bar, at that bar's open):
+  2R     base PF=1.393 tot=4637.8  ->  +1bar PF=1.339 tot=4099.5 (n=324)
+  close  base PF=1.361 tot=4373.5  ->  +1bar PF=1.307 tot=3835.2 (n=324)
+
+[4] CONTROL — same breakout with NO regime gate and with EXPANDED gate (is the edge the gate?):
+A_30_all_breakout_2R         n=1102 PF=1.197 WR=0.485 tot= 10386.8 | IS PF=1.285(n668) OOS PF=1.068(n319)
+    per-yr: 2021:1.187(115) 2022:1.204(227) 2023:1.304(214) 2024:1.385(227) 2025:1.098(217) 2026:1.015(102)
+A_30_exp_breakout_2R         n= 387 PF=1.146 WR=0.496 tot=  3281.0 | IS PF=1.391(n224) OOS PF=0.896(n122)
+    per-yr: 2021:0.943(41) 2022:1.158(82) 2023:1.17(62) 2024:1.967(80) 2025:0.963(83) 2026:0.779(39)
+A_30_comp_breakout_2R        n= 324 PF=1.393 WR=0.481 tot=  4637.8 | IS PF=1.556(n199) OOS PF=1.188(n90)
+    per-yr: 2021:1.186(35) 2022:1.712(55) 2023:1.389(81) 2024:1.6(63) 2025:1.223(66) 2026:1.114(24)
+
+[5] Robustness — 15m OR version of the compressed breakout (different OR window):
+A_15_comp_breakout_2R        n= 377 PF=1.205 WR=0.427 tot=  2822.8 | IS PF=1.153(n231) OOS PF=1.172(n107)
+    per-yr: 2021:1.836(39) 2022:1.3(67) 2023:0.942(93) 2024:1.237(71) 2025:1.18(78) 2026:1.158(29)
+A_15_comp_breakout_close     n= 377 PF=1.157 WR=0.390 tot=  2252.0 | IS PF=1.155(n231) OOS PF=1.056(n107)
+    per-yr: 2021:1.671(39) 2022:1.452(67) 2023:0.933(93) 2024:1.074(71) 2025:1.032(78) 2026:1.107(29)

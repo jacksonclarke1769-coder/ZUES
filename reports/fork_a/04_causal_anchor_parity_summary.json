@@ -1,0 +1,18 @@
+{
+  "path": "start_bar=None (internal _anchor_from_run on truncated slice)",
+  "n": 581,
+  "match_at_k": 581,
+  "mismatch": 0,
+  "no_emit": 0,
+  "bad_index": 0,
+  "all_emit_at_k": true,
+  "gap1_matched": 446,
+  "gap_ge2_matched": 135,
+  "honest_fill": {
+    "n": 581,
+    "sumR": 86.779,
+    "PF": 1.3507,
+    "WR": 0.4475
+  },
+  "sweep_match": 581
+}

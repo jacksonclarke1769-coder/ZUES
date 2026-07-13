@@ -1,0 +1,206 @@
+{
+  "meta": {
+    "vendor": "Databento NQ 1m\u21925m RTH",
+    "window": "2022-01-01\u21922026-06-22",
+    "engine": "tools_account_size_research EOD (day_rows+eval_run+funded_paid), $550 stop, $1000 DLL, 30d clock",
+    "momentum_params": "V4 canonical: confirm_bars=4, last_entry_slot=72(15:30), k=1.0, nd=14, trend=50",
+    "econ": "E[$/att]=P(pass)\u00d7funded_paid(same-config) \u2212 $67.5 ; LOW-CONFIDENCE placeholder",
+    "flip_cost_per_contract": 1.0
+  },
+  "canary_A_cap6_900": {
+    "label": "CANARY A-only cap6/$900",
+    "n_starts": 348,
+    "pass_pct": 3.4,
+    "bust_pct": 8.9,
+    "exp_pct": 87.6,
+    "med_days": 19,
+    "funded_paid": 711,
+    "e_per_att": -43,
+    "trades_per_wk": 1.53,
+    "n_events": 394
+  },
+  "item1_momentum_standalone": [
+    {
+      "label": "Momentum mm=2",
+      "n_starts": 448,
+      "pass_pct": 0.0,
+      "bust_pct": 11.4,
+      "exp_pct": 88.6,
+      "med_days": null,
+      "funded_paid": 914,
+      "e_per_att": -68,
+      "trades_per_wk": 2.0,
+      "n_events": 461,
+      "mm": 2
+    },
+    {
+      "label": "Momentum mm=3",
+      "n_starts": 448,
+      "pass_pct": 1.1,
+      "bust_pct": 37.9,
+      "exp_pct": 60.9,
+      "med_days": 22,
+      "funded_paid": 0,
+      "e_per_att": -68,
+      "trades_per_wk": 2.0,
+      "n_events": 461,
+      "mm": 3
+    },
+    {
+      "label": "Momentum mm=4",
+      "n_starts": 448,
+      "pass_pct": 0.4,
+      "bust_pct": 62.9,
+      "exp_pct": 36.6,
+      "med_days": 28,
+      "funded_paid": 0,
+      "e_per_att": -68,
+      "trades_per_wk": 2.0,
+      "n_events": 461,
+      "mm": 4
+    },
+    {
+      "label": "Momentum mm=6",
+      "n_starts": 448,
+      "pass_pct": 0.0,
+      "bust_pct": 92.2,
+      "exp_pct": 7.8,
+      "med_days": null,
+      "funded_paid": 0,
+      "e_per_att": -68,
+      "trades_per_wk": 2.0,
+      "n_events": 461,
+      "mm": 6
+    },
+    {
+      "label": "Momentum mm=8",
+      "n_starts": 448,
+      "pass_pct": 0.0,
+      "bust_pct": 98.2,
+      "exp_pct": 1.8,
+      "med_days": null,
+      "funded_paid": 0,
+      "e_per_att": -68,
+      "trades_per_wk": 2.0,
+      "n_events": 461,
+      "mm": 8
+    }
+  ],
+  "best_standalone_mm": 2,
+  "item2_mom_vpc": {
+    "momentum": {
+      "label": "Momentum mm=2",
+      "n_starts": 448,
+      "pass_pct": 0.0,
+      "bust_pct": 11.4,
+      "exp_pct": 88.6,
+      "med_days": null,
+      "funded_paid": 914,
+      "e_per_att": -68,
+      "trades_per_wk": 2.0,
+      "n_events": 461
+    },
+    "vpc": {
+      "label": "VPC $600/cap3",
+      "n_starts": 390,
+      "pass_pct": 12.6,
+      "bust_pct": 3.6,
+      "exp_pct": 83.8,
+      "med_days": 19,
+      "funded_paid": 1000,
+      "e_per_att": 58,
+      "trades_per_wk": 1.77,
+      "n_events": 408
+    },
+    "portfolio": {
+      "label": "Momentum2+VPC",
+      "n_starts": 674,
+      "pass_pct": 20.8,
+      "bust_pct": 24.3,
+      "exp_pct": 54.9,
+      "med_days": 17,
+      "funded_paid": 1389,
+      "e_per_att": 221,
+      "trades_per_wk": 3.76,
+      "n_events": 869
+    }
+  },
+  "item2_independence": {
+    "corr_all_days": 0.224,
+    "corr_overlap_days": 0.527,
+    "mom_active_days": 461,
+    "vpc_active_days": 401,
+    "both_active_days": 171
+  },
+  "item3_three_edge": {
+    "portfolio": {
+      "label": "Momentum2+VPC+A394",
+      "n_starts": 815,
+      "pass_pct": 25.5,
+      "bust_pct": 34.5,
+      "exp_pct": 40.0,
+      "med_days": 15,
+      "funded_paid": 136,
+      "e_per_att": -33,
+      "trades_per_wk": 5.22,
+      "n_events": 1213
+    },
+    "a394_standalone": {
+      "label": "A-394 cap6/$900",
+      "n_starts": 303,
+      "pass_pct": 4.0,
+      "bust_pct": 10.2,
+      "exp_pct": 85.8,
+      "med_days": 19,
+      "funded_paid": 750,
+      "e_per_att": -38,
+      "trades_per_wk": 1.48,
+      "n_events": 344
+    }
+  },
+  "item4_eod_vs_intraday": {
+    "mm=2": {
+      "eod": {
+        "n": 448,
+        "pass_pct": 4.7,
+        "bust_pct": 8.5,
+        "exp_pct": 86.8
+      },
+      "intraday_trail": {
+        "n": 448,
+        "pass_pct": 7.1,
+        "bust_pct": 8.5,
+        "exp_pct": 84.4
+      }
+    },
+    "mm=4": {
+      "eod": {
+        "n": 448,
+        "pass_pct": 11.8,
+        "bust_pct": 39.3,
+        "exp_pct": 48.9
+      },
+      "intraday_trail": {
+        "n": 448,
+        "pass_pct": 16.7,
+        "bust_pct": 49.1,
+        "exp_pct": 34.2
+      }
+    },
+    "mm=6": {
+      "eod": {
+        "n": 448,
+        "pass_pct": 13.8,
+        "bust_pct": 70.8,
+        "exp_pct": 15.4
+      },
+      "intraday_trail": {
+        "n": 448,
+        "pass_pct": 23.4,
+        "bust_pct": 70.3,
+        "exp_pct": 6.2
+      }
+    }
+  },
+  "md5": "65fbd5bd100cbe7fc0af428ad60f1f8a"
+}
