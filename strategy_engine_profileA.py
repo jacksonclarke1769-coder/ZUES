@@ -19,7 +19,12 @@ BUFFER_DAYS = 35   # enough history for weekly/daily/4H/1H context + sessions
 
 PROFILE_A = dict(entry_type="ote", sessions={"asia", "london", "ny_am", "ny_lunch", "ny_pm"},
                  target_mode="fixed_rr", rr=2.0,
-                 partial=[(1, 0.5)])   # Exit #3 (frozen v2): bank 50% at +1R, hold 50% to +2R
+                 partial=[(1, 0.5)],   # Exit #3 (frozen v2): bank 50% at +1R, hold 50% to +2R
+                 slip_ticks=8)         # PIN live emission to the certified slip (fork_a/05,
+                                       # operator-authorized 2026-07-17): every certification ran
+                                       # at slip_ticks=8; model01's module default is 2, which
+                                       # would post the resting limit 1.5pt deeper than certified.
+                                       # Guarded by test_slip_pin_canary.py — do not remove.
 
 
 class TimestampReconstructionError(Exception):
