@@ -76,3 +76,15 @@ Cells passing G1-G4 on IS are measured ONCE on the frozen holdout: survive iff s
 - **WP-E (build, Sonnet):** event/feature/outcome extraction over the certified engine streams → per-family parquet datasets + counts report. NO statistics beyond event counts. Knowability asserted via `history_through`. Holdout rows written to separate files and NOT READ by any analysis until §6.
 - **WP-F (build+run, Sonnet):** measurement harness implementing §4-§5 exactly; synthetic self-test (planted effect + null placebo must pass/fail correctly); then the IS run; report to `reports/ict_v2/03_phase3_is_results.md` citing this prereg's git hash. Fable adjudicates gates; then §6 holdout pass; final report `reports/ict_v2/04_phase3_verdict.md`.
 - Bans: no PF/WR/expectancy; no parameter search over thresholds/horizons beyond the preregistered lists; no unlisted cells; no holdout contact outside §6; AMD events excluded (uncertified on real data).
+
+---
+## AMENDMENT v1.1 (2026-07-17, BEFORE any Phase-3 measurement ran)
+
+**Change (data-quality only, no cell/gate/threshold change):** §1's frame is replaced by the
+roll-adjusted series `data/real_futures/NQ_databento_1m_5y_rolladj.parquet` (16 quarterly roll
+gaps back-adjusted; discovery + validation: vault BT-20260716-1659). Rationale: the original
+splice contains 16 artificial ~80-320pt bars at expiry-week midnights that forge
+displacement/excursion events with extreme ATR-multiple outcomes — a known data artifact, not
+market structure. The certified engines are frame-agnostic (semantic certification, WP-D).
+Same resample recipe, same date range, same IS/holdout boundaries. Authorized by operator
+session directive 2026-07-17 (Phase-3 execution order); no outcome data were consulted.
