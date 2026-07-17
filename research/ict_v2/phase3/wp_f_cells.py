@@ -339,6 +339,49 @@ def _run_f2_target(df: pd.DataFrame, y: np.ndarray, cell: str, target: str) -> F
     )
 
 
+# --- F2a' (Amendment v1.2, hash bc35ceddcb10): F2a re-scoped to episodes whose FSM
+# terminal resolves STRICTLY AFTER t0 (same-bar/tautological resolutions excluded) -----
+
+
+def restrict_post_t0(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, int]]:
+    """Amendment v1.2 unit: keep excursion episodes with terminal in {SWEEP_CONFIRMED,
+    ACCEPTED_BREAKOUT} AND `terminal_confirmed_at` STRICTLY AFTER `t0`. Same-bar
+    resolutions (terminal_confirmed_at == t0 -- the reclaim_speed_bars=1 tautological
+    majority) are excluded from BOTH fit and evaluation; timeouts/unresolved excluded
+    (counted). Returns (kept_df, meta counts)."""
+    term = df["terminal_event_type"].to_numpy()
+    tconf = pd.to_datetime(df["terminal_confirmed_at"])
+    t0 = pd.to_datetime(df["t0"])
+    is_pair = np.isin(term, ["SWEEP_CONFIRMED", "ACCEPTED_BREAKOUT"])
+    strictly_after = (tconf > t0).to_numpy()  # NaT > t0 -> False (unresolved excluded)
+    keep = is_pair & strictly_after
+    same_bar_excluded = int((is_pair & ~strictly_after).sum())
+    non_pair_excluded = int((~is_pair).sum())
+    kept = df[keep].reset_index(drop=True)
+    kept_term = kept["terminal_event_type"].to_numpy()
+    meta = {
+        "total_episodes": int(len(df)),
+        "kept_post_t0_pair": int(len(kept)),
+        "excluded_same_bar_resolutions": same_bar_excluded,
+        "excluded_non_pair_timeout_or_unresolved": non_pair_excluded,
+        "n_sweep_confirmed": int((kept_term == "SWEEP_CONFIRMED").sum()),
+        "n_accepted_breakout": int((kept_term == "ACCEPTED_BREAKOUT").sum()),
+    }
+    return kept, meta
+
+
+def run_F2a_prime(df: pd.DataFrame) -> Tuple[F2Result, Dict[str, int]]:
+    _log(f"F2a' ACCEPTANCE prediction, POST-t0 only (Amendment v1.2), from n={len(df):,} episodes")
+    kept, meta = restrict_post_t0(df)
+    _log(f"  kept post-t0 pair={meta['kept_post_t0_pair']:,} "
+         f"(excluded same-bar={meta['excluded_same_bar_resolutions']:,}, "
+         f"non-pair/timeout/unresolved={meta['excluded_non_pair_timeout_or_unresolved']:,})")
+    _log(f"  class balance: SWEEP_CONFIRMED={meta['n_sweep_confirmed']:,} vs ACCEPTED_BREAKOUT={meta['n_accepted_breakout']:,}")
+    y = (kept["terminal_event_type"].to_numpy() == "SWEEP_CONFIRMED").astype(np.int64)
+    res = _run_f2_target(kept, y, "F2a_prime", "SWEEP_CONFIRMED vs ACCEPTED_BREAKOUT (terminal strictly after t0)")
+    return res, meta
+
+
 # --- BH within family + assembly -----------------------------------------------------
 
 

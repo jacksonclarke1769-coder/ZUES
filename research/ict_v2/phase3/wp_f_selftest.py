@@ -116,8 +116,81 @@ def run_selftest() -> Dict[str, object]:
     checks.append(("f2_null_uplift_FAILS_G1", f2_null_fails, True))
     _log(f"  f2_null: uplift={rn.uplift:.3f} CI[{rn.ci_lo:.3f},{rn.ci_hi:.3f}] G1={rn.g1}")
 
+    # 6) UNIT-RESTRICTION path (Amendment v1.2, F2a'): the same-bar exclusion must
+    #    (a) let a genuine POST-t0 signal through -> passes G1, and
+    #    (b) STRIP a purely t0-contemporaneous (same-bar) tautology -> after restriction
+    #        the residual post-t0 signal is noise -> fails G1 (no leak).
+    r_planted, r_leak_full, r_leak_restricted = _unit_restriction_checks(rng)
+    results["f2aprime_planted"] = r_planted
+    results["f2aprime_leak_full"] = r_leak_full
+    results["f2aprime_leak_restricted"] = r_leak_restricted
+    checks.append(("f2aprime_planted_post_t0_PASSES_G1", r_planted.g1, True))
+    # the leak must be REAL when unrestricted (sanity) and REMOVED after restriction:
+    checks.append(("f2aprime_same_bar_leak_present_when_unrestricted", r_leak_full.g1, True))
+    checks.append(("f2aprime_same_bar_leak_REMOVED_by_restriction", not r_leak_restricted.g1, True))
+    _log(f"  f2aprime_planted(post-t0): uplift={r_planted.uplift:.3f} CI[{r_planted.ci_lo:.3f},{r_planted.ci_hi:.3f}] G1={r_planted.g1}")
+    _log(f"  f2aprime_leak unrestricted: uplift={r_leak_full.uplift:.3f} G1={r_leak_full.g1}  |  restricted: uplift={r_leak_restricted.uplift:.3f} G1={r_leak_restricted.g1}")
+
     all_ok = all(actual == expected for _, actual, expected in checks)
     results["checks"] = checks
     results["all_ok"] = all_ok
     _log(f"SELF-TEST {'PASSED' if all_ok else 'FAILED'}: " + ", ".join(f"{name}={actual}" for name, actual, _ in checks))
     return results
+
+
+def _synth_excursion(n: int, rng: np.random.Generator, label_mode: str) -> pd.DataFrame:
+    """Synthetic excursion-episode frame shaped like excursion_episodes_is.parquet for
+    the F2a' unit-restriction self-test. Half the episodes resolve SAME-BAR
+    (terminal_confirmed_at == t0), half resolve POST-t0 (terminal_confirmed_at > t0).
+
+    label_mode:
+      - 'planted_post_t0': POST-t0 label driven by excursion_depth_atr_t0 (a genuine
+        strictly-pre-label feature); same-bar label = noise.
+      - 'leak_same_bar': SAME-bar label = a deterministic function of t0_close_location
+        (the tautology); POST-t0 label = noise. Restricting to post-t0 must remove it.
+    """
+    df = _synth_frame(n, rng)
+    for c in W.F2_NUM_FULL:
+        if c not in df.columns:
+            df[c] = rng.normal(0, 1, n)
+    df["level_timeframe_class"] = rng.choice(["weekly", "intraday"], n)
+    same_bar = rng.random(n) < 0.5
+    t0 = pd.to_datetime(df["t0"])
+    steps = rng.integers(1, 4, n)  # 1..3 bars later for post-t0
+    add_min = np.where(same_bar, 0, steps * 5)
+    df["terminal_confirmed_at"] = t0 + pd.to_timedelta(add_min, unit="min")  # tz preserved
+
+    depth = df["excursion_depth_atr_t0"].to_numpy()
+    cloc = df["t0_close_location"].to_numpy()
+    y = np.empty(n, dtype=int)
+    post = ~same_bar
+    if label_mode == "planted_post_t0":
+        y[post] = (1 / (1 + np.exp(-(1.3 * depth[post]))) > rng.random(post.sum())).astype(int)
+        y[same_bar] = rng.integers(0, 2, same_bar.sum())
+    elif label_mode == "leak_same_bar":
+        y[same_bar] = (1 / (1 + np.exp(-(4.0 * cloc[same_bar]))) > rng.random(same_bar.sum())).astype(int)
+        y[post] = rng.integers(0, 2, post.sum())
+    else:
+        raise ValueError(label_mode)
+    df["terminal_event_type"] = np.where(y == 1, "SWEEP_CONFIRMED", "ACCEPTED_BREAKOUT")
+    return df
+
+
+def _unit_restriction_checks(rng: np.random.Generator):
+    """Returns (planted_result, leak_unrestricted_result, leak_restricted_result)."""
+    m = 40000
+    # (a) genuine post-t0 signal survives the restriction and passes G1.
+    dfp = _synth_excursion(m, rng, "planted_post_t0")
+    kept, _ = W.restrict_post_t0(dfp)
+    yk = (kept["terminal_event_type"].to_numpy() == "SWEEP_CONFIRMED").astype(np.int64)
+    r_planted = W._run_f2_target(kept, yk, "STF2AP", "planted post-t0")
+
+    # (b) a purely same-bar tautology: real when unrestricted, GONE after restriction.
+    dfl = _synth_excursion(m, rng, "leak_same_bar")
+    pair = np.isin(dfl["terminal_event_type"].to_numpy(), ["SWEEP_CONFIRMED", "ACCEPTED_BREAKOUT"])
+    yfull = (dfl["terminal_event_type"].to_numpy()[pair] == "SWEEP_CONFIRMED").astype(np.int64)
+    r_leak_full = W._run_f2_target(dfl[pair].reset_index(drop=True), yfull, "STF2AL", "leak unrestricted")
+    keptl, _ = W.restrict_post_t0(dfl)
+    ykl = (keptl["terminal_event_type"].to_numpy() == "SWEEP_CONFIRMED").astype(np.int64)
+    r_leak_restricted = W._run_f2_target(keptl, ykl, "STF2ALR", "leak restricted")
+    return r_planted, r_leak_full, r_leak_restricted

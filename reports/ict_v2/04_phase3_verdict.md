@@ -29,3 +29,34 @@ Supplementary (not the §6 gate): holdout bootstrap p and B-residualized retenti
 **1 feature(s) CERTIFIED-CONDITIONAL** (passed all IS gates AND the §6 holdout): F1a. Per §7, a certified-conditional feature becomes a Phase-4 building block (acceptance-gate / Alpha-Asset-#2 candidate), to be built only under its own Phase-4/5 prereg. Phase 3 is CLOSED for the measured cells, pending the operator's F2a re-scope amendment decision.
 
 *Holdout pass runtime: 12.85 s. Holdout files opened exactly once, for F1a and F4b only.*
+
+
+---
+
+## v1.2 — F2a′ §6 holdout (Amendment v1.2, git hash `bc35ceddcb10`)
+
+Final Phase-3 measurement. F2a′ (F2a re-scoped to episodes whose FSM terminal resolves STRICTLY AFTER t0) passed all IS gates (uplift 0.347; leak audit accepted by Fable) and was taken to the one-shot §6 holdout. Confirmatory design: B and B+ICT logistic models FIT on the IS post-t0 population (committed IS run `fb798d7`), evaluated EXACTLY ONCE on the frozen holdout post-t0 population. §6 F2 rule: holdout AUC uplift ≥ 0.01 AND same sign as IS. DISCLOSURE: `excursion_episodes_holdout` was previously opened once for F1a's columns (incl. the terminal column); no F2a′ FEATURE column had been read from holdout before this pass.
+
+| quantity | IS (train) | HOLDOUT (eval) |
+|---|---:|---:|
+| kept post-t0 episodes | 1,281,034 | 320,809 |
+| excluded same-bar resolutions | 194,563 | 47,995 |
+| SWEEP_CONFIRMED | 86,162 | 20,323 |
+| ACCEPTED_BREAKOUT | 1,194,872 | 300,486 |
+
+| metric | value |
+|---|---:|
+| IS AUC uplift (committed) | 0.347 |
+| holdout AUC(B-only) | 0.5734 |
+| holdout AUC(B+ICT) | 0.9134 |
+| **holdout AUC uplift** | **0.3400** |
+| holdout uplift 95% CI (weekly block bootstrap, supplementary) | [0.3273, 0.3521] |
+| §6 bar (≥0.01, same sign) | MET |
+
+### F2a′ FINAL VERDICT: **CERTIFIED-CONDITIONAL**
+
+The out-of-sample holdout AUC uplift (0.3400) clears the §6 bar (≥0.01, same positive sign as the IS uplift), confirming genuine ex-ante conditional structure in acceptance-vs-rejection once the same-bar tautological episodes are excluded. Per §7, **F2a′ is CERTIFIED-CONDITIONAL** and joins F1a as a Phase-4 building block (acceptance-gate / Alpha-Asset-#2 candidate), to be built only under its own Phase-4/5 prereg — including the deferred level-kind attribution check, which is Phase-4 work, not a §6 gate. This is the honest answer to the book's Chapter-20 question for this event stream: whether a level excursion is accepted or rejected is partly predictable BEFORE it resolves — carried chiefly by the initial thrust depth at t0, not by the discredited same-bar close-location tautology.
+
+**Phase-3 certified-conditional set is now: F1a, F2a′.** F2a's original (unrestricted) cell remains superseded by F2a′ per Amendment v1.2. Amendment v1.2 paper trail closed (prereg hash `bc35ceddcb10`, IS base `fb798d7`). This was the final measurement of Phase 3.
+
+*F2a′ holdout runtime: 36.72 s. Holdout opened once, F2a′ columns only.*

@@ -102,3 +102,61 @@ Per §7 verdict rules, the survivor set determines routing; only cells that pass
 | F7_s | 5.34 |
 | F2_s | 290.6 |
 | total_s | 328.14 |
+
+
+---
+
+## v1.2 — F2a′ (re-scope of F2a), Amendment v1.2 (git hash `bc35ceddcb10`)
+
+Filed under PREREG Amendment v1.2 (operator-approved 2026-07-17), appended to the IS report base committed `fb798d7`. F2a′ measures the book's Chapter-20 question honestly — is acceptance-vs-rejection predictable BEFORE resolution — on the population where prediction is possible at all: excursion episodes whose FSM terminal `confirmed_at` is STRICTLY AFTER t0 (same-bar/tautological resolutions excluded from fit AND evaluation). Features, estimator, and gates are identical to F2 (§4-§5). IS ONLY — holdout not opened.
+
+### Self-test extension (unit-restriction path)
+
+| check | result |
+|---|:---:|
+| f2aprime_planted_post_t0_PASSES_G1 | True |
+| f2aprime_same_bar_leak_present_when_unrestricted | True |
+| f2aprime_same_bar_leak_REMOVED_by_restriction | True |
+
+The extended self-test confirms the restriction is faithful: a planted POST-t0 signal passes G1, and a purely same-bar (t0-contemporaneous) tautology — which passes G1 when unrestricted — is REMOVED by the restriction (uplift → ~0, G1 fails). The same-bar exclusion therefore strips the tautological signal, not a genuine one.
+
+### Unit restriction — episode accounting
+
+| quantity | count |
+|---|---:|
+| total excursion episodes (IS) | 1,475,787 |
+| **excluded — same-bar resolutions (terminal confirmed_at == t0)** | 194,563 |
+| excluded — timeouts / unresolved / non-pair | 190 |
+| **kept — post-t0 SWEEP_CONFIRMED vs ACCEPTED_BREAKOUT** | 1,281,034 |
+| class balance — SWEEP_CONFIRMED | 86,162 |
+| class balance — ACCEPTED_BREAKOUT | 1,194,872 |
+| SWEEP_CONFIRMED fraction | 0.067 |
+
+### F2a′ result (AUC uplift of B+ICT over baseline B, blocked-5-fold weekly CV)
+
+| cell | n | n_pos(SC) | AUC(B) | AUC(B+ICT) | uplift | 95% CI | G1(≥.02) | G2 | per-yr uplift signs | G3 | p | q(BH, family F2) | G4 | verdict |
+|---|---:|---:|---:|---:|---:|---|:---:|:---:|---|:---:|---:|---:|:---:|:---:|
+| F2a′ | 1,281,034 | 86,162 | 0.567 | 0.914 | 0.347 | [0.342, 0.353] | True | True | ++++ | True | 0.0000 | 0.0000 | True | **SURVIVES** |
+
+**BH within family F2** (q=0.10 over {F2a, F2b, F2a′}, using the committed F2a/F2b p-values): F2a: p=0.0000, BH-reject=True, F2b: p=0.8630, BH-reject=False, F2a': p=0.0000, BH-reject=True.
+
+### Verdict
+
+**F2a′ SURVIVES the IS gates** (uplift 0.347 ≥ 0.02 floor, CI excludes 0, G2 incremental over B by construction, G3 era-stable, G4 BH-clean). Acceptance-vs-rejection carries genuine ex-ante conditional structure once the tautological same-bar episodes are removed — eligible for the §6 holdout as a fresh cell (a later, separate execution). Awaiting Fable adjudication before any holdout contact.
+
+### Leak audit (why 0.347 is real, not residual tautology — for the adjudicator)
+
+The uplift (0.347) is lower than F2a's (0.383) but still large, which warranted an explicit leak check on the kept post-t0 population (IS only). Univariate feature→label AUCs (0.5 = no signal; far from 0.5 = strong):
+
+| ex-ante feature | univariate AUC | reading |
+|---|---:|---|
+| `t0_close_location` (the flagged F2a tautology proxy) | **0.496** | **≈ null — the tautology is GONE** |
+| `excursion_depth_ticks_t0` | 0.140 | strong INVERSE: shallow t0 excursion → SWEEP, deep → ACCEPTED_BREAKOUT |
+| `excursion_depth_atr_t0` | 0.092 | same, ATR-normalized |
+| `volume_z_t0` | 0.554 | mild |
+| `body_vs_tod_t0` | 0.538 | mild |
+| others (prominence, roundness, equality, prior_test) | 0.49–0.53 | negligible |
+
+Median t0 excursion depth: SWEEP_CONFIRMED = 31 ticks vs ACCEPTED_BREAKOUT = 176 ticks. The signal is carried by the **initial excursion depth at t0** — a strictly-pre-label feature measured on the first-beyond bar that predicts a *future* (bar +1..+3) resolution: a shallow poke beyond a level tends to reclaim (sweep), a deep thrust tends to hold (breakout). This is a genuine decision-layer relationship, NOT the same-bar tautology: (a) `t0_close_location` — the very feature that drove F2a — is now ≈random here, and (b) the extended self-test independently proves the same-bar exclusion strips a contemporaneous tautology (uplift 0.227→−0.005) while passing a genuine post-t0 signal. **Adjudication note:** the finding rests on excursion-depth-at-t0 predicting non-reclaim; whether that is accepted as the honest Chapter-20 answer (my read: yes — it is ex-ante and causally sensible) or warrants a further confound check (e.g. depth vs level-kind mix) before the §6 holdout is Fable's call. F2a′ did NOT touch holdout.
+
+*F2a′ runtime (incl. self-test): 201.32 s. IS files only; holdout not opened.*
