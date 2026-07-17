@@ -88,3 +88,26 @@ displacement/excursion events with extreme ATR-multiple outcomes — a known dat
 market structure. The certified engines are frame-agnostic (semantic certification, WP-D).
 Same resample recipe, same date range, same IS/holdout boundaries. Authorized by operator
 session directive 2026-07-17 (Phase-3 execution order); no outcome data were consulted.
+
+---
+## AMENDMENT v1.2 (2026-07-17, operator-approved; filed BEFORE any F2a′ measurement)
+
+**New cell F2a′ (re-scope of F2a, whose holdout was DEFERRED by adjudication):**
+- **Unit:** excursion episodes whose FSM terminal has `confirmed_at` STRICTLY AFTER t0 (the
+  first-beyond bar close). Episodes resolving on the t0 bar — the near-tautological majority
+  that invalidated F2a — are excluded from both fit and evaluation; their count is reported.
+- **Target:** SWEEP_CONFIRMED vs ACCEPTED_BREAKOUT among these (timeouts excluded, counted).
+- **Features:** unchanged from F2 (all knowable at t0, now strictly pre-label): excursion
+  depth (ticks/ATR), t0 close-location, body_vs_tod at t0, volume_z at t0, salience
+  component snapshot, + baseline B.
+- **Estimator & gates:** unchanged (§4 blocked-CV logistic AUC; G1 uplift ≥0.02 CI>0,
+  G2 ICT-free incrementality, G3 era stability, G4 BH within family).
+- **Holdout:** the §6 one-shot rule applies to F2a′ as a fresh cell. DISCLOSURE: the
+  `excursion_episodes_holdout` file was previously opened ONCE for F1a's columns (incl. the
+  terminal column, as F1a's outcome). No F2a′ feature column has been read from holdout.
+  The re-scope choice (unit restriction vs feature restriction) was specified as the option
+  set in the adjudication BEFORE any holdout contact; F1a's holdout result carries no
+  information differentiating the two options. Residual risk disclosed and accepted by
+  operator approval 2026-07-17.
+- Rationale: answers the book's Ch.20 question honestly — is rejection-vs-acceptance
+  predictable BEFORE resolution — for the population where prediction is possible at all.
