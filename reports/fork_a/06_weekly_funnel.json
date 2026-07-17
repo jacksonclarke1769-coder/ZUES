@@ -1,0 +1,417 @@
+{
+ "window": [
+  "2025-06-18",
+  "2026-06-18"
+ ],
+ "accounts": [
+  {
+   "start": "2025-06-18",
+   "eval": "EXPIRE",
+   "eval_days": 30,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2025-06-26",
+   "eval": "EXPIRE",
+   "eval_days": 30,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2025-07-07",
+   "eval": "PASS",
+   "eval_days": 22,
+   "paid": 12124.02999999989,
+   "payouts": 6,
+   "funded": "LADDER_COMPLETE",
+   "funded_days": 256
+  },
+  {
+   "start": "2025-07-15",
+   "eval": "PASS",
+   "eval_days": 16,
+   "paid": 10000.0,
+   "payouts": 5,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 316
+  },
+  {
+   "start": "2025-07-24",
+   "eval": "PASS",
+   "eval_days": 13,
+   "paid": 4672.439999999871,
+   "payouts": 3,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 315
+  },
+  {
+   "start": "2025-07-31",
+   "eval": "PASS",
+   "eval_days": 7,
+   "paid": 6535.3399999998655,
+   "payouts": 4,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 309
+  },
+  {
+   "start": "2025-08-07",
+   "eval": "BUST",
+   "eval_days": 27,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2025-08-14",
+   "eval": "BUST",
+   "eval_days": 20,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2025-08-25",
+   "eval": "PASS",
+   "eval_days": 30,
+   "paid": 8883.739999999925,
+   "payouts": 5,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 261
+  },
+  {
+   "start": "2025-09-03",
+   "eval": "PASS",
+   "eval_days": 21,
+   "paid": 8883.739999999925,
+   "payouts": 5,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 261
+  },
+  {
+   "start": "2025-09-10",
+   "eval": "PASS",
+   "eval_days": 14,
+   "paid": 8883.739999999925,
+   "payouts": 5,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 261
+  },
+  {
+   "start": "2025-09-19",
+   "eval": "PASS",
+   "eval_days": 5,
+   "paid": 8883.739999999925,
+   "payouts": 5,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 261
+  },
+  {
+   "start": "2025-09-30",
+   "eval": "BUST",
+   "eval_days": 13,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2025-10-07",
+   "eval": "EXPIRE",
+   "eval_days": 30,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2025-10-15",
+   "eval": "PASS",
+   "eval_days": 8,
+   "paid": 7247.819999999956,
+   "payouts": 4,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 232
+  },
+  {
+   "start": "2025-10-23",
+   "eval": "PASS",
+   "eval_days": 29,
+   "paid": 5000.0,
+   "payouts": 3,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 208
+  },
+  {
+   "start": "2025-11-03",
+   "eval": "PASS",
+   "eval_days": 18,
+   "paid": 6970.769999999997,
+   "payouts": 4,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 198
+  },
+  {
+   "start": "2025-11-12",
+   "eval": "PASS",
+   "eval_days": 9,
+   "paid": 6970.769999999997,
+   "payouts": 4,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 198
+  },
+  {
+   "start": "2025-11-20",
+   "eval": "PASS",
+   "eval_days": 1,
+   "paid": 6970.769999999997,
+   "payouts": 4,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 198
+  },
+  {
+   "start": "2025-12-01",
+   "eval": "PASS",
+   "eval_days": 4,
+   "paid": 4157.939999999988,
+   "payouts": 3,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 191
+  },
+  {
+   "start": "2025-12-08",
+   "eval": "PASS",
+   "eval_days": 3,
+   "paid": 1500.0,
+   "payouts": 1,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 184
+  },
+  {
+   "start": "2025-12-15",
+   "eval": "PASS",
+   "eval_days": 23,
+   "paid": 1300.9000000000087,
+   "payouts": 1,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 155
+  },
+  {
+   "start": "2025-12-22",
+   "eval": "PASS",
+   "eval_days": 16,
+   "paid": 1300.9000000000087,
+   "payouts": 1,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 155
+  },
+  {
+   "start": "2025-12-29",
+   "eval": "PASS",
+   "eval_days": 22,
+   "paid": 1236.6800000000367,
+   "payouts": 1,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 146
+  },
+  {
+   "start": "2026-01-07",
+   "eval": "PASS",
+   "eval_days": 13,
+   "paid": 1236.6800000000367,
+   "payouts": 1,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 146
+  },
+  {
+   "start": "2026-01-15",
+   "eval": "PASS",
+   "eval_days": 5,
+   "paid": 1236.6800000000367,
+   "payouts": 1,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 146
+  },
+  {
+   "start": "2026-01-22",
+   "eval": "BUST",
+   "eval_days": 7,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2026-01-29",
+   "eval": "BUST",
+   "eval_days": 19,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2026-02-10",
+   "eval": "BUST",
+   "eval_days": 7,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2026-02-17",
+   "eval": "BUST",
+   "eval_days": 2,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2026-02-24",
+   "eval": "PASS",
+   "eval_days": 16,
+   "paid": 547.8199999999997,
+   "payouts": 1,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 97
+  },
+  {
+   "start": "2026-03-05",
+   "eval": "PASS",
+   "eval_days": 7,
+   "paid": 547.8199999999997,
+   "payouts": 1,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 97
+  },
+  {
+   "start": "2026-03-13",
+   "eval": "PASS",
+   "eval_days": 5,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 91
+  },
+  {
+   "start": "2026-03-30",
+   "eval": "EXPIRE",
+   "eval_days": 30,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2026-04-06",
+   "eval": "EXPIRE",
+   "eval_days": 30,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2026-04-13",
+   "eval": "BUST",
+   "eval_days": 30,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2026-04-20",
+   "eval": "BUST",
+   "eval_days": 24,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2026-05-04",
+   "eval": "BUST",
+   "eval_days": 10,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2026-05-13",
+   "eval": "BUST",
+   "eval_days": 15,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2026-05-21",
+   "eval": "BUST",
+   "eval_days": 8,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2026-05-28",
+   "eval": "BUST",
+   "eval_days": 7,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2026-06-04",
+   "eval": "BUST",
+   "eval_days": 14,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  },
+  {
+   "start": "2026-06-11",
+   "eval": "PASS",
+   "eval_days": 1,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "CENSORED_DATA_END",
+   "funded_days": 2
+  },
+  {
+   "start": "2026-06-18",
+   "eval": "INCOMPLETE",
+   "eval_days": null,
+   "paid": 0.0,
+   "payouts": 0,
+   "funded": "",
+   "funded_days": null
+  }
+ ],
+ "summary": {
+  "n": 44,
+  "eval": {
+   "PASS": 24,
+   "BUST": 14,
+   "EXPIRE": 5,
+   "INCOMPLETE": 1
+  },
+  "passed": 24,
+  "paid_accts": 22,
+  "total_paid": 115092.3199999994,
+  "total_payouts": 68
+ }
+}

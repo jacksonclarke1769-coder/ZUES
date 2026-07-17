@@ -19,3 +19,4 @@ out/ares/trade_results.csv
 # watchdog runtime state (heartbeat/belief/HALT/audit are per-session artifacts)
 out/watchdog/
 data/watchdog.lock
+research/ict_v2/phase3/data/
