@@ -32,10 +32,73 @@ def main():
     gate_d = j("gate_d_result.json") if os.path.exists("gate_d_result.json") else {}
     corr = j("correlation_result.json") if os.path.exists("correlation_result.json") else {}
 
+    v1_holdout = j("holdout_stats_v1_ARTIFACT.json") if os.path.exists("holdout_stats_v1_ARTIFACT.json") else {}
+    v1_survivors = (j("gate_abc_survivors_v1_ARTIFACT.json")
+                    if os.path.exists("gate_abc_survivors_v1_ARTIFACT.json") else [])
+    v1_gate_d = (j("gate_d_result_v1_ARTIFACT.json") if os.path.exists("gate_d_result_v1_ARTIFACT.json") else {})
+
     lines = []
     P = lines.append
 
-    P("# ICT Concept Survey — 36-Cell Preregistered Arena, Gated Results")
+    P("# ICT Concept Survey — 36-Cell Preregistered Arena, Gated Results (v2, CORRECTED)")
+    P("")
+    P("## CORRECTION NOTICE (v2, 2026-07-20)")
+    P("")
+    P("**v1 of this report and its 19-cell survivor shortlist are RETRACTED. Cause: a "
+      "same-bar fill/invalidation sequencing bug in `survey_engine.py::run_cell()` "
+      "(limit-order path) silently CANCELLED trades whose entry touch and stop/invalidation "
+      "touch first occurred on the same 1m bar, instead of recording them as filled-then-"
+      "immediately-stopped losses. This is a selection-bias bug: it deleted precisely the "
+      "fastest-reversing, worst-case fills from the trade population -- for FVG_1m_long "
+      "holdout alone, 8,791 same-bar candidates were wrongly cancelled vs 8,894 kept as clean "
+      "fills; that deleted population WAS the edge (PF 1.90 -> 0.68, totR +5,116 -> -5,104 once "
+      "corrected).**")
+    P("")
+    P("**Fix**: same-bar entry+invalidation now resolves as a filled trade, immediately "
+      "stopped out on that same bar (conservative, consistent with PREREG §3's "
+      "\"stop-fills-first on ambiguous 1m bars\"). Invalidation strictly BEFORE the entry is "
+      "ever touched remains a legitimate cancel (the order never had a chance to fill "
+      "cleanly). A regression test (`test_fill_sequencing.py`) now asserts this directly. "
+      "The exit-management scan for clean fills is unchanged (already started at fill_i+1, "
+      "already never credited target hits on the fill bar).")
+    P("")
+    P("**Scope of the bug**: it only affects LIMIT-mode entries -- FVG, IFVG, Order Block, "
+      "Breaker Block (24/36 cells). **Sweep/MSS are market-mode (fill immediately at signal "
+      "confirmation, no pre-fill touch-window logic) and are UNCHANGED by this fix** -- their "
+      "v1 and v2 holdout stats are bit-identical, confirmed below.")
+    P("")
+    P("**Corrected verdict: Gate A+B+C survivors = 0/36 (was 19/36 in the retracted v1). "
+      "The survey found nothing deployable.**")
+    P("")
+    if v1_survivors:
+        P("### Before/after per-cell deltas for the 19 previously-claimed (now retracted) survivors")
+        P("")
+        P("| cell | v1 HOLDOUT n/PF/exp/totR (retracted) | v2 HOLDOUT n/PF/exp/totR (corrected) | "
+          "v2 Gate A | still a survivor? |")
+        P("|---|---|---|---|---|")
+        for k in v1_survivors:
+            v1s = v1_holdout.get(k, {})
+            v2s = holdout.get(k, {})
+            ga = "PASS" if gab["gate_a"].get(k) else "fail"
+            still = "YES" if k in survivors else "NO"
+            P(f"| {k} | {v1s.get('n')}/{fmt(v1s.get('pf'))}/{fmt(v1s.get('expectancy'))}/"
+              f"{fmt(v1s.get('totR'))} | {v2s.get('n')}/{fmt(v2s.get('pf'))}/"
+              f"{fmt(v2s.get('expectancy'))}/{fmt(v2s.get('totR'))} | {ga} | {still} |")
+        P("")
+        P("Market-mode cells (Sweep/MSS) for reference -- bit-identical v1 vs v2 (unaffected by the bug):")
+        P("")
+        P("| cell | v1 HOLDOUT totR | v2 HOLDOUT totR | identical? |")
+        P("|---|---|---|---|")
+        for concept, tf, d, dname in all_cells():
+            if concept not in ("Sweep", "MSS"):
+                continue
+            k = cell_key(concept, tf, dname)
+            v1t = v1_holdout.get(k, {}).get("totR")
+            v2t = holdout.get(k, {}).get("totR")
+            ident = "yes" if v1t == v2t else "NO -- UNEXPECTED"
+            P(f"| {k} | {v1t} | {v2t} | {ident} |")
+        P("")
+    P("---")
     P("")
     P(f"Preregistration: `backtests/zeus-ict-2026-07/concept_survey/PREREG.md` (frozen 2026-07-20, "
       f"before any result was computed). Data: single-vendor Databento NQ 1m "
@@ -51,7 +114,8 @@ def main():
     P(f"- Gate B (BH-FDR q=0.10 across all 36, one-sided block-bootstrap p): **{n_b}/36** "
       f"(BH cutoff p = {gab['bh_cutoff_p']})")
     P(f"- Gate A+B (both required to reach Gate C): **{n_ab}/36**")
-    P(f"- Gate C (beats 1000-run randomized-entry null, 95th pctile of total R): **{n_c}/36**")
+    P(f"- Gate C (beats randomized-entry null 95th pctile of total R -- 1000 runs for any A+B "
+      f"survivor, 200-run global null otherwise): **{n_c}/36**")
     if n_c == 0:
         P("")
         P("**No cell survived all three statistical gates. The survey found nothing "
@@ -123,11 +187,22 @@ def main():
     # ---- Quarterly sign stability ----
     P("## 5. Quarterly walk-forward sign stability (8 quarters across the 2y window)")
     P("")
-    P("| cell | positive quarters / 8 | sign sequence |")
-    P("|---|---|---|")
-    for k in (survivors if survivors else list(gab["gate_ab"])):
-        q = quarterly["cells"].get(k, {})
-        P(f"| {k} | {q.get('n_positive_quarters')}/8 | {''.join(q.get('sign_by_quarter', []))} |")
+    quarterly_rows = survivors or list(gab["gate_ab"]) or [k for k, v in gab["gate_a"].items() if v]
+    if not quarterly_rows:
+        P("(no cells passed even Gate A -- showing nothing; see `quarterly_stats.json` for the "
+          "full per-cell, per-quarter breakdown of all 36 cells if needed.)")
+    else:
+        note = ("(no Gate A+B+C or Gate A+B survivors -- showing the 8 Gate-A-only cells for "
+                "context; none of these cleared Gate B/C)" if not survivors and not gab["gate_ab"]
+                else "")
+        if note:
+            P(note)
+            P("")
+        P("| cell | positive quarters / 8 | sign sequence |")
+        P("|---|---|---|")
+        for k in quarterly_rows:
+            q = quarterly["cells"].get(k, {})
+            P(f"| {k} | {q.get('n_positive_quarters')}/8 | {''.join(q.get('sign_by_quarter', []))} |")
     P("")
 
     # ---- Survivor shortlist ----
@@ -226,6 +301,12 @@ def main():
   has a single-instant confirmation with no extra internal lag, so the only latency source is the
   <=5-minute poll cadence itself — always under the 10-minute threshold. The substantive
   deployability effect is the poll-delay re-walk (a trade can be missed/repriced by minutes).
+- **Same-bar fill/invalidation resolution (v2 correction, audited 2026-07-20)**: for LIMIT-mode
+  entries, when the entry-touch and invalidation/stop-touch bars are the SAME 1m bar, the order
+  is treated as FILLED at entry_price and immediately STOPPED at stop_price on that bar (a real
+  loss), not cancelled -- this is the "stop-fills-first on ambiguous bars" convention (PREREG §3)
+  extended to the pre-fill phase. Invalidation on a bar STRICTLY BEFORE the entry is ever touched
+  remains a legitimate cancel. See the CORRECTION NOTICE at the top of this report.
 """)
 
     P("## 10. Anti-pattern compliance")

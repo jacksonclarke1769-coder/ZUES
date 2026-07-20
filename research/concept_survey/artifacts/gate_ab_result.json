@@ -1,235 +1,235 @@
 {
-  "bh_cutoff_p": 0.0442,
+  "bh_cutoff_p": null,
   "q": 0.1,
   "n_cells": 36,
   "ladder": [
     {
-      "cell": "FVG_1m_long",
-      "p": 9.999000099990002e-05,
+      "cell": "MSS_15m_long",
+      "p": 0.0442,
       "rank": 1,
       "bh_threshold": 0.002778,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "FVG_1m_short",
-      "p": 9.999000099990002e-05,
-      "rank": 2,
-      "bh_threshold": 0.005556,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "FVG_5m_long",
-      "p": 9.999000099990002e-05,
-      "rank": 3,
-      "bh_threshold": 0.008333,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "FVG_5m_short",
-      "p": 9.999000099990002e-05,
-      "rank": 4,
-      "bh_threshold": 0.011111,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "IFVG_1m_long",
-      "p": 9.999000099990002e-05,
-      "rank": 5,
-      "bh_threshold": 0.013889,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "IFVG_1m_short",
-      "p": 9.999000099990002e-05,
-      "rank": 6,
-      "bh_threshold": 0.016667,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "IFVG_5m_long",
-      "p": 9.999000099990002e-05,
-      "rank": 7,
-      "bh_threshold": 0.019444,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "IFVG_5m_short",
-      "p": 9.999000099990002e-05,
-      "rank": 8,
-      "bh_threshold": 0.022222,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "OB_1m_long",
-      "p": 9.999000099990002e-05,
-      "rank": 9,
-      "bh_threshold": 0.025,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "OB_1m_short",
-      "p": 9.999000099990002e-05,
-      "rank": 10,
-      "bh_threshold": 0.027778,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "Breaker_1m_long",
-      "p": 9.999000099990002e-05,
-      "rank": 11,
-      "bh_threshold": 0.030556,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "Breaker_1m_short",
-      "p": 9.999000099990002e-05,
-      "rank": 12,
-      "bh_threshold": 0.033333,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "OB_5m_long",
-      "p": 0.0005,
-      "rank": 13,
-      "bh_threshold": 0.036111,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "IFVG_15m_short",
-      "p": 0.0006,
-      "rank": 14,
-      "bh_threshold": 0.038889,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "Breaker_5m_long",
-      "p": 0.0008,
-      "rank": 15,
-      "bh_threshold": 0.041667,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "FVG_15m_long",
-      "p": 0.0013,
-      "rank": 16,
-      "bh_threshold": 0.044444,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "Breaker_5m_short",
-      "p": 0.0054,
-      "rank": 17,
-      "bh_threshold": 0.047222,
-      "passes_rank_threshold": true
+      "passes_rank_threshold": false
     },
     {
       "cell": "Breaker_15m_short",
-      "p": 0.0421,
-      "rank": 18,
-      "bh_threshold": 0.05,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "MSS_15m_long",
-      "p": 0.0442,
-      "rank": 19,
-      "bh_threshold": 0.052778,
-      "passes_rank_threshold": true
-    },
-    {
-      "cell": "IFVG_15m_long",
-      "p": 0.0606,
-      "rank": 20,
-      "bh_threshold": 0.055556,
+      "p": 0.1407,
+      "rank": 2,
+      "bh_threshold": 0.005556,
       "passes_rank_threshold": false
     },
     {
-      "cell": "FVG_15m_short",
-      "p": 0.1095,
-      "rank": 21,
-      "bh_threshold": 0.058333,
+      "cell": "IFVG_15m_short",
+      "p": 0.1808,
+      "rank": 3,
+      "bh_threshold": 0.008333,
       "passes_rank_threshold": false
     },
     {
-      "cell": "OB_15m_long",
-      "p": 0.1426,
-      "rank": 22,
-      "bh_threshold": 0.061111,
+      "cell": "FVG_5m_short",
+      "p": 0.2406,
+      "rank": 4,
+      "bh_threshold": 0.011111,
       "passes_rank_threshold": false
     },
     {
-      "cell": "Breaker_15m_long",
-      "p": 0.199,
-      "rank": 23,
-      "bh_threshold": 0.063889,
-      "passes_rank_threshold": false
-    },
-    {
-      "cell": "OB_5m_short",
-      "p": 0.2668,
-      "rank": 24,
-      "bh_threshold": 0.066667,
+      "cell": "FVG_15m_long",
+      "p": 0.3274,
+      "rank": 5,
+      "bh_threshold": 0.013889,
       "passes_rank_threshold": false
     },
     {
       "cell": "MSS_15m_short",
       "p": 0.3297,
-      "rank": 25,
-      "bh_threshold": 0.069444,
+      "rank": 6,
+      "bh_threshold": 0.016667,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "OB_15m_long",
+      "p": 0.3966,
+      "rank": 7,
+      "bh_threshold": 0.019444,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "OB_5m_long",
+      "p": 0.471,
+      "rank": 8,
+      "bh_threshold": 0.022222,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "FVG_15m_short",
+      "p": 0.5777,
+      "rank": 9,
+      "bh_threshold": 0.025,
       "passes_rank_threshold": false
     },
     {
       "cell": "Sweep_15m_long",
       "p": 0.6491,
-      "rank": 26,
-      "bh_threshold": 0.072222,
+      "rank": 10,
+      "bh_threshold": 0.027778,
       "passes_rank_threshold": false
     },
     {
       "cell": "MSS_5m_long",
       "p": 0.654,
-      "rank": 27,
-      "bh_threshold": 0.075,
+      "rank": 11,
+      "bh_threshold": 0.030556,
       "passes_rank_threshold": false
     },
     {
-      "cell": "OB_15m_short",
-      "p": 0.6914,
-      "rank": 28,
-      "bh_threshold": 0.077778,
+      "cell": "FVG_5m_long",
+      "p": 0.6608,
+      "rank": 12,
+      "bh_threshold": 0.033333,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "Breaker_5m_short",
+      "p": 0.6849,
+      "rank": 13,
+      "bh_threshold": 0.036111,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "Breaker_15m_long",
+      "p": 0.6964,
+      "rank": 14,
+      "bh_threshold": 0.038889,
       "passes_rank_threshold": false
     },
     {
       "cell": "Sweep_5m_long",
       "p": 0.7577,
-      "rank": 29,
-      "bh_threshold": 0.080556,
+      "rank": 15,
+      "bh_threshold": 0.041667,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "IFVG_15m_long",
+      "p": 0.7651,
+      "rank": 16,
+      "bh_threshold": 0.044444,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "Breaker_5m_long",
+      "p": 0.7833,
+      "rank": 17,
+      "bh_threshold": 0.047222,
       "passes_rank_threshold": false
     },
     {
       "cell": "MSS_5m_short",
       "p": 0.8565,
-      "rank": 30,
-      "bh_threshold": 0.083333,
+      "rank": 18,
+      "bh_threshold": 0.05,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "OB_15m_short",
+      "p": 0.9282,
+      "rank": 19,
+      "bh_threshold": 0.052778,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "IFVG_5m_long",
+      "p": 0.9695,
+      "rank": 20,
+      "bh_threshold": 0.055556,
       "passes_rank_threshold": false
     },
     {
       "cell": "MSS_1m_long",
       "p": 0.9848,
-      "rank": 31,
-      "bh_threshold": 0.086111,
+      "rank": 21,
+      "bh_threshold": 0.058333,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "OB_5m_short",
+      "p": 0.9872,
+      "rank": 22,
+      "bh_threshold": 0.061111,
       "passes_rank_threshold": false
     },
     {
       "cell": "Sweep_15m_short",
       "p": 0.9929,
-      "rank": 32,
-      "bh_threshold": 0.088889,
+      "rank": 23,
+      "bh_threshold": 0.063889,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "IFVG_5m_short",
+      "p": 0.9961,
+      "rank": 24,
+      "bh_threshold": 0.066667,
       "passes_rank_threshold": false
     },
     {
       "cell": "Sweep_5m_short",
       "p": 0.999,
+      "rank": 25,
+      "bh_threshold": 0.069444,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "FVG_1m_long",
+      "p": 1.0,
+      "rank": 26,
+      "bh_threshold": 0.072222,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "FVG_1m_short",
+      "p": 1.0,
+      "rank": 27,
+      "bh_threshold": 0.075,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "IFVG_1m_long",
+      "p": 1.0,
+      "rank": 28,
+      "bh_threshold": 0.077778,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "IFVG_1m_short",
+      "p": 1.0,
+      "rank": 29,
+      "bh_threshold": 0.080556,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "OB_1m_long",
+      "p": 1.0,
+      "rank": 30,
+      "bh_threshold": 0.083333,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "OB_1m_short",
+      "p": 1.0,
+      "rank": 31,
+      "bh_threshold": 0.086111,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "Breaker_1m_long",
+      "p": 1.0,
+      "rank": 32,
+      "bh_threshold": 0.088889,
+      "passes_rank_threshold": false
+    },
+    {
+      "cell": "Breaker_1m_short",
+      "p": 1.0,
       "rank": 33,
       "bh_threshold": 0.091667,
       "passes_rank_threshold": false
@@ -257,29 +257,29 @@
     }
   ],
   "gate_a": {
-    "FVG_1m_long": true,
-    "FVG_1m_short": true,
-    "FVG_5m_long": true,
+    "FVG_1m_long": false,
+    "FVG_1m_short": false,
+    "FVG_5m_long": false,
     "FVG_5m_short": true,
     "FVG_15m_long": true,
-    "FVG_15m_short": true,
-    "IFVG_1m_long": true,
-    "IFVG_1m_short": true,
-    "IFVG_5m_long": true,
-    "IFVG_5m_short": true,
-    "IFVG_15m_long": true,
+    "FVG_15m_short": false,
+    "IFVG_1m_long": false,
+    "IFVG_1m_short": false,
+    "IFVG_5m_long": false,
+    "IFVG_5m_short": false,
+    "IFVG_15m_long": false,
     "IFVG_15m_short": true,
-    "OB_1m_long": true,
-    "OB_1m_short": true,
+    "OB_1m_long": false,
+    "OB_1m_short": false,
     "OB_5m_long": true,
-    "OB_5m_short": true,
+    "OB_5m_short": false,
     "OB_15m_long": true,
     "OB_15m_short": false,
-    "Breaker_1m_long": true,
-    "Breaker_1m_short": true,
-    "Breaker_5m_long": true,
-    "Breaker_5m_short": true,
-    "Breaker_15m_long": true,
+    "Breaker_1m_long": false,
+    "Breaker_1m_short": false,
+    "Breaker_5m_long": false,
+    "Breaker_5m_short": false,
+    "Breaker_15m_long": false,
     "Breaker_15m_short": true,
     "Sweep_1m_long": false,
     "Sweep_1m_short": false,
@@ -295,62 +295,42 @@
     "MSS_15m_short": true
   },
   "gate_b": {
-    "FVG_1m_long": true,
-    "FVG_1m_short": true,
-    "FVG_5m_long": true,
-    "FVG_5m_short": true,
-    "IFVG_1m_long": true,
-    "IFVG_1m_short": true,
-    "IFVG_5m_long": true,
-    "IFVG_5m_short": true,
-    "OB_1m_long": true,
-    "OB_1m_short": true,
-    "Breaker_1m_long": true,
-    "Breaker_1m_short": true,
-    "OB_5m_long": true,
-    "IFVG_15m_short": true,
-    "Breaker_5m_long": true,
-    "FVG_15m_long": true,
-    "Breaker_5m_short": true,
-    "Breaker_15m_short": true,
-    "MSS_15m_long": true,
-    "IFVG_15m_long": false,
-    "FVG_15m_short": false,
-    "OB_15m_long": false,
-    "Breaker_15m_long": false,
-    "OB_5m_short": false,
+    "MSS_15m_long": false,
+    "Breaker_15m_short": false,
+    "IFVG_15m_short": false,
+    "FVG_5m_short": false,
+    "FVG_15m_long": false,
     "MSS_15m_short": false,
+    "OB_15m_long": false,
+    "OB_5m_long": false,
+    "FVG_15m_short": false,
     "Sweep_15m_long": false,
     "MSS_5m_long": false,
-    "OB_15m_short": false,
+    "FVG_5m_long": false,
+    "Breaker_5m_short": false,
+    "Breaker_15m_long": false,
     "Sweep_5m_long": false,
+    "IFVG_15m_long": false,
+    "Breaker_5m_long": false,
     "MSS_5m_short": false,
+    "OB_15m_short": false,
+    "IFVG_5m_long": false,
     "MSS_1m_long": false,
+    "OB_5m_short": false,
     "Sweep_15m_short": false,
+    "IFVG_5m_short": false,
     "Sweep_5m_short": false,
+    "FVG_1m_long": false,
+    "FVG_1m_short": false,
+    "IFVG_1m_long": false,
+    "IFVG_1m_short": false,
+    "OB_1m_long": false,
+    "OB_1m_short": false,
+    "Breaker_1m_long": false,
+    "Breaker_1m_short": false,
     "Sweep_1m_long": false,
     "Sweep_1m_short": false,
     "MSS_1m_short": false
   },
-  "gate_ab": [
-    "FVG_1m_long",
-    "FVG_1m_short",
-    "FVG_5m_long",
-    "FVG_5m_short",
-    "FVG_15m_long",
-    "IFVG_1m_long",
-    "IFVG_1m_short",
-    "IFVG_5m_long",
-    "IFVG_5m_short",
-    "IFVG_15m_short",
-    "OB_1m_long",
-    "OB_1m_short",
-    "OB_5m_long",
-    "Breaker_1m_long",
-    "Breaker_1m_short",
-    "Breaker_5m_long",
-    "Breaker_5m_short",
-    "Breaker_15m_short",
-    "MSS_15m_long"
-  ]
+  "gate_ab": []
 }

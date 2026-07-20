@@ -1,100 +1,24 @@
 {
   "ranked_by_train_expectancy": [
     {
-      "cell": "FVG_1m_long",
-      "expectancy": 0.5708
-    },
-    {
-      "cell": "IFVG_1m_short",
-      "expectancy": 0.5642
-    },
-    {
-      "cell": "IFVG_1m_long",
-      "expectancy": 0.5627
-    },
-    {
-      "cell": "FVG_1m_short",
-      "expectancy": 0.4969
-    },
-    {
-      "cell": "FVG_5m_long",
-      "expectancy": 0.3779
-    },
-    {
-      "cell": "FVG_15m_long",
-      "expectancy": 0.3192
-    },
-    {
-      "cell": "Breaker_1m_long",
-      "expectancy": 0.3053
-    },
-    {
-      "cell": "IFVG_5m_short",
-      "expectancy": 0.2929
-    },
-    {
       "cell": "FVG_15m_short",
-      "expectancy": 0.2903
-    },
-    {
-      "cell": "IFVG_5m_long",
-      "expectancy": 0.2828
-    },
-    {
-      "cell": "FVG_5m_short",
-      "expectancy": 0.2741
-    },
-    {
-      "cell": "IFVG_15m_long",
-      "expectancy": 0.2652
-    },
-    {
-      "cell": "Breaker_5m_short",
-      "expectancy": 0.2455
-    },
-    {
-      "cell": "Breaker_1m_short",
-      "expectancy": 0.2267
-    },
-    {
-      "cell": "IFVG_15m_short",
-      "expectancy": 0.2136
+      "expectancy": 0.1474
     },
     {
       "cell": "OB_15m_long",
-      "expectancy": 0.1862
+      "expectancy": 0.1057
     },
     {
-      "cell": "OB_1m_long",
-      "expectancy": 0.1532
+      "cell": "FVG_15m_long",
+      "expectancy": 0.0642
     },
     {
-      "cell": "OB_1m_short",
-      "expectancy": 0.1489
+      "cell": "Breaker_5m_short",
+      "expectancy": 0.0522
     },
     {
-      "cell": "OB_5m_short",
-      "expectancy": 0.1274
-    },
-    {
-      "cell": "Breaker_5m_long",
-      "expectancy": 0.1224
-    },
-    {
-      "cell": "Breaker_15m_long",
-      "expectancy": 0.0967
-    },
-    {
-      "cell": "OB_15m_short",
-      "expectancy": 0.0958
-    },
-    {
-      "cell": "OB_5m_long",
-      "expectancy": 0.0639
-    },
-    {
-      "cell": "Breaker_15m_short",
-      "expectancy": 0.0379
+      "cell": "IFVG_15m_short",
+      "expectancy": 0.0368
     },
     {
       "cell": "MSS_15m_long",
@@ -105,8 +29,16 @@
       "expectancy": 0.0141
     },
     {
+      "cell": "OB_15m_short",
+      "expectancy": 0.014
+    },
+    {
       "cell": "Sweep_15m_long",
       "expectancy": 0.0077
+    },
+    {
+      "cell": "OB_5m_short",
+      "expectancy": 0.0023
     },
     {
       "cell": "MSS_5m_long",
@@ -117,8 +49,24 @@
       "expectancy": -0.0174
     },
     {
+      "cell": "FVG_5m_long",
+      "expectancy": -0.0189
+    },
+    {
       "cell": "Sweep_5m_long",
       "expectancy": -0.0211
+    },
+    {
+      "cell": "IFVG_15m_long",
+      "expectancy": -0.0248
+    },
+    {
+      "cell": "Breaker_15m_short",
+      "expectancy": -0.0293
+    },
+    {
+      "cell": "Breaker_15m_long",
+      "expectancy": -0.0318
     },
     {
       "cell": "Sweep_5m_short",
@@ -137,12 +85,64 @@
       "expectancy": -0.048
     },
     {
+      "cell": "FVG_5m_short",
+      "expectancy": -0.0498
+    },
+    {
       "cell": "Sweep_1m_long",
       "expectancy": -0.0504
     },
     {
+      "cell": "OB_5m_long",
+      "expectancy": -0.0739
+    },
+    {
       "cell": "Sweep_15m_short",
       "expectancy": -0.0774
+    },
+    {
+      "cell": "Breaker_5m_long",
+      "expectancy": -0.0911
+    },
+    {
+      "cell": "IFVG_5m_short",
+      "expectancy": -0.1002
+    },
+    {
+      "cell": "IFVG_5m_long",
+      "expectancy": -0.1548
+    },
+    {
+      "cell": "Breaker_1m_long",
+      "expectancy": -0.2121
+    },
+    {
+      "cell": "OB_1m_long",
+      "expectancy": -0.2365
+    },
+    {
+      "cell": "Breaker_1m_short",
+      "expectancy": -0.2375
+    },
+    {
+      "cell": "OB_1m_short",
+      "expectancy": -0.2405
+    },
+    {
+      "cell": "FVG_1m_short",
+      "expectancy": -0.3045
+    },
+    {
+      "cell": "FVG_1m_long",
+      "expectancy": -0.3282
+    },
+    {
+      "cell": "IFVG_1m_long",
+      "expectancy": -0.3562
+    },
+    {
+      "cell": "IFVG_1m_short",
+      "expectancy": -0.3632
     }
   ],
   "cells_with_zero_trades": []

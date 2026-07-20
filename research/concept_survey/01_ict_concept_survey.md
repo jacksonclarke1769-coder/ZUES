@@ -1,56 +1,111 @@
-# ICT Concept Survey — 36-Cell Preregistered Arena, Gated Results
+# ICT Concept Survey — 36-Cell Preregistered Arena, Gated Results (v2, CORRECTED)
+
+## CORRECTION NOTICE (v2, 2026-07-20)
+
+**v1 of this report and its 19-cell survivor shortlist are RETRACTED. Cause: a same-bar fill/invalidation sequencing bug in `survey_engine.py::run_cell()` (limit-order path) silently CANCELLED trades whose entry touch and stop/invalidation touch first occurred on the same 1m bar, instead of recording them as filled-then-immediately-stopped losses. This is a selection-bias bug: it deleted precisely the fastest-reversing, worst-case fills from the trade population -- for FVG_1m_long holdout alone, 8,791 same-bar candidates were wrongly cancelled vs 8,894 kept as clean fills; that deleted population WAS the edge (PF 1.90 -> 0.68, totR +5,116 -> -5,104 once corrected).**
+
+**Fix**: same-bar entry+invalidation now resolves as a filled trade, immediately stopped out on that same bar (conservative, consistent with PREREG §3's "stop-fills-first on ambiguous 1m bars"). Invalidation strictly BEFORE the entry is ever touched remains a legitimate cancel (the order never had a chance to fill cleanly). A regression test (`test_fill_sequencing.py`) now asserts this directly. The exit-management scan for clean fills is unchanged (already started at fill_i+1, already never credited target hits on the fill bar).
+
+**Scope of the bug**: it only affects LIMIT-mode entries -- FVG, IFVG, Order Block, Breaker Block (24/36 cells). **Sweep/MSS are market-mode (fill immediately at signal confirmation, no pre-fill touch-window logic) and are UNCHANGED by this fix** -- their v1 and v2 holdout stats are bit-identical, confirmed below.
+
+**Corrected verdict: Gate A+B+C survivors = 0/36 (was 19/36 in the retracted v1). The survey found nothing deployable.**
+
+### Before/after per-cell deltas for the 19 previously-claimed (now retracted) survivors
+
+| cell | v1 HOLDOUT n/PF/exp/totR (retracted) | v2 HOLDOUT n/PF/exp/totR (corrected) | v2 Gate A | still a survivor? |
+|---|---|---|---|---|
+| FVG_1m_long | 7953/1.897/0.643/5115.532 | 13824/0.741/-0.260/-3595.868 | fail | NO |
+| Breaker_5m_long | 910/1.245/0.165/150.392 | 1065/0.949/-0.038/-40.348 | fail | NO |
+| FVG_5m_short | 1739/1.465/0.368/640.763 | 2175/1.042/0.036/78.926 | PASS | NO |
+| FVG_1m_short | 7832/1.822/0.598/4685.379 | 13452/0.732/-0.269/-3622.439 | fail | NO |
+| IFVG_5m_short | 1582/1.355/0.294/465.137 | 2090/0.870/-0.120/-251.792 | fail | NO |
+| Breaker_1m_short | 3689/1.438/0.281/1036.861 | 5302/0.736/-0.222/-1177.553 | fail | NO |
+| FVG_5m_long | 1810/1.488/0.378/683.371 | 2342/0.979/-0.019/-44.120 | fail | NO |
+| IFVG_5m_long | 1389/1.364/0.297/412.249 | 1852/0.886/-0.104/-192.027 | fail | NO |
+| Breaker_1m_long | 3648/1.487/0.310/1132.681 | 5252/0.772/-0.190/-997.221 | fail | NO |
+| FVG_15m_long | 642/1.355/0.275/176.667 | 740/1.042/0.035/25.620 | PASS | NO |
+| OB_1m_long | 5392/1.362/0.227/1223.989 | 7381/0.781/-0.173/-1278.515 | fail | NO |
+| IFVG_1m_long | 6449/1.924/0.663/4277.503 | 11859/0.698/-0.308/-3657.270 | fail | NO |
+| IFVG_1m_short | 6567/1.831/0.618/4060.550 | 12120/0.666/-0.348/-4216.166 | fail | NO |
+| Breaker_15m_short | 353/1.234/0.162/57.207 | 370/1.141/0.101/37.235 | PASS | NO |
+| IFVG_15m_short | 537/1.513/0.404/216.879 | 645/1.120/0.102/65.564 | PASS | NO |
+| MSS_15m_long | 747/1.182/0.047/35.009 | 747/1.182/0.047/35.009 | PASS | NO |
+| OB_5m_long | 1312/1.236/0.149/195.279 | 1482/1.004/0.003/3.821 | PASS | NO |
+| OB_1m_short | 5269/1.275/0.183/965.100 | 7264/0.742/-0.212/-1539.770 | fail | NO |
+| Breaker_5m_short | 872/1.214/0.147/128.604 | 996/0.968/-0.024/-24.118 | fail | NO |
+
+Market-mode cells (Sweep/MSS) for reference -- bit-identical v1 vs v2 (unaffected by the bug):
+
+| cell | v1 HOLDOUT totR | v2 HOLDOUT totR | identical? |
+|---|---|---|---|
+| Sweep_1m_long | -835.5434 | -835.5434 | yes |
+| Sweep_1m_short | -964.2826 | -964.2826 | yes |
+| Sweep_5m_long | -54.5268 | -54.5268 | yes |
+| Sweep_5m_short | -276.1182 | -276.1182 | yes |
+| Sweep_15m_long | -18.2416 | -18.2416 | yes |
+| Sweep_15m_short | -130.2679 | -130.2679 | yes |
+| MSS_1m_long | -219.8319 | -219.8319 | yes |
+| MSS_1m_short | -455.8624 | -455.8624 | yes |
+| MSS_5m_long | -12.1885 | -12.1885 | yes |
+| MSS_5m_short | -38.8829 | -38.8829 | yes |
+| MSS_15m_long | 35.0089 | 35.0089 | yes |
+| MSS_15m_short | 8.2349 | 8.2349 | yes |
+
+---
 
 Preregistration: `backtests/zeus-ict-2026-07/concept_survey/PREREG.md` (frozen 2026-07-20, before any result was computed). Data: single-vendor Databento NQ 1m (`data/real_futures/NQ_databento_1m_5y.parquet`), window 2024-06-22 -> 2026-06-22, TRAIN=first 12mo, HOLDOUT=last 12mo. N=36 (6 concepts x 3 TFs x 2 directions), fixed a priori.
 
 ## 1. Headline
-- Gate A (holdout PF>1.0 & expectancy>0): **25/36**
-- Gate B (BH-FDR q=0.10 across all 36, one-sided block-bootstrap p): **19/36** (BH cutoff p = 0.0442)
-- Gate A+B (both required to reach Gate C): **19/36**
-- Gate C (beats 1000-run randomized-entry null, 95th pctile of total R): **19/36**
+- Gate A (holdout PF>1.0 & expectancy>0): **8/36**
+- Gate B (BH-FDR q=0.10 across all 36, one-sided block-bootstrap p): **0/36** (BH cutoff p = None)
+- Gate A+B (both required to reach Gate C): **0/36**
+- Gate C (beats randomized-entry null 95th pctile of total R -- 1000 runs for any A+B survivor, 200-run global null otherwise): **0/36**
+
+**No cell survived all three statistical gates. The survey found nothing deployable — this is an acceptable, honestly-reported result, not a failure of the harness.**
 
 ## 2. Null expectation vs observed (Gate B/C context)
-- Observed cells with HOLDOUT PF>1.2: **19/36**.
+- Observed cells with HOLDOUT PF>1.2: **0/36**.
 - Expected cells clearing PF>1.2 under the randomized-entry null (sum, across all 36 cells, of that cell's own null-run fraction with PF>1.2 -- i.e. the false-positive yield the SAME execution template would produce from bar-selection luck alone): **0.3/36**.
-- Gap (observed minus null-expected): **18.7**. This gap is large relative to the null-expected count -- the survey found a real signal, not noise; Gate C (per-cell, not aggregate) is still the decisive test for individual cells.
+- Gap (observed minus null-expected): **-0.3**. This gap is small -- treat the per-cell Gate C outcomes as the only reliable signal; in aggregate the observed PF>1.2 rate is close to what bar-selection luck alone would produce.
 - Per-cell 200-run (1000-run for A+B survivors) null total-R and null-PF distributions, and the observed-vs-null-p95 outcome, are in `gate_c_result.json` for every cell, not just survivors (per PREREG §Gate B/C).
 
 ## 3. BH-FDR p-value ladder (q=0.10, N=36)
 
 | rank | cell | p | BH threshold | passes |
 |---|---|---|---|---|
-| 1 | FVG_1m_long | 0.00010 | 0.00278 | YES |
-| 2 | FVG_1m_short | 0.00010 | 0.00556 | YES |
-| 3 | FVG_5m_long | 0.00010 | 0.00833 | YES |
-| 4 | FVG_5m_short | 0.00010 | 0.01111 | YES |
-| 5 | IFVG_1m_long | 0.00010 | 0.01389 | YES |
-| 6 | IFVG_1m_short | 0.00010 | 0.01667 | YES |
-| 7 | IFVG_5m_long | 0.00010 | 0.01944 | YES |
-| 8 | IFVG_5m_short | 0.00010 | 0.02222 | YES |
-| 9 | OB_1m_long | 0.00010 | 0.02500 | YES |
-| 10 | OB_1m_short | 0.00010 | 0.02778 | YES |
-| 11 | Breaker_1m_long | 0.00010 | 0.03056 | YES |
-| 12 | Breaker_1m_short | 0.00010 | 0.03333 | YES |
-| 13 | OB_5m_long | 0.00050 | 0.03611 | YES |
-| 14 | IFVG_15m_short | 0.00060 | 0.03889 | YES |
-| 15 | Breaker_5m_long | 0.00080 | 0.04167 | YES |
-| 16 | FVG_15m_long | 0.00130 | 0.04444 | YES |
-| 17 | Breaker_5m_short | 0.00540 | 0.04722 | YES |
-| 18 | Breaker_15m_short | 0.04210 | 0.05000 | YES |
-| 19 | MSS_15m_long | 0.04420 | 0.05278 | YES |
-| 20 | IFVG_15m_long | 0.06060 | 0.05556 |  |
-| 21 | FVG_15m_short | 0.10950 | 0.05833 |  |
-| 22 | OB_15m_long | 0.14260 | 0.06111 |  |
-| 23 | Breaker_15m_long | 0.19900 | 0.06389 |  |
-| 24 | OB_5m_short | 0.26680 | 0.06667 |  |
-| 25 | MSS_15m_short | 0.32970 | 0.06944 |  |
-| 26 | Sweep_15m_long | 0.64910 | 0.07222 |  |
-| 27 | MSS_5m_long | 0.65400 | 0.07500 |  |
-| 28 | OB_15m_short | 0.69140 | 0.07778 |  |
-| 29 | Sweep_5m_long | 0.75770 | 0.08056 |  |
-| 30 | MSS_5m_short | 0.85650 | 0.08333 |  |
-| 31 | MSS_1m_long | 0.98480 | 0.08611 |  |
-| 32 | Sweep_15m_short | 0.99290 | 0.08889 |  |
-| 33 | Sweep_5m_short | 0.99900 | 0.09167 |  |
+| 1 | MSS_15m_long | 0.04420 | 0.00278 |  |
+| 2 | Breaker_15m_short | 0.14070 | 0.00556 |  |
+| 3 | IFVG_15m_short | 0.18080 | 0.00833 |  |
+| 4 | FVG_5m_short | 0.24060 | 0.01111 |  |
+| 5 | FVG_15m_long | 0.32740 | 0.01389 |  |
+| 6 | MSS_15m_short | 0.32970 | 0.01667 |  |
+| 7 | OB_15m_long | 0.39660 | 0.01944 |  |
+| 8 | OB_5m_long | 0.47100 | 0.02222 |  |
+| 9 | FVG_15m_short | 0.57770 | 0.02500 |  |
+| 10 | Sweep_15m_long | 0.64910 | 0.02778 |  |
+| 11 | MSS_5m_long | 0.65400 | 0.03056 |  |
+| 12 | FVG_5m_long | 0.66080 | 0.03333 |  |
+| 13 | Breaker_5m_short | 0.68490 | 0.03611 |  |
+| 14 | Breaker_15m_long | 0.69640 | 0.03889 |  |
+| 15 | Sweep_5m_long | 0.75770 | 0.04167 |  |
+| 16 | IFVG_15m_long | 0.76510 | 0.04444 |  |
+| 17 | Breaker_5m_long | 0.78330 | 0.04722 |  |
+| 18 | MSS_5m_short | 0.85650 | 0.05000 |  |
+| 19 | OB_15m_short | 0.92820 | 0.05278 |  |
+| 20 | IFVG_5m_long | 0.96950 | 0.05556 |  |
+| 21 | MSS_1m_long | 0.98480 | 0.05833 |  |
+| 22 | OB_5m_short | 0.98720 | 0.06111 |  |
+| 23 | Sweep_15m_short | 0.99290 | 0.06389 |  |
+| 24 | IFVG_5m_short | 0.99610 | 0.06667 |  |
+| 25 | Sweep_5m_short | 0.99900 | 0.06944 |  |
+| 26 | FVG_1m_long | 1.00000 | 0.07222 |  |
+| 27 | FVG_1m_short | 1.00000 | 0.07500 |  |
+| 28 | IFVG_1m_long | 1.00000 | 0.07778 |  |
+| 29 | IFVG_1m_short | 1.00000 | 0.08056 |  |
+| 30 | OB_1m_long | 1.00000 | 0.08333 |  |
+| 31 | OB_1m_short | 1.00000 | 0.08611 |  |
+| 32 | Breaker_1m_long | 1.00000 | 0.08889 |  |
+| 33 | Breaker_1m_short | 1.00000 | 0.09167 |  |
 | 34 | Sweep_1m_long | 1.00000 | 0.09444 |  |
 | 35 | Sweep_1m_short | 1.00000 | 0.09722 |  |
 | 36 | MSS_1m_short | 1.00000 | 0.10000 |  |
@@ -59,30 +114,30 @@ Preregistration: `backtests/zeus-ict-2026-07/concept_survey/PREREG.md` (frozen 2
 
 | cell | TRAIN n/PF/exp | HOLDOUT n/PF/exp | Gate A | Gate B (p) | Gate C (beats null) | LIVE n/PF/exp (survivors) |
 |---|---|---|---|---|---|---|
-| FVG_1m_long | 7907/1.796/0.571 | 7953/1.897/0.643 | PASS | 0.0001 PASS | beats | 5741/1.952/0.657 |
-| FVG_1m_short | 8232/1.671/0.497 | 7832/1.822/0.598 | PASS | 0.0001 PASS | beats | 5762/1.837/0.590 |
-| FVG_5m_long | 1822/1.480/0.378 | 1810/1.488/0.378 | PASS | 0.0001 PASS | beats | 1810/1.488/0.378 |
-| FVG_5m_short | 1738/1.348/0.274 | 1739/1.465/0.368 | PASS | 0.0001 PASS | beats | 1739/1.465/0.368 |
-| FVG_15m_long | 632/1.411/0.319 | 642/1.355/0.275 | PASS | 0.0013 PASS | beats | 642/1.355/0.275 |
-| FVG_15m_short | 595/1.382/0.290 | 569/1.148/0.120 | PASS | 0.1095 | - | - |
-| IFVG_1m_long | 6593/1.772/0.563 | 6449/1.924/0.663 | PASS | 0.0001 PASS | beats | 4122/1.973/0.666 |
-| IFVG_1m_short | 6760/1.757/0.564 | 6567/1.831/0.618 | PASS | 0.0001 PASS | beats | 4239/1.908/0.647 |
-| IFVG_5m_long | 1381/1.355/0.283 | 1389/1.364/0.297 | PASS | 0.0001 PASS | beats | 1369/1.342/0.279 |
-| IFVG_5m_short | 1573/1.363/0.293 | 1582/1.355/0.294 | PASS | 0.0001 PASS | beats | 1529/1.324/0.269 |
-| IFVG_15m_long | 476/1.354/0.265 | 463/1.216/0.174 | PASS | 0.0606 | - | - |
-| IFVG_15m_short | 566/1.264/0.214 | 537/1.513/0.404 | PASS | 0.0006 PASS | beats | 518/1.427/0.338 |
-| OB_1m_long | 5264/1.241/0.153 | 5392/1.362/0.227 | PASS | 0.0001 PASS | beats | 4138/1.403/0.249 |
-| OB_1m_short | 5226/1.222/0.149 | 5269/1.275/0.183 | PASS | 0.0001 PASS | beats | 4070/1.313/0.206 |
-| OB_5m_long | 1353/1.099/0.064 | 1312/1.236/0.149 | PASS | 0.0005 PASS | beats | 1312/1.236/0.149 |
-| OB_5m_short | 1417/1.191/0.127 | 1382/1.040/0.028 | PASS | 0.2668 | - | - |
-| OB_15m_long | 543/1.309/0.186 | 542/1.105/0.068 | PASS | 0.1426 | - | - |
-| OB_15m_short | 500/1.148/0.096 | 498/0.942/-0.042 | fail | 0.6914 | - | - |
-| Breaker_1m_long | 3556/1.483/0.305 | 3648/1.487/0.310 | PASS | 0.0001 PASS | beats | 2643/1.503/0.312 |
-| Breaker_1m_short | 3652/1.350/0.227 | 3689/1.438/0.281 | PASS | 0.0001 PASS | beats | 2685/1.470/0.292 |
-| Breaker_5m_long | 925/1.175/0.122 | 910/1.245/0.165 | PASS | 0.0008 PASS | beats | 886/1.234/0.158 |
-| Breaker_5m_short | 903/1.376/0.245 | 872/1.214/0.147 | PASS | 0.0054 PASS | beats | 852/1.162/0.113 |
-| Breaker_15m_long | 335/1.135/0.097 | 325/1.121/0.085 | PASS | 0.1990 | - | - |
-| Breaker_15m_short | 345/1.055/0.038 | 353/1.234/0.162 | PASS | 0.0421 PASS | beats | 352/1.231/0.160 |
+| FVG_1m_long | 13920/0.679/-0.328 | 13824/0.741/-0.260 | fail | 1.0000 | - | - |
+| FVG_1m_short | 13697/0.699/-0.304 | 13452/0.732/-0.269 | fail | 1.0000 | - | - |
+| FVG_5m_long | 2339/0.979/-0.019 | 2342/0.979/-0.019 | fail | 0.6608 | - | - |
+| FVG_5m_short | 2163/0.943/-0.050 | 2175/1.042/0.036 | PASS | 0.2406 | - | - |
+| FVG_15m_long | 737/1.077/0.064 | 740/1.042/0.035 | PASS | 0.3274 | - | - |
+| FVG_15m_short | 648/1.186/0.147 | 635/0.982/-0.015 | fail | 0.5777 | - | - |
+| IFVG_1m_long | 11966/0.655/-0.356 | 11859/0.698/-0.308 | fail | 1.0000 | - | - |
+| IFVG_1m_short | 12145/0.653/-0.363 | 12120/0.666/-0.348 | fail | 1.0000 | - | - |
+| IFVG_5m_long | 1895/0.830/-0.155 | 1852/0.886/-0.104 | fail | 0.9695 | - | - |
+| IFVG_5m_short | 2083/0.890/-0.100 | 2090/0.870/-0.120 | fail | 0.9961 | - | - |
+| IFVG_15m_long | 584/0.970/-0.025 | 567/0.922/-0.067 | fail | 0.7651 | - | - |
+| IFVG_15m_short | 648/1.043/0.037 | 645/1.120/0.102 | PASS | 0.1808 | - | - |
+| OB_1m_long | 7248/0.706/-0.236 | 7381/0.781/-0.173 | fail | 1.0000 | - | - |
+| OB_1m_short | 7153/0.711/-0.240 | 7264/0.742/-0.212 | fail | 1.0000 | - | - |
+| OB_5m_long | 1519/0.894/-0.074 | 1482/1.004/0.003 | PASS | 0.4710 | - | - |
+| OB_5m_short | 1570/1.003/0.002 | 1536/0.877/-0.092 | fail | 0.9872 | - | - |
+| OB_15m_long | 578/1.167/0.106 | 568/1.025/0.017 | PASS | 0.3966 | - | - |
+| OB_15m_short | 538/1.021/0.014 | 532/0.844/-0.117 | fail | 0.9282 | - | - |
+| Breaker_1m_long | 5185/0.747/-0.212 | 5252/0.772/-0.190 | fail | 1.0000 | - | - |
+| Breaker_1m_short | 5101/0.717/-0.237 | 5302/0.736/-0.222 | fail | 1.0000 | - | - |
+| Breaker_5m_long | 1081/0.882/-0.091 | 1065/0.949/-0.038 | fail | 0.7833 | - | - |
+| Breaker_5m_short | 1018/1.073/0.052 | 996/0.968/-0.024 | fail | 0.6849 | - | - |
+| Breaker_15m_long | 368/0.958/-0.032 | 355/0.937/-0.047 | fail | 0.6964 | - | - |
+| Breaker_15m_short | 367/0.959/-0.029 | 370/1.141/0.101 | PASS | 0.1407 | - | - |
 | Sweep_1m_long | 15270/0.912/-0.050 | 15475/0.908/-0.054 | fail | 1.0000 | - | - |
 | Sweep_1m_short | 15572/0.919/-0.048 | 15598/0.899/-0.062 | fail | 1.0000 | - | - |
 | Sweep_5m_long | 3494/0.962/-0.021 | 3449/0.973/-0.016 | fail | 0.7577 | - | - |
@@ -93,82 +148,34 @@ Preregistration: `backtests/zeus-ict-2026-07/concept_survey/PREREG.md` (frozen 2
 | MSS_1m_short | 10120/0.844/-0.044 | 9950/0.847/-0.046 | fail | 1.0000 | - | - |
 | MSS_5m_long | 2074/0.944/-0.015 | 2074/0.980/-0.006 | fail | 0.6540 | - | - |
 | MSS_5m_short | 2045/0.938/-0.017 | 1987/0.934/-0.020 | fail | 0.8565 | - | - |
-| MSS_15m_long | 711/1.115/0.029 | 747/1.182/0.047 | PASS | 0.0442 PASS | beats | 747/1.105/0.028 |
+| MSS_15m_long | 711/1.115/0.029 | 747/1.182/0.047 | PASS | 0.0442 | - | - |
 | MSS_15m_short | 734/1.052/0.014 | 678/1.041/0.012 | PASS | 0.3297 | - | - |
 
 ## 5. Quarterly walk-forward sign stability (8 quarters across the 2y window)
 
+(no Gate A+B+C or Gate A+B survivors -- showing the 8 Gate-A-only cells for context; none of these cleared Gate B/C)
+
 | cell | positive quarters / 8 | sign sequence |
 |---|---|---|
-| FVG_1m_long | 8/8 | ++++++++ |
-| Breaker_5m_long | 7/8 | +++-++++ |
-| FVG_5m_short | 8/8 | ++++++++ |
-| FVG_1m_short | 8/8 | ++++++++ |
-| IFVG_5m_short | 8/8 | ++++++++ |
-| Breaker_1m_short | 8/8 | ++++++++ |
-| FVG_5m_long | 8/8 | ++++++++ |
-| IFVG_5m_long | 8/8 | ++++++++ |
-| Breaker_1m_long | 8/8 | ++++++++ |
-| FVG_15m_long | 8/8 | ++++++++ |
-| OB_1m_long | 8/8 | ++++++++ |
-| IFVG_1m_long | 8/8 | ++++++++ |
-| IFVG_1m_short | 8/8 | ++++++++ |
-| Breaker_15m_short | 7/8 | +++-++++ |
-| IFVG_15m_short | 7/8 | +++-++++ |
+| FVG_5m_short | 3/8 | --+-+-+- |
+| FVG_15m_long | 6/8 | ++-++-++ |
+| IFVG_15m_short | 5/8 | ++--+++- |
+| OB_5m_long | 2/8 | -----+-+ |
+| OB_15m_long | 6/8 | +-++-+++ |
+| Breaker_15m_short | 5/8 | -+--++++ |
 | MSS_15m_long | 6/8 | ++-+++-+ |
-| OB_5m_long | 8/8 | ++++++++ |
-| OB_1m_short | 8/8 | ++++++++ |
-| Breaker_5m_short | 8/8 | ++++++++ |
+| MSS_15m_short | 5/8 | --+++++- |
 
 ## 6. Ranked survivor shortlist
 
-Ranked by (a) gates passed [all A+B+C here], (b) decorrelation vs other survivors/Profile A/VPC (lower mean |corr| = better), (c) live-achievable expectancy:
-
-1. **OB_5m_long** — decorr=0.0651, live-achievable n=1312, PF=1.236, expectancy=0.149R, suppression%=0.0, edge_lives_in_suppressed=False
-2. **Breaker_5m_short** — decorr=0.0651, live-achievable n=852, PF=1.162, expectancy=0.113R, suppression%=3.73, edge_lives_in_suppressed=False
-3. **Breaker_5m_long** — decorr=0.0685, live-achievable n=886, PF=1.234, expectancy=0.158R, suppression%=2.76, edge_lives_in_suppressed=False
-4. **IFVG_5m_long** — decorr=0.0721, live-achievable n=1369, PF=1.342, expectancy=0.279R, suppression%=2.09, edge_lives_in_suppressed=False
-5. **MSS_15m_long** — decorr=0.0779, live-achievable n=747, PF=1.105, expectancy=0.028R, suppression%=0.0, edge_lives_in_suppressed=False
-6. **IFVG_15m_short** — decorr=0.08, live-achievable n=518, PF=1.427, expectancy=0.338R, suppression%=6.11, edge_lives_in_suppressed=False
-7. **FVG_15m_long** — decorr=0.0844, live-achievable n=642, PF=1.355, expectancy=0.275R, suppression%=0.0, edge_lives_in_suppressed=False
-8. **Breaker_15m_short** — decorr=0.0893, live-achievable n=352, PF=1.231, expectancy=0.160R, suppression%=0.13, edge_lives_in_suppressed=False
-9. **OB_1m_long** — decorr=0.0899, live-achievable n=4138, PF=1.403, expectancy=0.249R, suppression%=22.05, edge_lives_in_suppressed=False
-10. **IFVG_5m_short** — decorr=0.0911, live-achievable n=1529, PF=1.324, expectancy=0.269R, suppression%=4.44, edge_lives_in_suppressed=False
-11. **FVG_5m_long** — decorr=0.0927, live-achievable n=1810, PF=1.488, expectancy=0.378R, suppression%=0.0, edge_lives_in_suppressed=False
-12. **Breaker_1m_short** — decorr=0.0992, live-achievable n=2685, PF=1.470, expectancy=0.292R, suppression%=27.46, edge_lives_in_suppressed=False
-13. **FVG_5m_short** — decorr=0.105, live-achievable n=1739, PF=1.465, expectancy=0.368R, suppression%=0.0, edge_lives_in_suppressed=False
-14. **Breaker_1m_long** — decorr=0.1105, live-achievable n=2643, PF=1.503, expectancy=0.312R, suppression%=27.62, edge_lives_in_suppressed=False
-15. **OB_1m_short** — decorr=0.1118, live-achievable n=4070, PF=1.313, expectancy=0.206R, suppression%=21.57, edge_lives_in_suppressed=False
-16. **IFVG_1m_short** — decorr=0.1442, live-achievable n=4239, PF=1.908, expectancy=0.647R, suppression%=34.43, edge_lives_in_suppressed=False
-17. **IFVG_1m_long** — decorr=0.146, live-achievable n=4122, PF=1.973, expectancy=0.666R, suppression%=36.36, edge_lives_in_suppressed=False
-18. **FVG_1m_long** — decorr=0.1615, live-achievable n=5741, PF=1.952, expectancy=0.657R, suppression%=28.06, edge_lives_in_suppressed=False
-19. **FVG_1m_short** — decorr=0.164, live-achievable n=5762, PF=1.837, expectancy=0.590R, suppression%=26.64, edge_lives_in_suppressed=False
+**Empty. No cell passed Gate A + Gate B (BH-FDR q=0.10) + Gate C (randomized-entry null).**
 
 ## 7. Correlation matrix (daily-R Pearson, holdout)
 
-| | FVG_1m_long | Breaker_5m_long | FVG_5m_short | FVG_1m_short | IFVG_5m_short | Breaker_1m_short | FVG_5m_long | IFVG_5m_long | Breaker_1m_long | FVG_15m_long | OB_1m_long | IFVG_1m_long | IFVG_1m_short | Breaker_15m_short | IFVG_15m_short | MSS_15m_long | OB_5m_long | OB_1m_short | Breaker_5m_short | ProfileA_OTE | VPC_ProfileB |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| FVG_1m_long | 1.000 | 0.109 | 0.149 | 0.352 | 0.179 | 0.266 | 0.095 | 0.107 | 0.254 | 0.110 | 0.216 | 0.443 | 0.384 | -0.063 | 0.092 | 0.021 | 0.062 | 0.197 | 0.100 | -0.005 | -0.025 |
-| Breaker_5m_long | 0.109 | 1.000 | 0.051 | 0.061 | 0.115 | 0.080 | -0.081 | -0.074 | 0.009 | 0.040 | 0.084 | 0.109 | 0.084 | 0.062 | 0.129 | -0.050 | 0.133 | -0.006 | 0.044 | 0.013 | 0.035 |
-| FVG_5m_short | 0.149 | 0.051 | 1.000 | 0.179 | 0.196 | 0.104 | -0.071 | 0.007 | -0.046 | 0.008 | -0.028 | 0.126 | 0.203 | 0.147 | 0.188 | -0.120 | -0.031 | 0.154 | 0.183 | 0.034 | -0.074 |
-| FVG_1m_short | 0.352 | 0.061 | 0.179 | 1.000 | 0.240 | 0.285 | 0.072 | 0.073 | 0.201 | -0.117 | 0.233 | 0.335 | 0.460 | 0.068 | 0.025 | -0.054 | -0.047 | 0.304 | 0.062 | 0.086 | 0.026 |
-| IFVG_5m_short | 0.179 | 0.115 | 0.196 | 0.240 | 1.000 | 0.058 | 0.101 | 0.132 | -0.021 | -0.031 | 0.035 | 0.074 | 0.121 | 0.128 | 0.090 | -0.030 | -0.044 | 0.135 | -0.009 | 0.066 | 0.018 |
-| Breaker_1m_short | 0.266 | 0.080 | 0.104 | 0.285 | 0.058 | 1.000 | 0.065 | -0.075 | 0.110 | 0.005 | -0.019 | 0.239 | 0.231 | 0.069 | 0.052 | -0.081 | 0.009 | 0.184 | 0.028 | 0.001 | 0.022 |
-| FVG_5m_long | 0.095 | -0.081 | -0.071 | 0.072 | 0.101 | 0.065 | 1.000 | 0.186 | 0.203 | 0.155 | 0.125 | 0.226 | 0.001 | -0.006 | -0.011 | 0.197 | 0.051 | 0.073 | 0.088 | 0.002 | 0.043 |
-| IFVG_5m_long | 0.107 | -0.074 | 0.007 | 0.073 | 0.132 | -0.075 | 0.186 | 1.000 | 0.149 | 0.137 | -0.010 | 0.040 | 0.060 | 0.045 | 0.022 | 0.105 | -0.071 | 0.010 | 0.016 | 0.103 | -0.018 |
-| Breaker_1m_long | 0.254 | 0.009 | -0.046 | 0.201 | -0.021 | 0.110 | 0.203 | 0.149 | 1.000 | 0.124 | 0.151 | 0.260 | 0.189 | -0.065 | 0.108 | 0.034 | 0.053 | 0.108 | -0.017 | -0.046 | 0.062 |
-| FVG_15m_long | 0.110 | 0.040 | 0.008 | -0.117 | -0.031 | 0.005 | 0.155 | 0.137 | 0.124 | 1.000 | -0.006 | 0.102 | 0.141 | 0.031 | 0.019 | 0.104 | 0.131 | 0.105 | -0.063 | 0.126 | 0.131 |
-| OB_1m_long | 0.216 | 0.084 | -0.028 | 0.233 | 0.035 | -0.019 | 0.125 | -0.010 | 0.151 | -0.006 | 1.000 | 0.144 | 0.149 | -0.157 | 0.006 | 0.158 | 0.151 | -0.018 | 0.063 | -0.036 | 0.010 |
-| IFVG_1m_long | 0.443 | 0.109 | 0.126 | 0.335 | 0.074 | 0.239 | 0.226 | 0.040 | 0.260 | 0.102 | 0.144 | 1.000 | 0.286 | -0.033 | 0.116 | 0.023 | 0.002 | 0.254 | 0.058 | -0.027 | 0.021 |
-| IFVG_1m_short | 0.384 | 0.084 | 0.203 | 0.460 | 0.121 | 0.231 | 0.001 | 0.060 | 0.189 | 0.141 | 0.149 | 0.286 | 1.000 | 0.089 | 0.022 | -0.053 | 0.019 | 0.244 | 0.080 | 0.021 | -0.047 |
-| Breaker_15m_short | -0.063 | 0.062 | 0.147 | 0.068 | 0.128 | 0.069 | -0.006 | 0.045 | -0.065 | 0.031 | -0.157 | -0.033 | 0.089 | 1.000 | 0.215 | -0.070 | -0.093 | 0.127 | 0.091 | 0.078 | 0.148 |
-| IFVG_15m_short | 0.092 | 0.129 | 0.188 | 0.025 | 0.090 | 0.052 | -0.011 | 0.022 | 0.108 | 0.019 | 0.006 | 0.116 | 0.022 | 0.215 | 1.000 | -0.142 | 0.019 | 0.141 | 0.078 | -0.069 | -0.057 |
-| MSS_15m_long | 0.021 | -0.050 | -0.120 | -0.054 | -0.030 | -0.081 | 0.197 | 0.105 | 0.034 | 0.104 | 0.158 | 0.023 | -0.053 | -0.070 | -0.142 | 1.000 | 0.153 | -0.047 | -0.030 | 0.009 | 0.079 |
-| OB_5m_long | 0.062 | 0.133 | -0.031 | -0.047 | -0.044 | 0.009 | 0.051 | -0.071 | 0.053 | 0.131 | 0.151 | 0.002 | 0.019 | -0.093 | 0.019 | 0.153 | 1.000 | 0.041 | -0.084 | 0.021 | 0.090 |
-| OB_1m_short | 0.197 | -0.006 | 0.154 | 0.304 | 0.135 | 0.184 | 0.073 | 0.010 | 0.108 | 0.105 | -0.018 | 0.254 | 0.244 | 0.127 | 0.141 | -0.047 | 0.041 | 1.000 | 0.003 | 0.024 | -0.061 |
-| Breaker_5m_short | 0.100 | 0.044 | 0.183 | 0.062 | -0.009 | 0.028 | 0.088 | 0.016 | -0.017 | -0.063 | 0.063 | 0.058 | 0.080 | 0.091 | 0.078 | -0.030 | -0.084 | 0.003 | 1.000 | -0.081 | -0.121 |
-| ProfileA_OTE | -0.005 | 0.013 | 0.034 | 0.086 | 0.066 | 0.001 | 0.002 | 0.103 | -0.046 | 0.126 | -0.036 | -0.027 | 0.021 | 0.078 | -0.069 | 0.009 | 0.021 | 0.024 | -0.081 | 1.000 | 0.126 |
-| VPC_ProfileB | -0.025 | 0.035 | -0.074 | 0.026 | 0.018 | 0.022 | 0.043 | -0.018 | 0.062 | 0.131 | 0.010 | 0.021 | -0.047 | 0.148 | -0.057 | 0.079 | 0.090 | -0.061 | -0.121 | 0.126 | 1.000 |
+| | ProfileA_OTE | VPC_ProfileB |
+|---|---|---|
+| ProfileA_OTE | 1.000 | 0.126 |
+| VPC_ProfileB | 0.126 | 1.000 |
 
 Profile A (achievable, in-window) n=74; VPC/Profile B (in-window) n=98.
 
@@ -176,12 +183,30 @@ Profile A (achievable, in-window) n=74; VPC/Profile B (in-window) n=98.
 
 | cell | cause of death |
 |---|---|
-| FVG_15m_short | FDR miss (Gate B: p=0.1095 > BH cutoff 0.0442) |
-| IFVG_15m_long | FDR miss (Gate B: p=0.0606 > BH cutoff 0.0442) |
-| OB_5m_short | FDR miss (Gate B: p=0.2668 > BH cutoff 0.0442) |
-| OB_15m_long | FDR miss (Gate B: p=0.1426 > BH cutoff 0.0442) |
+| FVG_1m_long | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| FVG_1m_short | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| FVG_5m_long | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| FVG_5m_short | FDR miss (Gate B: p=0.2406 > BH cutoff None) |
+| FVG_15m_long | FDR miss (Gate B: p=0.3274 > BH cutoff None) |
+| FVG_15m_short | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| IFVG_1m_long | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| IFVG_1m_short | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| IFVG_5m_long | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| IFVG_5m_short | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| IFVG_15m_long | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| IFVG_15m_short | FDR miss (Gate B: p=0.1808 > BH cutoff None) |
+| OB_1m_long | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| OB_1m_short | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| OB_5m_long | FDR miss (Gate B: p=0.4710 > BH cutoff None) |
+| OB_5m_short | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| OB_15m_long | FDR miss (Gate B: p=0.3966 > BH cutoff None) |
 | OB_15m_short | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
-| Breaker_15m_long | FDR miss (Gate B: p=0.1990 > BH cutoff 0.0442) |
+| Breaker_1m_long | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| Breaker_1m_short | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| Breaker_5m_long | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| Breaker_5m_short | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| Breaker_15m_long | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
+| Breaker_15m_short | FDR miss (Gate B: p=0.1407 > BH cutoff None) |
 | Sweep_1m_long | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
 | Sweep_1m_short | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
 | Sweep_5m_long | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
@@ -192,7 +217,8 @@ Profile A (achievable, in-window) n=74; VPC/Profile B (in-window) n=98.
 | MSS_1m_short | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
 | MSS_5m_long | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
 | MSS_5m_short | holdout collapse (Gate A: PF<=1.0 or expectancy<=0) |
-| MSS_15m_short | FDR miss (Gate B: p=0.3297 > BH cutoff 0.0442) |
+| MSS_15m_long | FDR miss (Gate B: p=0.0442 > BH cutoff None) |
+| MSS_15m_short | FDR miss (Gate B: p=0.3297 > BH cutoff None) |
 
 ## 9. Documented literal-reading resolutions
 
@@ -229,6 +255,12 @@ Profile A (achievable, in-window) n=74; VPC/Profile B (in-window) n=98.
   has a single-instant confirmation with no extra internal lag, so the only latency source is the
   <=5-minute poll cadence itself — always under the 10-minute threshold. The substantive
   deployability effect is the poll-delay re-walk (a trade can be missed/repriced by minutes).
+- **Same-bar fill/invalidation resolution (v2 correction, audited 2026-07-20)**: for LIMIT-mode
+  entries, when the entry-touch and invalidation/stop-touch bars are the SAME 1m bar, the order
+  is treated as FILLED at entry_price and immediately STOPPED at stop_price on that bar (a real
+  loss), not cancelled -- this is the "stop-fills-first on ambiguous bars" convention (PREREG §3)
+  extended to the pre-fill phase. Invalidation on a bar STRICTLY BEFORE the entry is ever touched
+  remains a legitimate cancel. See the CORRECTION NOTICE at the top of this report.
 
 ## 10. Anti-pattern compliance
 - No train/full-window number presented as a finding above (train shown only for context alongside holdout/live-achievable).

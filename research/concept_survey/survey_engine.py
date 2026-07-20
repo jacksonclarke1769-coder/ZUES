@@ -136,10 +136,39 @@ def run_cell(df1m_arrays: dict, ctx: dict, concept: str, direction: int,
                 inv_touch = hi_w >= r.invalidate_price
             e_hit = np.argmax(entry_touch) if entry_touch.any() else None
             v_hit = np.argmax(inv_touch) if inv_touch.any() else None
-            if v_hit is not None and (e_hit is None or v_hit <= e_hit):
-                continue   # cancelled: invalidated before/at fill
             if e_hit is None:
-                continue   # cancelled: never filled
+                continue   # cancelled: never filled within the working-order window
+            if v_hit is not None and v_hit < e_hit:
+                continue   # legit cancel: invalidated on a STRICTLY earlier bar than the fill
+            if v_hit is not None and v_hit == e_hit:
+                # SAME 1m bar touches both entry and invalidation: intrabar order is
+                # unknowable -- conservative "stop-fills-first on ambiguous bars" (PREREG
+                # §3) convention extended to this case: the resting limit DID fill at
+                # entry_price (it was touched), and is immediately stopped out on that
+                # same bar (worst case). This is a real stop-loss trade, not a cancel --
+                # excluding it was a same-bar fill/invalidation selection-bias bug
+                # (audited 2026-07-20; see report v2 correction notice).
+                fill_i = i0 + int(e_hit)
+                entry_ref = r.entry_price
+                risk = abs(entry_ref - r.stop_price)
+                if not np.isfinite(risk) or risk <= 0:
+                    continue
+                atr_val = _atr_at(ctx, int(ts_ns[fill_i]))
+                target_sb = _nearest_target(direction, entry_ref, atr_val, ctx, int(ts_ns[fill_i]))
+                if target_sb is None:
+                    target_sb = entry_ref + 2.0 * risk * direction
+                net_dollars, R, e_fill, x_fill = finish(direction, entry_ref, r.stop_price, risk)
+                exit_i = fill_i
+                exit_ns = int(ts_ns[exit_i]) + 60_000_000_000
+                trades.append(dict(
+                    concept=concept, direction=direction, conf_ts=conf_ts,
+                    fill_ts=pd.Timestamp(int(ts_ns[fill_i]), tz="UTC"),
+                    exit_ts=pd.Timestamp(exit_ns, tz="UTC"),
+                    entry_ref=entry_ref, stop=r.stop_price, target=target_sb, risk_pts=risk,
+                    reason="stop_samebar", R=R, net_dollars=net_dollars, mode=r.mode,
+                ))
+                in_pos_until_ns = exit_ns
+                continue
             fill_i = i0 + int(e_hit)
             entry_ref = r.entry_price
         else:  # market
