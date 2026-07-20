@@ -1,0 +1,280 @@
+{
+  "prereg_commit": "eaef4a4",
+  "run_ts_utc": "2026-07-20T08:37:15.962430+00:00",
+  "window": {
+    "buffer_start": "2024-01-01 00:00:00+00:00",
+    "window_start": "2024-06-22 00:00:00+00:00",
+    "split_ts": "2025-06-22 00:00:00+00:00",
+    "window_end": "2026-06-22 00:00:00+00:00"
+  },
+  "step1_fill_path_pre_gate": {
+    "regression_test": "test_fill_sequencing_chain.py \u2014 2/2 PASS (filled-then-stopped booked, strict-precede is a real cancel)",
+    "self_test_shift_invariance": "self_test_chain.py \u2014 3/3 detectors PASS (1H_bias, chain_candidates, 15m_sweep)",
+    "physical_check_full_window": {
+      "n_candidates_total": 41,
+      "n_filled_raw": 21,
+      "n_never_filled_raw": 20,
+      "n_samebar_entry_invalidate_raw": 0,
+      "n_samebar_entry_stop_raw": 0,
+      "n_stop_samebar_booked_in_sequenced_ledger": 0,
+      "instant_loss_population_present": false
+    },
+    "physical_check_holdout": {
+      "n_candidates_total": 11,
+      "n_filled_raw": 8,
+      "n_never_filled_raw": 3,
+      "n_samebar_entry_invalidate_raw": 0,
+      "n_samebar_entry_stop_raw": 0,
+      "n_stop_samebar_booked_in_sequenced_ledger": 0,
+      "instant_loss_population_present": false
+    }
+  },
+  "n_candidates_total": 41,
+  "n_sweeps_total": 181,
+  "train": {
+    "n_candidates": 17,
+    "stats": {
+      "n": 6,
+      "wr": 0.5,
+      "pf": 0.504,
+      "totR": -1.0391,
+      "expectancy": -0.1732,
+      "avgW": 0.3519,
+      "avgL": -0.6983
+    },
+    "live_achievable": {
+      "n_original": 6,
+      "n_live_achievable": 4,
+      "live_wr": 0.25,
+      "live_pf": 0.2618,
+      "live_totR": -1.5464,
+      "live_expectancy": -0.3866,
+      "r_weighted_suppression_pct": 16.1,
+      "r_weighted_certified_gate_stale_pct": 0.0,
+      "suppressed_reasons": [
+        "poll_after_order_end",
+        "poll_after_order_end"
+      ],
+      "original_totR": -1.0391
+    },
+    "null": {
+      "n_runs": 1000,
+      "n_draws": 6,
+      "n_eligible_long": 159848,
+      "n_eligible_short": 113116,
+      "null_p95": 2.6326,
+      "null_mean": -0.0457,
+      "null_median": -0.1019,
+      "real_totR": -1.0391,
+      "beats_null_95": false,
+      "pctile_of_real_in_null": 0.288
+    }
+  },
+  "holdout": {
+    "n_candidates": 11,
+    "stats": {
+      "n": 7,
+      "wr": 0.8571,
+      "pf": 3.3715,
+      "totR": 2.4153,
+      "expectancy": 0.345,
+      "avgW": 0.5723,
+      "avgL": -1.0185
+    },
+    "live_achievable": {
+      "n_original": 7,
+      "n_live_achievable": 7,
+      "live_wr": 0.8571,
+      "live_pf": 3.3715,
+      "live_totR": 2.4153,
+      "live_expectancy": 0.345,
+      "r_weighted_suppression_pct": 0.0,
+      "r_weighted_certified_gate_stale_pct": 0.0,
+      "suppressed_reasons": [],
+      "original_totR": 2.4153
+    },
+    "null": {
+      "n_runs": 1000,
+      "n_draws": 7,
+      "n_eligible_long": 176989,
+      "n_eligible_short": 105449,
+      "null_p95": 3.0686,
+      "null_mean": 0.002,
+      "null_median": 0.016,
+      "real_totR": 2.4153,
+      "beats_null_95": false,
+      "pctile_of_real_in_null": 0.903
+    }
+  },
+  "full_2y": {
+    "stats": {
+      "n": 13,
+      "wr": 0.6923,
+      "pf": 1.4338,
+      "totR": 1.3505,
+      "expectancy": 0.1039,
+      "avgW": 0.496,
+      "avgL": -0.7783
+    },
+    "live_achievable": {
+      "n_original": 13,
+      "n_live_achievable": 11,
+      "live_wr": 0.6364,
+      "live_pf": 1.2791,
+      "live_totR": 0.8689,
+      "live_expectancy": 0.079,
+      "r_weighted_suppression_pct": 6.35,
+      "r_weighted_certified_gate_stale_pct": 0.0,
+      "suppressed_reasons": [
+        "poll_after_order_end",
+        "poll_after_order_end"
+      ],
+      "original_totR": 1.3505
+    }
+  },
+  "quarterly": [
+    {
+      "start": "2024-06-22",
+      "end": "2024-09-21",
+      "stats": {
+        "n": 1,
+        "wr": 0.0,
+        "pf": 0.0,
+        "totR": -1.0157,
+        "expectancy": -1.0157,
+        "avgW": null,
+        "avgL": -1.0157
+      }
+    },
+    {
+      "start": "2024-09-21",
+      "end": "2024-12-21",
+      "stats": {
+        "n": 1,
+        "wr": 1.0,
+        "pf": Infinity,
+        "totR": 0.0123,
+        "expectancy": 0.0123,
+        "avgW": 0.0123,
+        "avgL": null
+      }
+    },
+    {
+      "start": "2024-12-21",
+      "end": "2025-03-22",
+      "stats": {
+        "n": 4,
+        "wr": 0.5,
+        "pf": 0.9669,
+        "totR": -0.0357,
+        "expectancy": -0.0089,
+        "avgW": 0.5217,
+        "avgL": -0.5396
+      }
+    },
+    {
+      "start": "2025-03-22",
+      "end": "2025-06-22",
+      "stats": {
+        "n": 0,
+        "wr": null,
+        "pf": null,
+        "totR": 0.0,
+        "expectancy": null,
+        "avgW": null,
+        "avgL": null
+      }
+    },
+    {
+      "start": "2025-06-22",
+      "end": "2025-09-21",
+      "stats": {
+        "n": 1,
+        "wr": 1.0,
+        "pf": Infinity,
+        "totR": 0.506,
+        "expectancy": 0.506,
+        "avgW": 0.506,
+        "avgL": null
+      }
+    },
+    {
+      "start": "2025-09-21",
+      "end": "2025-12-21",
+      "stats": {
+        "n": 1,
+        "wr": 1.0,
+        "pf": Infinity,
+        "totR": 0.1712,
+        "expectancy": 0.1712,
+        "avgW": 0.1712,
+        "avgL": null
+      }
+    },
+    {
+      "start": "2025-12-21",
+      "end": "2026-03-22",
+      "stats": {
+        "n": 2,
+        "wr": 1.0,
+        "pf": Infinity,
+        "totR": 0.4396,
+        "expectancy": 0.2198,
+        "avgW": 0.2198,
+        "avgL": null
+      }
+    },
+    {
+      "start": "2026-03-22",
+      "end": "2026-06-22",
+      "stats": {
+        "n": 3,
+        "wr": 0.6667,
+        "pf": 2.2749,
+        "totR": 1.2985,
+        "expectancy": 0.4328,
+        "avgW": 1.1585,
+        "avgL": -1.0185
+      }
+    }
+  ],
+  "n_adequacy": {
+    "floor": 30,
+    "n_holdout": 7,
+    "meets_floor": false,
+    "years_observed_holdout": 0.999,
+    "firing_rate_per_year": 7.005,
+    "years_needed_for_n30": 4.3
+  },
+  "profile_a_overlap": {
+    "profile_a_n_achievable_in_holdout": 74,
+    "chain_n_trading_days_holdout": 7,
+    "profile_a_n_trading_days_holdout": 69,
+    "n_shared_days": 4,
+    "n_union_days": 72,
+    "jaccard_trading_days": 0.0556,
+    "shared_days": [
+      "2025-10-10",
+      "2026-01-28",
+      "2026-02-17",
+      "2026-04-20"
+    ],
+    "profile_a_expectancy_on_shared_days": {
+      "2026-04-20": 0.2465,
+      "2025-10-10": -0.0092,
+      "2026-02-17": -1.0078,
+      "2026-01-28": 0.2438
+    },
+    "chain_expectancy_on_shared_days": {
+      "2026-04-20": 1.6908,
+      "2025-10-10": 0.1712,
+      "2026-02-17": 0.3615,
+      "2026-01-28": 0.0781
+    },
+    "profile_a_mean_R_on_shared_days": -0.1317,
+    "chain_mean_R_on_shared_days": 0.5754,
+    "profile_a_overall_holdout_expectancy": 0.1276,
+    "chain_overall_holdout_expectancy": 0.345,
+    "n_chain_days_with_no_profile_a_signal": 3
+  }
+}
